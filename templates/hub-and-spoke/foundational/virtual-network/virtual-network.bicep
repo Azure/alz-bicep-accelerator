@@ -2,8 +2,13 @@
 // Parameters
 //========================================
 
+//TODO: Add locks
+
 @sys.description('The Azure Region to deploy the resources into.')
 param parLocation string = resourceGroup().location
+
+@sys.description('Tags you would like to be applied to all resources in this module.')
+param parTags object = {}
 
 @sys.description('Prefix value which will be prepended to all resource names.')
 param parCompanyPrefix string = 'alz'
@@ -51,17 +56,25 @@ param parDdosEnabled bool = true
 @sys.description('DDoS Plan Name.')
 param parDdosProtectionPlanResourceId string = ''
 
+@sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
+param parTelemetryOptOut bool = false
+
+//========================================
+// Resources
+//========================================
 
 module resHubVnet 'br/public:avm/res/network/virtual-network:0.4.0' = {
   name: 'hubVnet-${uniqueString(resourceGroup().id, parHubNetworkName,parLocation)}'
   params: {
     name: parHubNetworkName
+    tags: parTags
     addressPrefixes: [
       parHubNetworkAddressPrefix
     ]
     dnsServers: parDnsServerIps
     subnets: parSubnets
     ddosProtectionPlanResourceId: parDdosEnabled ? (parDdosProtectionPlanResourceId ?? null) : null
+    enableTelemetry: parTelemetryOptOut
   }
 }
 

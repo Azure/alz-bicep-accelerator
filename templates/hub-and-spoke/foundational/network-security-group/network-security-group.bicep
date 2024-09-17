@@ -13,14 +13,11 @@ param parTags object = {}
 @sys.description('Prefix value which will be prepended to all resource names.')
 param parCompanyPrefix string = 'alz'
 
-@sys.description('Name for route table.')
-param parRouteTableName string = '${parCompanyPrefix}-hub-${parLocation}'
+@sys.description('Name for network security group.')
+param parNetworkSecurityGroup string = '${parCompanyPrefix}-nsg-${parLocation}'
 
-@sys.description('The routes for the route table.')
-param parRoutes array = []
-
-@sys.description('Switch to enable/disable BGP Propagation on route table.')
-param parDisableBgpRoutePropagation bool = false
+@sys.description('The security rules for the network security group.')
+param parNetworkSecurityGroupSecurityRules array = []
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
@@ -29,14 +26,13 @@ param parTelemetryOptOut bool = false
 // Resources
 //========================================
 
-module resRouteTable 'br/public:avm/res/network/route-table:0.4.0' = {
-  name: 'routeTable-${uniqueString(resourceGroup().id, parRouteTableName,parLocation)}'
+module resNetworkSecurityGroup 'br/public:avm/res/network/network-security-group:0.5.0' = {
+  name: 'hubVnet-${uniqueString(resourceGroup().id, parNetworkSecurityGroup,parLocation)}'
   params: {
-    name: parRouteTableName
+    name: parNetworkSecurityGroup
     location: parLocation
     tags: parTags
-    routes: parRoutes
-    disableBgpRoutePropagation: parDisableBgpRoutePropagation
+    securityRules: parNetworkSecurityGroupSecurityRules
     enableTelemetry: parTelemetryOptOut
   }
 }
