@@ -5,4 +5,5 @@ param parTags = {}
 param parCompanyPrefix = 'alz'
 param parNetworkSecurityGroup = '${parCompanyPrefix}-nsg-${parLocation}'
 param parNetworkSecurityGroupSecurityRules = []
+param parTelemetryOptOut = false
 

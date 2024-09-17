@@ -33,5 +33,7 @@ param parSubnets = [
 param parDnsServerIps = []
 param parDdosEnabled = true
 param parDdosProtectionPlanResourceId = ''
+param parTags = {}
+param parTelemetryOptOut = false
 
 
