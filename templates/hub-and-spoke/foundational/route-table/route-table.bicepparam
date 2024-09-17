@@ -1,0 +1,2 @@
+using './route-table.bicep'
+

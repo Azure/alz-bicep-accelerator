@@ -1,0 +1,2 @@
+using './expressRoute-gateway.bicep'
+

@@ -1,0 +1,2 @@
+using './ddos-protection.bicep'
+
