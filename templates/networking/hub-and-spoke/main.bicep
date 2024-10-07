@@ -587,37 +587,3 @@ type lockType = {
   @description('Optional. Notes about this lock.')
   notes: string?
 }
-
-type virtualNetworkGatewayConfigType = {
-  gatewayType: 'Vpn' | 'ExpressRoute'
-  skuName:
-    | 'Basic'
-    | 'VpnGw1'
-    | 'VpnGw2'
-    | 'VpnGw3'
-    | 'VpnGw4'
-    | 'VpnGw5'
-    | 'VpnGw1AZ'
-    | 'VpnGw2AZ'
-    | 'VpnGw3AZ'
-    | 'VpnGw4AZ'
-    | 'VpnGw5AZ'
-    | 'Standard'
-    | 'HighPerformance'
-    | 'UltraPerformance'
-    | 'ErGw1AZ'
-    | 'ErGw2AZ'
-    | 'ErGw3AZ'
-  vNetResourceId: string
-  clusterMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'?
-  vpnType: 'RouteBased' | 'PolicyBased'?
-  vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
-  enableBgpRouteTranslationForNat: bool?
-  enableDnsForwarding: bool?
-  asn: int?
-  customBgpIpAddresses: string?
-  publicIpZones: bool
-  clientRootCertData: string?
-  vpnClientAddressPoolPrefix: string?
-  vpnClientAadConfiguration: object?
-}?

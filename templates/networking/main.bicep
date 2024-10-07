@@ -54,7 +54,6 @@ param hubNetworks hubVirtualNetworkType?
 //================================
 // Resources
 //================================
-
 module hubSpokeNetwork 'hub-and-spoke/main.bicep' = if(alzNetworking.networkType == 'hub-and-spoke' && !empty(hubNetworks)) {
   name: 'hubNetworks'
   params: {
@@ -186,6 +185,9 @@ type hubVirtualNetworkType = {
 
   @description('Optional. The VNet encryption enforcement settings of the virtual network.')
   vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
+
+  @description('Required. The virtual network gateway configuration.')
+  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType
 
   @description('Optional. The Azure Bastion config.')
   bastionHost: {
@@ -404,7 +406,6 @@ type virtualNetworkGatewayConfigType = {
     | 'ErGw1AZ'
     | 'ErGw2AZ'
     | 'ErGw3AZ'
-  vNetResourceId: string
   clusterMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'?
   vpnType: 'RouteBased' | 'PolicyBased'?
   vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
