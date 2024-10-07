@@ -54,47 +54,295 @@ param hubNetworks hubVirtualNetworkType?
 //================================
 // Resources
 //================================
-module hubSpokeNetwork 'hub-and-spoke/main.bicep' = if(alzNetworking.networkType == 'hub-and-spoke' && !empty(hubNetworks)) {
-  name: 'hubNetworks'
+
+//=====================
+// Foundational
+//=====================
+
+module resBastionNsg 'foundational/network-security-group/main.bicep' = [
+  for (hub, i) in hubNetworks!: if (hub.enableBastion) {
+    name: '${hub.hubName}-bastionNsg-${uniqueString(resourceGroup().id,hub.location)}'
+    params: {
+      name: 'nsg-AzureBastionSubnet-${hub.hubName}-${hub.location}'
+      location: hub.location
+      securityRules: [
+        // Inbound Rules
+        {
+          name: 'AllowHttpsInbound'
+          properties: {
+            access: 'Allow'
+            direction: 'Inbound'
+            priority: 120
+            sourceAddressPrefix: 'Internet'
+            destinationAddressPrefix: '*'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '443'
+          }
+        }
+        {
+          name: 'AllowGatewayManagerInbound'
+          properties: {
+            access: 'Allow'
+            direction: 'Inbound'
+            priority: 130
+            sourceAddressPrefix: 'GatewayManager'
+            destinationAddressPrefix: '*'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '443'
+          }
+        }
+        {
+          name: 'AllowAzureLoadBalancerInbound'
+          properties: {
+            access: 'Allow'
+            direction: 'Inbound'
+            priority: 140
+            sourceAddressPrefix: 'AzureLoadBalancer'
+            destinationAddressPrefix: '*'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '443'
+          }
+        }
+        {
+          name: 'AllowBastionHostCommunication'
+          properties: {
+            access: 'Allow'
+            direction: 'Inbound'
+            priority: 150
+            sourceAddressPrefix: 'VirtualNetwork'
+            destinationAddressPrefix: 'VirtualNetwork'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRanges: [
+              '8080'
+              '5701'
+            ]
+          }
+        }
+        {
+          name: 'DenyAllInbound'
+          properties: {
+            access: 'Deny'
+            direction: 'Inbound'
+            priority: 4096
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            protocol: '*'
+            sourcePortRange: '*'
+            destinationPortRange: '*'
+          }
+        }
+        // Outbound Rules
+        {
+          name: 'AllowSshRdpOutbound'
+          properties: {
+            access: 'Allow'
+            direction: 'Outbound'
+            priority: 100
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: 'VirtualNetwork'
+            protocol: '*'
+            sourcePortRange: '*'
+            destinationPortRanges: hub.?bastionHost.?outboundSshRdpPorts ?? [
+              '22'
+              '3389'
+            ]
+          }
+        }
+        {
+          name: 'AllowAzureCloudOutbound'
+          properties: {
+            access: 'Allow'
+            direction: 'Outbound'
+            priority: 110
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: 'AzureCloud'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '443'
+          }
+        }
+        {
+          name: 'AllowBastionCommunication'
+          properties: {
+            access: 'Allow'
+            direction: 'Outbound'
+            priority: 120
+            sourceAddressPrefix: 'VirtualNetwork'
+            destinationAddressPrefix: 'VirtualNetwork'
+            protocol: '*'
+            sourcePortRange: '*'
+            destinationPortRanges: [
+              '8080'
+              '5701'
+            ]
+          }
+        }
+        {
+          name: 'AllowGetSessionInformation'
+          properties: {
+            access: 'Allow'
+            direction: 'Outbound'
+            priority: 130
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: 'Internet'
+            protocol: '*'
+            sourcePortRange: '*'
+            destinationPortRange: '80'
+          }
+        }
+        {
+          name: 'DenyAllOutbound'
+          properties: {
+            access: 'Deny'
+            direction: 'Outbound'
+            priority: 4096
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+            protocol: '*'
+            sourcePortRange: '*'
+            destinationPortRange: '*'
+          }
+        }
+      ]
+    }
+  }
+]
+
+//=====================
+// Hub network
+//=====================
+module resHubNetwork 'hub-and-spoke/hub-networking/main.bicep' = [for (hub, i) in hubNetworks!: if (alzNetworking.networkType == 'hub-and-spoke' && !empty(hubNetworks)) {
+  name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
+  dependsOn: [
+    resBastionNsg[i]
+  ]
   params: {
-    hubNetworks: [
-      {
-        location: 'eastus'
-        addressPrefixes: ['10.0.0.0/16']
-        enableAzureFirewall: false
-        enableBastion: true
-        enablePeering: false
-        hubName: 'hub1'
+    hubVirtualNetworks: {
+      '${hub.hubName}': {
+        addressPrefixes: hub.addressPrefixes
+        dnsServers: hub.?dnsServers ?? null
+        enablePeering: hub.?enablePeering ?? false
+        peeringSettings: (hub.?enablePeering ?? false) ? hub.?peeringSettings : null
+        ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? null
+        enableBastion: hub.enableBastion
+        vnetEncryption: hub.?vnetEncryption ?? false
+        location: hub.location
+        tags: parTags
+        routes: hub.?routes ?? null
+        bastionHost: hub.enableBastion
+          ? {
+              skuName: hub.?bastionHost.?skuName ?? 'Standard'
+            }
+          : null
+        vnetEncryptionEnforcement: hub.?vnetEncryptionEnforcement ?? 'AllowUnencrypted'
+        enableAzureFirewall: hub.enableAzureFirewall
+        azureFirewallSettings: hub.enableAzureFirewall
+          ? {
+              azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
+              location: hub.?azureFirewallSettings.?location ?? parLocation
+              firewallPolicyId: hub.?azureFirewallSettings.?firewallPolicyId ?? resAzFirewallPolicy[i].outputs.resourceId
+              threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Basic')
+                ? 'Alert'
+                : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
+              zones: hub.?azureFirewallSettings.?zones ?? null
+              publicIPAddressObject: {
+                name: '${hub.hubName}-azfirewall-pip-${hub.location}'
+              }
+            }
+          : null
         subnets: [
-          {
-            name: 'AzureBastionSubnet'
-            addressPrefix: '20.0.15.0/24'
-            networkSecurityGroupId: ''
-            routeTable: ''
-          }
-          {
-            name: 'GatewaySubnet'
-            addressPrefix: '20.0.20.0/24'
-            networkSecurityGroupId: ''
-            routeTable: ''
-          }
-          {
-            name: 'AzureFirewallSubnet'
-            addressPrefix: '20.0.254.0/24'
-            networkSecurityGroupId: ''
-            routeTable: ''
-          }
-          {
-            name: 'AzureFirewallManagementSubnet'
-            addressPrefix: '20.0.253.0/24'
-            networkSecurityGroupId: ''
-            routeTable: ''
-          }
+          for subnet in hub.subnets: !empty(subnet)
+            ? {
+                name: subnet.name
+                addressPrefix: subnet.addressPrefix
+                delegations: empty(subnet.?delegation ?? null)
+                  ? null
+                  : [
+                      {
+                        name: subnet.?delegation ?? null
+                        properties: {
+                          serviceName: subnet.?delegation ?? null
+                        }
+                      }
+                    ]
+                networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.enableBastion)
+                  ? resBastionNsg[i].outputs.resourceId
+                  : subnet.?networkSecurityGroupId ?? null
+                routeTable: subnet.?routeTable ??null
+              }
+            : null
         ]
       }
-    ]
+    }
   }
 }
+]
+
+//=====================
+// Network security
+//=====================
+
+module resDdosProtectionPlan 'network-security/ddos-protection-plan/main.bicep' = [
+  for (hub, i) in hubNetworks!: if (!empty(hub.?ddosProtectionPlanResourceId) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
+    name: 'ddosPlan-${uniqueString(resourceGroup().id,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
+    params: {
+      name: '${parCompanyPrefix}-ddos-plan-${hub.location}'
+      location: hub.location
+      enableTelemetry: parTelemetryOptOut
+      tags: parTags
+    }
+  }
+]
+
+module resAzFirewallPolicy 'network-security/firewall-policy/main.bicep' = [
+  for (hub, i) in hubNetworks!: if ((hub.enableAzureFirewall) && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
+    name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    params: {
+      name: '${parCompanyPrefix}-azfwpolicy-${hub.hubName}-${hub.location}'
+      location: hub.location
+      tier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
+      enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
+        ? false
+        : hub.?azureFirewallSettings.?dnsProxyEnabled
+      servers: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
+        ? null
+        : hub.?azureFirewallSettings.?firewallDnsServers
+    }
+  }
+]
+
+//=====================
+// Hybrid connectivity
+//=====================
+
+module resVirtualNetworkGateway 'hybrid-connectivity/virtual-network-gateway/main.bicep' = [
+  for (hub, i) in hubNetworks!: if (alzNetworking.networkType == 'hub-and-spoke' && !empty(hub.virtualNetworkGatewayConfig)) {
+  name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+  params: {
+    name: '${parCompanyPrefix}-${toLower(hub.virtualNetworkGatewayConfig.gatewayType)}-${hub.hubName}-${hub.location}-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    clusterSettings: {
+      clusterMode: 'activePassiveBgp'
+      asn: hub.virtualNetworkGatewayConfig.?asn ?? 65515
+      customBgpIpAddresses: (hub.virtualNetworkGatewayConfig.clusterMode == 'activePassiveBgp' || hub.virtualNetworkGatewayConfig.clusterMode == 'activeActiveBgp') ? (hub.virtualNetworkGatewayConfig.?customBgpIpAddresses) : null
+    }
+    location: hub.location
+    gatewayType: hub.virtualNetworkGatewayConfig.gatewayType
+    vpnType: hub.virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
+    skuName: hub.virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
+    enableBgpRouteTranslationForNat: hub.virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
+    enableDnsForwarding: hub.virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
+    vpnGatewayGeneration: hub.virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
+    vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
+    domainNameLabel: hub.virtualNetworkGatewayConfig.?domainNameLabel ?? []
+    publicIpZones: hub.virtualNetworkGatewayConfig.skuName != 'Basic' ? hub.virtualNetworkGatewayConfig.?publicIpZones ?? [1,2,3] : []
+    }
+  }
+]
+
 
 //================================
 // Definitions
@@ -406,15 +654,16 @@ type virtualNetworkGatewayConfigType = {
     | 'ErGw1AZ'
     | 'ErGw2AZ'
     | 'ErGw3AZ'
-  clusterMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'?
+  clusterMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'
   vpnType: 'RouteBased' | 'PolicyBased'?
   vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
   enableBgpRouteTranslationForNat: bool?
   enableDnsForwarding: bool?
   asn: int?
-  customBgpIpAddresses: string?
-  publicIpZones: bool
+  customBgpIpAddresses: string[]?
+  publicIpZones: array?
   clientRootCertData: string?
   vpnClientAddressPoolPrefix: string?
   vpnClientAadConfiguration: object?
-}?
+  domainNameLabel: string[]?
+}
