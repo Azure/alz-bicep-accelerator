@@ -12,7 +12,7 @@ param parDdosLock = {
 }
 param parTags = {}
 param parTelemetryOptOut = false
-param alzNetworking =  {
+param alzNetworking = {
   networkType: 'hub-and-spoke'
 }
 
@@ -20,47 +20,53 @@ param hubNetworks = [
   {
     hubName: 'hub1'
     location: 'eastus'
+    vpnGatewayEnabled: true
     addressPrefixes: [
       '20.0.0.0/16'
     ]
-    enableAzureFirewall: false
-    enableBastion: false
+    enableAzureFirewall: true
+    enableBastion: true
     enablePeering: false
     dnsServers: []
     routes: []
     virtualNetworkGatewayConfig: {
       gatewayType: 'Vpn'
-      publicIpZones: true
-      skuName: 'ErGw1AZ'
-      clusterMode: 'activePassiveBgp'
+      publicIpZones: [
+        1
+        2
+        3
+      ]
+      skuName: 'VpnGw1AZ'
+      vpnMode: 'activeActiveBgp'
       asn: 65515
       vpnType: 'RouteBased'
     }
     subnets: [
       {
-    name: 'AzureBastionSubnet'
-    addressPrefix: '20.0.15.0/24'
-    networkSecurityGroupId: ''
-    routeTable: ''
-  }
-  {
-    name: 'GatewaySubnet'
-    addressPrefix: '20.0.20.0/24'
-    networkSecurityGroupId: ''
-    routeTable: ''
-  }
-  {
-    name: 'AzureFirewallSubnet'
-    addressPrefix: '20.0.254.0/24'
-    networkSecurityGroupId: ''
-    routeTable: ''
-  }
-  {
-    name: 'AzureFirewallManagementSubnet'
-    addressPrefix: '20.0.253.0/24'
-    networkSecurityGroupId: ''
-    routeTable: ''
-  }]
+        name: 'AzureBastionSubnet'
+        addressPrefix: '20.0.15.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'GatewaySubnet'
+        addressPrefix: '20.0.20.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'AzureFirewallSubnet'
+        addressPrefix: '20.0.254.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'AzureFirewallManagementSubnet'
+        addressPrefix: '20.0.253.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+    ]
   }
   {
     hubName: 'hub2'
@@ -68,21 +74,14 @@ param hubNetworks = [
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-    enableAzureFirewall: true
+    enableAzureFirewall: false
     enablePeering: false
     azureFirewallSettings: {
       azureSkuTier: 'Basic'
       location: 'uksouth'
     }
-    virtualNetworkGatewayConfig: {
-      gatewayType: 'Vpn'
-      publicIpZones: true
-      skuName: 'ErGw2AZ'
-      clusterMode: 'activePassiveBgp'
-      asn: 65515
-      vpnType: 'RouteBased'
-    }
-    enableBastion: true
+    vpnGatewayEnabled: false
+    enableBastion: false
     dnsServers: []
     routes: []
     subnets: [
@@ -113,5 +112,3 @@ param hubNetworks = [
     ]
   }
 ]
-
-

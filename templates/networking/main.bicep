@@ -322,8 +322,11 @@ module resAzFirewallPolicy 'network-security/firewall-policy/main.bicep' = [
 module resVirtualNetworkGateway 'hybrid-connectivity/virtual-network-gateway/main.bicep' = [
   for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && alzNetworking.networkType == 'hub-and-spoke' && !empty(hub.?virtualNetworkGatewayConfig)) {
   name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+  dependsOn: [
+    resHubNetwork[i]
+  ]
   params: {
-    name: '${parCompanyPrefix}-${toLower(hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'vpn')}-${hub.hubName}-${hub.location}-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    name: '${parCompanyPrefix}-${toLower(hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'vpn')}-${hub.hubName}-${hub.location}'
     clusterSettings: {
       clusterMode: any(hub.?virtualNetworkGatewayConfig.?vpnMode)
       asn: hub.?virtualNetworkGatewayConfig.?asn ?? 65515
