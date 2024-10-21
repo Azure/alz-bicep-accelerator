@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
-metadata name = 'ExpressRoute'
-metadata description = 'This instance deploys the module with the ExpressRoute set of required parameters.'
+metadata name = 'Forced tunneling'
+metadata description = 'This instance deploys the module and sets up forced tunneling.'
 
 // ========== //
 // Parameters //
@@ -9,13 +9,13 @@ metadata description = 'This instance deploys the module with the ExpressRoute s
 
 @description('Optional. The name of the resource group to deploy for testing purposes.')
 @maxLength(90)
-param resourceGroupName string = 'dep-${namePrefix}-network.virtualnetworkgateways-${serviceShort}-rg'
+param resourceGroupName string = 'dep-${namePrefix}-network.azurefirewalls-${serviceShort}-rg'
 
 @description('Optional. The location to deploy resources to.')
 param resourceLocation string = deployment().location
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
-param serviceShort string = 'nvger'
+param serviceShort string = 'naftunn'
 
 @description('Optional. A token to inject into the name of each resource.')
 param namePrefix string = '#_namePrefix_#'
@@ -37,6 +37,7 @@ module nestedDependencies 'dependencies.bicep' = {
   params: {
     location: resourceLocation
     virtualNetworkName: 'dep-${namePrefix}-vnet-${serviceShort}'
+    publicIPName: 'dep-${namePrefix}-pip-${serviceShort}'
   }
 }
 
@@ -52,24 +53,18 @@ module testDeployment '../../../main.bicep' = [
     params: {
       location: resourceLocation
       name: '${namePrefix}${serviceShort}001'
-      skuName: 'ErGw1AZ'
-      gatewayType: 'ExpressRoute'
-      vNetResourceId: nestedDependencies.outputs.vnetResourceId
-      clusterSettings:{
-        clusterMode: 'activePassiveBgp'
+      virtualNetworkResourceId: nestedDependencies.outputs.virtualNetworkResourceId
+      additionalPublicIpConfigurations: [
+        {
+          name: 'ipConfig01'
+          publicIPAddressResourceId: nestedDependencies.outputs.publicIPResourceId
+        }
+      ]
+      azureSkuTier: 'Standard'
+      enableForcedTunneling: true
+      managementIPAddressObject: {
+        publicIPAllocationMethod: 'Static'
       }
-      domainNameLabel: [
-        '${namePrefix}-dm-${serviceShort}'
-      ]
-      firstPipName: '${namePrefix}-pip-${serviceShort}'
-      publicIpZones: [
-        1
-        2
-        3
-      ]
     }
-    dependsOn: [
-      nestedDependencies
-    ]
   }
 ]

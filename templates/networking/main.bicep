@@ -320,25 +320,25 @@ module resAzFirewallPolicy 'network-security/firewall-policy/main.bicep' = [
 //=====================
 
 module resVirtualNetworkGateway 'hybrid-connectivity/virtual-network-gateway/main.bicep' = [
-  for (hub, i) in hubNetworks!: if (alzNetworking.networkType == 'hub-and-spoke' && !empty(hub.virtualNetworkGatewayConfig)) {
+  for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && alzNetworking.networkType == 'hub-and-spoke' && !empty(hub.?virtualNetworkGatewayConfig)) {
   name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
   params: {
-    name: '${parCompanyPrefix}-${toLower(hub.virtualNetworkGatewayConfig.gatewayType)}-${hub.hubName}-${hub.location}-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    name: '${parCompanyPrefix}-${toLower(hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'vpn')}-${hub.hubName}-${hub.location}-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
     clusterSettings: {
-      clusterMode: 'activePassiveBgp'
-      asn: hub.virtualNetworkGatewayConfig.?asn ?? 65515
-      customBgpIpAddresses: (hub.virtualNetworkGatewayConfig.clusterMode == 'activePassiveBgp' || hub.virtualNetworkGatewayConfig.clusterMode == 'activeActiveBgp') ? (hub.virtualNetworkGatewayConfig.?customBgpIpAddresses) : null
+      clusterMode: any(hub.?virtualNetworkGatewayConfig.?vpnMode)
+      asn: hub.?virtualNetworkGatewayConfig.?asn ?? 65515
+      customBgpIpAddresses: (hub.?virtualNetworkGatewayConfig.?vpnMode == 'activePassiveBgp' || hub.?virtualNetworkGatewayConfig.?vpnMode == 'activeActiveBgp') ? (hub.?virtualNetworkGatewayConfig.?customBgpIpAddresses) : null
     }
     location: hub.location
-    gatewayType: hub.virtualNetworkGatewayConfig.gatewayType
-    vpnType: hub.virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
-    skuName: hub.virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
-    enableBgpRouteTranslationForNat: hub.virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
-    enableDnsForwarding: hub.virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
-    vpnGatewayGeneration: hub.virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
+    gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
+    vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
+    skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
+    enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
+    enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
+    vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
     vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
-    domainNameLabel: hub.virtualNetworkGatewayConfig.?domainNameLabel ?? []
-    publicIpZones: hub.virtualNetworkGatewayConfig.skuName != 'Basic' ? hub.virtualNetworkGatewayConfig.?publicIpZones ?? [1,2,3] : []
+    domainNameLabel: hub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
+    publicIpZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic' ? hub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1,2,3] : []
     }
   }
 ]
@@ -434,8 +434,11 @@ type hubVirtualNetworkType = {
   @description('Optional. The VNet encryption enforcement settings of the virtual network.')
   vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
 
-  @description('Required. The virtual network gateway configuration.')
-  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType
+  @description('Optional. The virtual network gateway configuration.')
+  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType?
+
+  @description('Optional. Switch to enable/disable VPN virtual network gateway deployment.')
+  vpnGatewayEnabled: bool
 
   @description('Optional. The Azure Bastion config.')
   bastionHost: {
@@ -635,7 +638,7 @@ type subnetOptionsType = ({
 })[]
 
 type virtualNetworkGatewayConfigType = {
-  gatewayType: 'Vpn' | 'ExpressRoute'
+  gatewayType: 'Vpn' | 'ExpressRoute'?
   skuName:
     | 'Basic'
     | 'VpnGw1'
@@ -654,7 +657,7 @@ type virtualNetworkGatewayConfigType = {
     | 'ErGw1AZ'
     | 'ErGw2AZ'
     | 'ErGw3AZ'
-  clusterMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'
+  vpnMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'
   vpnType: 'RouteBased' | 'PolicyBased'?
   vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
   enableBgpRouteTranslationForNat: bool?
