@@ -33,6 +33,11 @@ param parDdosLock lockType = {
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
+param parVirtualWanLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
 @sys.description('Tags you would like to be applied to all resources in this module.')
 param parTags object = {}
 
@@ -44,6 +49,9 @@ param alzNetworking alzNetworkingType
 
 @description('Optional. The hub virtual networks to create.')
 param hubNetworks hubVirtualNetworkType?
+
+@description('Optional. The virtual WAN settings to create.')
+param virtualWan virtualWanSettingsType?
 
 
 //================================
@@ -283,6 +291,24 @@ module resHubNetwork 'hub-and-spoke/hub-networking/main.bicep' = [for (hub, i) i
 ]
 
 //=====================
+// VWAN
+//=====================
+module resVirtualWan 'virtual-Wan/main.bicep'= if  (alzNetworking.networkType == 'virtual-wan' && !empty(virtualWan)) {
+  name: 'virtualWan-${uniqueString(resourceGroup().id, virtualWan.?name ?? parCompanyPrefix, virtualWan.?location ?? parLocation)}'
+  params: {
+    name: 'virtualWan-${parLocation}' ?? virtualWan.?name
+    allowBranchToBranchTraffic: virtualWan.?allowBranchToBranchTraffic ?? true
+    allowVnetToVnetTraffic: virtualWan.?allowVnetToVnetTraffic ?? true
+    disableVpnEncryption: virtualWan.?disableVpnEncryption ?? false
+    location: virtualWan.?location ?? parLocation
+    lock: parGlobalResourceLock ?? parVirtualWanLock
+    tags: parTags
+    type: virtualWan.?type ?? 'Standard'
+    enableTelemetry: parTelemetryOptOut
+  }
+}
+
+//=====================
 // Network security
 //=====================
 
@@ -396,7 +422,7 @@ type hubVirtualNetworkType = {
   enableAzureFirewall: bool
 
   @description('Optional. The location of the virtual network. Defaults to the location of the resource group.')
-  location: string
+  location: string?
 
   @description('Optional. The lock settings of the virtual network.')
   lock: lockType?
@@ -467,6 +493,100 @@ type hubVirtualNetworkType = {
     outboundSshRdpPorts: array?
   }?
 }[]?
+
+type virtualWanSettingsType = {
+  @description('Required. The name of the virtual WAN.')
+  name: string
+
+  @description('Optional. Allow branch to branch traffic.')
+  allowBranchToBranchTraffic: bool?
+
+  @description('Optional. Allow VNet to VNet traffic.')
+  allowVnetToVnetTraffic: bool?
+
+  @description('Optional. Disable VPN encryption.')
+  disableVpnEncryption: bool?
+
+  @description('Required. The location of the virtual WAN. Defaults to the location of the resource group.')
+  location: string?
+
+  @description('Optional. Lock settings.')
+  lock: lockType?
+
+  @description('Optional. Tags of the resource.')
+  tags: object?
+
+  @description('Optional. The type of the virtual WAN. Defaults to Basic.')
+  type: 'Basic' | 'Standard'?
+}?
+
+type typeVirtualWanHubs = {
+  @description('Required. The name of the hub.')
+  hubName: string
+
+  @description('Required. The address prefixes for the virtual network.')
+  addressPrefixes: array
+
+  @description('Optional. The Azure Firewall config.')
+  azureFirewallSettings: azureFirewallType?
+
+  @description('Optional. Enable/Disable usage telemetry for module.')
+  enableTelemetry: bool?
+
+  @description('Optional. Enable/Disable Azure Bastion for the virtual network.')
+  enableBastion: bool
+
+  @description('Required. Enable/Disable Azure Firewall for the virtual network.')
+  enableAzureFirewall: bool
+
+  @description('Optional. The location of the virtual network. Defaults to the location of the resource group.')
+  location: string?
+
+  @description('Optional. The lock settings of the virtual network.')
+  lock: lockType?
+
+  @description('Optional. The diagnostic settings of the virtual network.')
+  diagnosticSettings: diagnosticSettingType?
+
+  @description('Optional. The DDoS protection plan resource ID.')
+  ddosProtectionPlanResourceId: string?
+
+  @description('Optional. The DNS servers of the virtual network.')
+  dnsServers: array?
+
+  @description('Optional. The flow timeout in minutes.')
+  flowTimeoutInMinutes: int?
+
+  @description('Optional. Enable/Disable peering for the virtual network.')
+  enablePeering: bool
+
+  @description('Optional. The peerings of the virtual network.')
+  peeringSettings: peeringSettingsType?
+
+  @description('Optional. The role assignments to create.')
+  roleAssignments: roleAssignmentType?
+
+  @description('Optional. Routes to add to the virtual network route table.')
+  routes: array?
+
+  @description('Optional. The subnets of the virtual network.')
+  subnets: subnetOptionsType
+
+  @description('Optional. The tags of the virtual network.')
+  tags: object?
+
+  @description('Optional. Enable/Disable VNet encryption.')
+  vnetEncryption: bool?
+
+  @description('Optional. The VNet encryption enforcement settings of the virtual network.')
+  vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
+
+  @description('Optional. The virtual network gateway configuration.')
+  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType?
+
+  @description('Optional. Switch to enable/disable VPN virtual network gateway deployment.')
+  vpnGatewayEnabled: bool
+}
 
 type peeringSettingsType = {
   @description('Optional. Allow forwarded traffic.')

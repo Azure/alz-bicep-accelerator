@@ -16,6 +16,15 @@ param alzNetworking = {
   networkType: 'hub-and-spoke'
 }
 
+param virtualWan = {
+  name: 'alz-vwan'
+  location: 'eastus2'
+  allowBranchToBranchTraffic: true
+  allowVnetToVnetTraffic: true
+  disableVpnEncryption: false
+  type: 'Standard'
+}
+
 param hubNetworks = [
   {
     hubName: 'hub1'
