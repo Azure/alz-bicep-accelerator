@@ -1,6 +1,5 @@
 using './main.bicep'
 
-param parLocation = 'eastus2'
 param parCompanyPrefix = 'alz'
 param parGlobalResourceLock = {
   kind: 'None'
@@ -12,18 +11,6 @@ param parDdosLock = {
 }
 param parTags = {}
 param parTelemetryOptOut = false
-param alzNetworking = {
-  networkType: 'hub-and-spoke'
-}
-
-param virtualWan = {
-  name: 'alz-vwan'
-  location: 'eastus2'
-  allowBranchToBranchTraffic: true
-  allowVnetToVnetTraffic: true
-  disableVpnEncryption: false
-  type: 'Standard'
-}
 
 param hubNetworks = [
   {
@@ -31,7 +18,7 @@ param hubNetworks = [
     location: 'eastus'
     vpnGatewayEnabled: true
     addressPrefixes: [
-      '20.0.0.0/16'
+      '10.0.0.0/16'
     ]
     enableAzureFirewall: true
     enableBastion: true
@@ -53,56 +40,13 @@ param hubNetworks = [
     subnets: [
       {
         name: 'AzureBastionSubnet'
-        addressPrefix: '20.0.15.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
-      }
-      {
-        name: 'GatewaySubnet'
-        addressPrefix: '20.0.20.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
-      }
-      {
-        name: 'AzureFirewallSubnet'
-        addressPrefix: '20.0.254.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
-      }
-      {
-        name: 'AzureFirewallManagementSubnet'
-        addressPrefix: '20.0.253.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
-      }
-    ]
-  }
-  {
-    hubName: 'hub2'
-    location: 'uksouth'
-    addressPrefixes: [
-      '10.0.0.0/16'
-    ]
-    enableAzureFirewall: false
-    enablePeering: false
-    azureFirewallSettings: {
-      azureSkuTier: 'Basic'
-      location: 'uksouth'
-    }
-    vpnGatewayEnabled: false
-    enableBastion: false
-    dnsServers: []
-    routes: []
-    subnets: [
-      {
-        name: 'AzureBastionSubnet'
         addressPrefix: '10.0.15.0/24'
         networkSecurityGroupId: ''
         routeTable: ''
       }
       {
         name: 'GatewaySubnet'
-        addressPrefix: '10.0.252.0/24'
+        addressPrefix: '10.0.20.0/24'
         networkSecurityGroupId: ''
         routeTable: ''
       }
@@ -115,6 +59,49 @@ param hubNetworks = [
       {
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '10.0.253.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+    ]
+  }
+  {
+    hubName: 'hub2'
+    location: 'westus'
+    vpnGatewayEnabled: true
+    addressPrefixes: [
+      '20.0.0.0/16'
+    ]
+    enableAzureFirewall: true
+    enableBastion: false
+    enablePeering: false
+    dnsServers: []
+    routes: []
+    azureFirewallSettings: {
+      azureSkuTier: 'Basic'
+      location: 'westus'
+    }
+    subnets: [
+      {
+        name: 'AzureBastionSubnet'
+        addressPrefix: '20.0.15.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'GatewaySubnet'
+        addressPrefix: '20.0.252.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'AzureFirewallSubnet'
+        addressPrefix: '20.0.254.0/24'
+        networkSecurityGroupId: ''
+        routeTable: ''
+      }
+      {
+        name: 'AzureFirewallManagementSubnet'
+        addressPrefix: '20.0.253.0/24'
         networkSecurityGroupId: ''
         routeTable: ''
       }
