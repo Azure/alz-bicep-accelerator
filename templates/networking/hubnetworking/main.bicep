@@ -30,6 +30,72 @@ param parDdosLock lockType = {
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
+@sys.description('''Resource Lock Configuration for Virtual Network.
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parVirtualNetworkLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description('''Resource Lock Configuration for Bastion.
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parBastionLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description(''' Resource Lock Configuration for Azure Firewall.
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parAzureFirewallLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description('''Resource Lock Configuration for Hub Route Table.
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parHubRouteTableLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description('''Resource Lock Configuration for Private DNS Zone(s).
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parPrivateDNSZonesLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description('''Resource Lock Configuration for ExpressRoute Virtual Network Gateway.
+
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+
+''')
+param parVirtualNetworkGatewayLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
 @sys.description('Tags you would like to be applied to all resources in this module.')
 param parTags object = {}
 
@@ -47,8 +113,9 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
   for (hub, i) in hubNetworks!: if (hub.enableBastion) {
     name: '${hub.hubName}-bastionNsg-${uniqueString(resourceGroup().id,hub.location)}'
     params: {
-      name: 'nsg-AzureBastionSubnet-${hub.hubName}-${hub.location}'
+      name: 'nsg-bastion-${hub.hubName}-${hub.location}'
       location: hub.location
+      lock: parGlobalResourceLock ?? {}
       securityRules: [
         // Inbound Rules
         {
@@ -199,7 +266,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 // Hub network
 //=====================
-module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.1.3' = [
+module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.1' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
     name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
     dependsOn: [
@@ -214,6 +281,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.1.3' = [
           peeringSettings: (hub.?enablePeering ?? false) ? hub.?peeringSettings : null
           ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? null
           enableBastion: hub.enableBastion
+          lock: parGlobalResourceLock ?? parVirtualNetworkLock
           vnetEncryption: hub.?vnetEncryption ?? false
           location: hub.location
           tags: parTags
@@ -289,6 +357,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
     params: {
       name: '${parCompanyPrefix}-azfwpolicy-${hub.hubName}-${hub.location}'
       location: hub.location
+      lock: parGlobalResourceLock ?? parAzureFirewallLock
       tier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
       enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
@@ -320,9 +389,11 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
           : null
       }
       location: hub.location
+      lock: parGlobalResourceLock ?? parVirtualNetworkGatewayLock
       gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
       vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
       skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
+      enableTelemetry: parTelemetryOptOut
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
@@ -334,6 +405,23 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
     }
   }
 ]
+
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.3.1' = [for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
+  name: 'privateDnsZone-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
+  scope: resourceGroup(hub.?privateDnsZonesResourceGroup ?? resourceGroup().name)
+  params: {
+    location: hub.location
+    privateLinkPrivateDnsZones: empty(hub.?privateDnsZones) ? null : hub.?privateDnsZones
+    virtualNetworkResourceIdsToLinkTo: union(
+      [resourceId('Microsoft.Network/virtualNetworks', hub.hubName)],
+      !empty(hub.?virtualNetworkIdToLinkFailover) ? [hub.?virtualNetworkIdToLinkFailover] : [],
+      hub.?virtualNetworkResourceIdsToLinkTo ?? []
+    )
+    tags: parTags
+    lock: parGlobalResourceLock ?? parPrivateDNSZonesLock
+    enableTelemetry: parTelemetryOptOut
+  }
+}]
 
 //================================
 // Definitions
@@ -379,6 +467,21 @@ type hubVirtualNetworkType = {
 
   @description('Optional. The lock settings of the virtual network.')
   lock: lockType?
+
+  @description('Optional. Enable/Disable private DNS zones.')
+  enablePrivateDnsZones: bool?
+
+  @description('Optional. The resource group name for private DNS zones.')
+  privateDnsZonesResourceGroup: string?
+
+  @description('Array of Resource IDs of VNets to link to Private DNS Zones. Hub VNet is automatically included by module.')
+  virtualNetworkResourceIdsToLinkTo: array?
+
+  @description('Array of DNS Zones to provision and link to  Hub Virtual Network. Default: All known Azure Private DNS Zones, baked into underlying AVM module see: https://github.com/Azure/bicep-registry-modules/tree/main/avm/ptn/network/private-link-private-dns-zones#parameter-privatelinkprivatednszones')
+  privateDnsZones: array?
+
+  @description('Resource ID of Failover VNet for Private DNS Zone VNet Failover Links')
+  virtualNetworkIdToLinkFailover: string?
 
   @description('Optional. The diagnostic settings of the virtual network.')
   diagnosticSettings: diagnosticSettingType?
@@ -440,12 +543,12 @@ type hubVirtualNetworkType = {
     scaleUnits: int?
 
     @description('Optional. The SKU name of the Bastion host. Defaults to Standard.')
-    skuName: string?
+    skuName: 'Basic' | 'Standard' | 'Premium'?
 
     @description('Optional. The bastion\'s outbound ssh and rdp ports\'.')
     outboundSshRdpPorts: array?
   }?
-}[]?
+}[]
 
 type peeringSettingsType = {
   @description('Optional. Allow forwarded traffic.')
@@ -622,12 +725,6 @@ type subnetOptionsType = ({
 type virtualNetworkGatewayConfigType = {
   gatewayType: 'Vpn' | 'ExpressRoute'?
   skuName:
-    | 'Basic'
-    | 'VpnGw1'
-    | 'VpnGw2'
-    | 'VpnGw3'
-    | 'VpnGw4'
-    | 'VpnGw5'
     | 'VpnGw1AZ'
     | 'VpnGw2AZ'
     | 'VpnGw3AZ'
