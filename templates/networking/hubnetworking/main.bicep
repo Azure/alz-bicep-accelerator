@@ -725,12 +725,6 @@ type subnetOptionsType = ({
 type virtualNetworkGatewayConfigType = {
   gatewayType: 'Vpn' | 'ExpressRoute'?
   skuName:
-    | 'Basic'
-    | 'VpnGw1'
-    | 'VpnGw2'
-    | 'VpnGw3'
-    | 'VpnGw4'
-    | 'VpnGw5'
     | 'VpnGw1AZ'
     | 'VpnGw2AZ'
     | 'VpnGw3AZ'
