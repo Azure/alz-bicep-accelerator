@@ -47,7 +47,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
   for (hub, i) in hubNetworks!: if (hub.enableBastion) {
     name: '${hub.hubName}-bastionNsg-${uniqueString(resourceGroup().id,hub.location)}'
     params: {
-      name: 'nsg-AzureBastionSubnet-${hub.hubName}-${hub.location}'
+      name: 'nsg-bastion-${hub.hubName}-${hub.location}'
       location: hub.location
       securityRules: [
         // Inbound Rules
@@ -441,7 +441,7 @@ type hubVirtualNetworkType = {
     scaleUnits: int?
 
     @description('Optional. The SKU name of the Bastion host. Defaults to Standard.')
-    skuName: string?
+    skuName: 'Basic' | 'Standard' | 'Premium'?
 
     @description('Optional. The bastion\'s outbound ssh and rdp ports\'.')
     outboundSshRdpPorts: array?
