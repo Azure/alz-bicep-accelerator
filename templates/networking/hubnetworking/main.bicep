@@ -199,7 +199,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 // Hub network
 //=====================
-module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.1.3' = [
+module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.1' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
     name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
     dependsOn: [
@@ -323,6 +323,7 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
       vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
       skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
+      enableTelemetry: parTelemetryOptOut
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
