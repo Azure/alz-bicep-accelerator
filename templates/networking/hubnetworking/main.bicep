@@ -266,7 +266,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 // Hub network
 //=====================
-module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
+module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.1' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
     name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
     dependsOn: [
@@ -286,10 +286,8 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
           location: hub.location
           tags: parTags
           routes: hub.?routes ?? null
-          routeTableName: hub.?routeTableName ?? null
           bastionHost: hub.enableBastion
             ? {
-                bastionHostName: hub.?bastionHost.?bastionHostName ?? '${hub.hubName}-bastion'
                 skuName: hub.?bastionHost.?skuName ?? 'Standard'
               }
             : null
@@ -509,9 +507,6 @@ type hubVirtualNetworkType = {
   @description('Optional. Routes to add to the virtual network route table.')
   routes: array?
 
-  @description('Optional. The name of the route table.')
-  routeTableName: string?
-
   @description('Optional. The subnets of the virtual network.')
   subnets: subnetOptionsType
 
@@ -544,17 +539,11 @@ type hubVirtualNetworkType = {
     @description('Optional. Enable/Disable shareable link functionality.')
     enableShareableLink: bool?
 
-    @description('Optional. Enable/Disable Kerberos authentication.')
-    enableKerberos: bool?
-
     @description('Optional. The number of scale units for the Bastion host. Defaults to 4.')
     scaleUnits: int?
 
     @description('Optional. The SKU name of the Bastion host. Defaults to Standard.')
-    skuName: 'Basic' | 'Developer' | 'Premium' | 'Standard'?
-
-    @description('Optional. The name of the bastion host.')
-    bastionHostName: string?
+    skuName: 'Basic' | 'Standard' | 'Premium'?
 
     @description('Optional. The bastion\'s outbound ssh and rdp ports\'.')
     outboundSshRdpPorts: array?
@@ -579,10 +568,6 @@ type peeringSettingsType = {
 }[]?
 
 type azureFirewallType = {
-
-  @description('Optional. The name of the Azure Firewall.')
-  azureFirewallName: string?
-
   @description('Optional. Hub IP addresses.')
   hubIpAddresses: object?
 
