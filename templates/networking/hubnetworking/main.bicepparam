@@ -16,12 +16,21 @@ param hubNetworks = [
   {
     hubName: 'hub1'
     location: 'eastus'
-    vpnGatewayEnabled: true
+    vpnGatewayEnabled: false
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-    enableAzureFirewall: true
-    enableBastion: true
+    enablePrivateDnsZones: true
+    privateDnsZones: [
+      'privatelink.azconfig.io'
+  'privatelink.azure-api.net'
+  'privatelink.azure-automation.net'
+    ]
+    enableAzureFirewall: false
+    enableBastion: false
+    bastionHost: {
+      skuName: 'Standard'
+    }
     enablePeering: false
     dnsServers: []
     routes: []
@@ -67,7 +76,7 @@ param hubNetworks = [
   {
     hubName: 'hub2'
     location: 'westus'
-    vpnGatewayEnabled: true
+    vpnGatewayEnabled: false
     addressPrefixes: [
       '20.0.0.0/16'
     ]
