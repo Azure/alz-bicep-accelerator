@@ -7,31 +7,28 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-param intRootManagementGroup alzCore = {
-  createOrUpdateManagementGroup: true
-  managementGroupName: 'int-root'
-  managementGroupDisplayName: 'Int-Root Management Group'
-  managementGroupParentId: tenant().tenantId
-  managementGroupCustomPolicyDefinitions:
-  managementGroupCustomPolicySetDefinitions:
-  managementGroupPolicyAssignments: intRootManagementGroup.managementGroupPolicyAssignments
-  managementGroupCustomRoleDefinitions: intRootManagementGroup.managementGroupCustomRoleDefinitions
-  managementGroupRoleAssignments: intRootManagementGroup.managementGroupRoleAssignments
-  location: deployment().location
-  subscriptionsToPlaceInManagementGroup: intRootManagementGroup.subscriptionsToPlaceInManagementGroup
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: intRootManagementGroup.waitForConsistencyCounterBeforeCustomPolicyDefinitions
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: intRootManagementGroup.waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: intRootManagementGroup.waitForConsistencyCounterBeforeCustomRoleDefinitions
-  waitForConsistencyCounterBeforePolicyAssignments: intRootManagementGroup.waitForConsistencyCounterBeforePolicyAssignments
-  waitForConsistencyCounterBeforeRoleAssignment: intRootManagementGroup.waitForConsistencyCounterBeforeRoleAssignment
-  waitForConsistencyCounterBeforeSubPlacement: intRootManagementGroup.waitForConsistencyCounterBeforeSubPlacement
-  enableTelemetry: intRootManagementGroup.enableTelemetry
-}
+@description('Required. The management group configuration for the Int-Root Management Group.')
+param intRootManagementGroup alzCore
+
+@description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
+param customerRbacRoleDefs array = []
+
+@description('Optional. Customer provided RBAC role assignments.')
+param customerRbacRoleAssignments array = []
+
+@description('Optional. Additional customer provided policy definitions to be used in tandem with the ALZ policy definitions.')
+param customerPolicyDefs array = []
+
+@description('Optional. Additional customer provided policy set definitions to be used in tandem with the ALZ policy set definitions.')
+param customerPolicySetDefs array = []
+
+@description('Optional. Set to true to enable telemetry for the deployment. Set to false to opt-out of telemetry.')
+param customerPolicyAssignments array = []
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
 
-var alzCustomRbacRoleDefsJson = [
+var alzRbacRoleDefsJson = [
   loadJsonContent('../lib/role_definitions/application_owners.alz_role_definition.json')
   loadJsonContent('../lib/role_definitions/network_management.alz_role_definition.json')
   loadJsonContent('../lib/role_definitions/network_subnet_contributor.alz_role_definition.json')
@@ -39,36 +36,7 @@ var alzCustomRbacRoleDefsJson = [
   loadJsonContent('../lib/role_definitions/subscription_owner.alz_role_definition.json')
 ]
 
-var alzCustomRbacRoleDefsJsonParsed = [
-  for roleDef in alzCustomRbacRoleDefsJson: {
-    name: roleDef.name
-    roleName: roleDef.properties.roleName
-    description: roleDef.properties.description
-    actions: roleDef.properties.permissions[0].actions
-    notActions: roleDef.properties.permissions[0].notActions
-    dataActions: roleDef.properties.permissions[0].dataActions
-    notDataActions: roleDef.properties.permissions[0].notDataActions
-  }
-]
-
-var additionalTestCustomRbacRoleDefs = [
-  {
-    name: 'rbac-custom-role-4'
-    actions: [
-      'Microsoft.Compute/*/read'
-    ]
-  }
-  {
-    name: 'rbac-custom-role-3'
-    actions: [
-      'Microsoft.Storage/*/read'
-    ]
-  }
-]
-
-var unionedCustomRbacRoleDefs = union(alzCustomRbacRoleDefsJsonParsed, additionalTestCustomRbacRoleDefs)
-
-var alzCustomPolicyDefsJson = [
+var alzPolicyDefsJson = [
   loadJsonContent('../lib/policy_definitions/Append-AppService-httpsonly.alz_policy_definition.json')
   loadJsonContent('../lib/policy_definitions/Append-AppService-latestTLS.alz_policy_definition.json')
   loadJsonContent('../lib/policy_definitions/Append-KV-SoftDelete.alz_policy_definition.json')
@@ -231,7 +199,7 @@ var alzCustomPolicyDefsJson = [
   loadJsonContent('../lib/policy_definitions/Modify-UDR.alz_policy_definition.json')
 ]
 
-var alzCustomPolicySetDefsJson = [
+var alzPolicySetDefsJson = [
   loadJsonContent('../lib/policy_set_definitions/Audit-TrustedLaunch.alz_policy_set_definition.json')
   loadJsonContent('../lib/policy_set_definitions/Audit-UnusedResourcesCostOptimization.alz_policy_set_definition.json')
   loadJsonContent('../lib/policy_set_definitions/Deny-PublicPaaSEndpoints.alz_policy_set_definition.json')
@@ -281,37 +249,32 @@ var alzCustomPolicySetDefsJson = [
   loadJsonContent('../lib/policy_set_definitions/Enforce-Guardrails-VirtualDesktop.alz_policy_set_definition.json')
 ]
 
-var managementGroupCustomRoleDefinitions = [
-  for policy in alzCustomPolicyDefsJson: {
-    name: policy.name
-    properties: {
-      description: policy.properties.description
-      displayName: policy.properties.displayName
-      metadata: policy.properties.metadata
-      mode: policy.properties.mode
-      parameters: policy.properties.parameters
-      policyType: policy.properties.policyType
-      policyRule: policy.properties.policyRule
-    }
+var alzPolicyAssignmentsDefs = [
+  loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
+]
+
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, customerRbacRoleDefs)
+
+var unionedPolicyDefs = union(alzPolicyDefsJson, customerPolicyDefs)
+
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, customerPolicySetDefs)
+
+var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, customerPolicyAssignments)
+
+var allRbacRoleDefs = [
+  for roleDef in unionedRbacRoleDefs: {
+    name: roleDef.name
+    roleName: roleDef.properties.roleName
+    description: roleDef.properties.description
+    actions: roleDef.properties.permissions[0].actions
+    notActions: roleDef.properties.permissions[0].notActions
+    dataActions: roleDef.properties.permissions[0].dataActions
+    notDataActions: roleDef.properties.permissions[0].notDataActions
   }
 ]
 
-var managementGroupCustomPolicyDefinitions = [
-  for policy in alzCustomPolicyDefsJson: {
-    name: policy.name
-    properties: {
-      description: policy.properties.description
-      displayName: policy.properties.displayName
-      metadata: policy.properties.metadata
-      parameters: policy.properties.parameters
-      policyType: policy.properties.policyType
-      version: policy.properties.?version
-    }
-  }
-]
-
-var managementGroupCustomPolicySetDefinitions = [
-  for policy in alzCustomPolicySetDefsJson: {
+var allPolicyDefs = [
+  for policy in unionedPolicyDefs: {
     name: policy.name
     properties: {
       description: policy.properties.description
@@ -319,24 +282,45 @@ var managementGroupCustomPolicySetDefinitions = [
       metadata: policy.properties.metadata
       parameters: policy.properties.parameters
       policyType: policy.properties.policyType
-      version: policy.properties.?version
-      policyDefinitions: policy.properties.policyDefinitions
     }
   }
 ]
 
-var managementGroupRoleAssignments = [
-  {
-    principalId: deployer().objectId
-    roleDefinitionIdOrName: 'Security Reader'
+var allPolicySetDefinitions = [
+  for policySet in unionedPolicySetDefs: {
+    name: policySet.name
+    properties: {
+      description: policySet.properties.description
+      displayName: policySet.properties.displayName
+      metadata: policySet.properties.metadata
+      parameters: policySet.properties.parameters
+      policyType: policySet.properties.policyType
+      version: policySet.properties.version
+      policyDefinitions: policySet.properties.policyDefinitions
+    }
   }
-  {
-    principalId: deployer().objectId
-    roleDefinitionIdOrName: 'Reader'
-  }
-  {
-    principalId: deployer().objectId
-    roleDefinitionIdOrName: alzCustomRbacRoleDefsJson[4].name
+]
+
+var allPolicyAssignments = [
+  for policyAssignment in unionedPolicyAssignments: {
+    name: policyAssignment.name
+    description: policyAssignment.properties.description
+    displayName: policyAssignment.properties.displayName
+    policyDefinitionId: policyAssignment.properties.policyDefinitionId
+    enforcementMode: policyAssignment.properties.enforcementMode
+    identity: policyAssignment.properties.identity
+    userAssignedIdentityId: policyAssignment.properties.userAssignedIdentity
+    roleDefinitionIds: policyAssignment.properties.roleDefinitionIds
+    parameters: policyAssignment.properties.parameters
+    nonComplianceMessages: policyAssignment.properties.nonComplianceMessages
+    metadata: policyAssignment.properties.metadata
+    overrides: policyAssignment.properties.overrides
+    resourceSelectors: policyAssignment.properties.resourceSelectors
+    definitionVersion: policyAssignment.properties.?definitionVersion
+    notScopes: policyAssignment.properties.notScopes
+    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo
+    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo
+    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo
   }
 ]
 
@@ -349,29 +333,34 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
   name: tenant().tenantId
 }
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.1.0' = {
+module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
-    createOrUpdateManagementGroup: true
-    managementGroupName: 'int-root'
-    managementGroupDisplayName: 'Int-Root Management Group'
+    createOrUpdateManagementGroup: intRootManagementGroup.?createOrUpdateManagementGroup != null ? intRootManagementGroup.?createOrUpdateManagementGroup : true
+    managementGroupName: intRootManagementGroup.managementGroupName
+    managementGroupDisplayName: intRootManagementGroup.?managementGroupDisplayName
     managementGroupParentId: tenantRootMgExisting.id
-    managementGroupCustomPolicyDefinitions: managementGroupCustomPolicyDefinitions
-    managementGroupCustomPolicySetDefinitions: managementGroupCustomPolicySetDefinitions
-    managementGroupPolicyAssignments: []
-    managementGroupCustomRoleDefinitions: managementGroupCustomRoleDefinitions
-    managementGroupRoleAssignments: managementGroupRoleAssignments
-    location: deployment().location
-    subscriptionsToPlaceInManagementGroup: []
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions:
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions:
-    waitForConsistencyCounterBeforeCustomRoleDefinitions:
-    waitForConsistencyCounterBeforePolicyAssignments:
-    waitForConsistencyCounterBeforeRoleAssignments:
-    waitForConsistencyCounterBeforeSubPlacement:
+    managementGroupCustomRoleDefinitions: allRbacRoleDefs
+    managementGroupRoleAssignments: customerRbacRoleAssignments
+    managementGroupCustomPolicyDefinitions: allPolicyDefs
+    managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
+    managementGroupPolicyAssignments: allPolicyAssignments
+    location: intRootManagementGroup.?location != null ? intRootManagementGroup.?location : deployment().location
+    subscriptionsToPlaceInManagementGroup: intRootManagementGroup.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: intRootManagementGroup.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: intRootManagementGroup.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: intRootManagementGroup.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parTelemetryOptOut ? false : true
   }
 }
 
+// ================ //
+// Type Definitions
+// ================ //
+
+@export()
 type alzCore = {
   @description('Optional. Boolean to create or update the management group. If set to false, the module will only check if the management group exists and do a GET on it before it continues to deploy resources to it.')
   createOrUpdateManagementGroup: bool
@@ -382,35 +371,30 @@ type alzCore = {
   @description('The display name of the management group to create or update.')
   managementGroupDisplayName: string
 
+  @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
+  managementGroupParentId: string?
 
-  managementGroupParentId: string
+  @description('The location to use for the management group. This is used for the deployment and not the management group itself.')
+  location: string?
 
-  managementGroupCustomPolicyDefinitions: array
-
-  managementGroupCustomPolicySetDefinitions: array
-
-  managementGroupPolicyAssignments: array?
-
-  managementGroupCustomRoleDefinitions: array
-
-  managementGroupRoleAssignments: array?
-
-  location: string
-
+  @description('Optional. An array of subscription IDs to place in the management group. If not specified, no subscriptions will be placed in the management group.')
   subscriptionsToPlaceInManagementGroup: array?
 
+  @description('Optional. The number of consistency counters to wait for before creating or updating custom policy definitions. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: int?
 
+  @description('Optional. The number of consistency counters to wait for before creating or updating custom policy set definitions. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: int?
 
+  @description('Optional. The number of consistency counters to wait for before creating or updating custom role definitions. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeCustomRoleDefinitions: int?
 
+  @description('Optional. The number of consistency counters to wait for before creating or updating policy assignments. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforePolicyAssignments: int?
 
+  @description('Optional. The number of consistency counters to wait for before creating or updating role assignments. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeRoleAssignment: int?
 
+  @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
-
-  enableTelemetry: bool
-
 }
