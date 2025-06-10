@@ -7,7 +7,7 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-@description('Required. The management group configuration for the Int-Root Management Group.')
+@description('Required. The management group configuration for Int-Root.')
 param intRootConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
@@ -321,8 +321,8 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
-    managementGroupName: intRootConfig.managementGroupName
-    managementGroupDisplayName: intRootConfig.?managementGroupDisplayName
+    managementGroupName: intRootConfig.?managementGroupName ?? 'ALZ'
+    managementGroupDisplayName: intRootConfig.?managementGroupDisplayName ?? 'Azure Landing Zones'
     managementGroupParentId: tenantRootMgExisting.id
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
@@ -351,10 +351,10 @@ type alzCoreType = {
   createOrUpdateManagementGroup: bool
 
   @description('The name of the management group to create or update.')
-  managementGroupName: string
+  managementGroupName: string?
 
   @description('The display name of the management group to create or update.')
-  managementGroupDisplayName: string
+  managementGroupDisplayName: string?
 
   @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
   managementGroupParentId: string?
