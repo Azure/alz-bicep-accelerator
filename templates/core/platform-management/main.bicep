@@ -7,7 +7,7 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-@description('Required. The management group configuration for Platform.')
+@description('Required. The management group configuration for Platform-Management.')
 param platformManagementConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
@@ -95,20 +95,15 @@ var allPolicyAssignments = [
 ]
 
 // ============ //
-// Dependencies //
+//   Resources  //
 // ============ //
-
-resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01' existing = {
-  scope: tenant()
-  name: tenant().tenantId
-}
 
 module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: platformManagementConfig.?createOrUpdateManagementGroup
     managementGroupName: platformManagementConfig.?managementGroupName ?? 'alz-platform-management'
     managementGroupDisplayName: platformManagementConfig.?managementGroupDisplayName ?? 'Management'
-    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz-platform'
+    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz--management'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformManagementConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs

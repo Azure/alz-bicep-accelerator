@@ -318,6 +318,10 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
   name: tenant().tenantId
 }
 
+// ============ //
+//   Resources  //
+// ============ //
+
 module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
