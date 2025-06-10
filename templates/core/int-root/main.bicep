@@ -8,22 +8,7 @@ targetScope = 'managementGroup'
 //================================
 
 @description('Required. The management group configuration for the Int-Root Management Group.')
-param intRootManagementGroup alzCore
-
-@description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
-param customerRbacRoleDefs array = []
-
-@description('Optional. Customer provided RBAC role assignments.')
-param customerRbacRoleAssignments array = []
-
-@description('Optional. Additional customer provided policy definitions to be used in tandem with the ALZ policy definitions.')
-param customerPolicyDefs array = []
-
-@description('Optional. Additional customer provided policy set definitions to be used in tandem with the ALZ policy set definitions.')
-param customerPolicySetDefs array = []
-
-@description('Optional. Set to true to enable telemetry for the deployment. Set to false to opt-out of telemetry.')
-param customerPolicyAssignments array = []
+param intRootConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
@@ -253,13 +238,13 @@ var alzPolicyAssignmentsDefs = [
   loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
 ]
 
-var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, customerRbacRoleDefs)
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, intRootConfig.?customerRbacRoleDefs ?? [])
 
-var unionedPolicyDefs = union(alzPolicyDefsJson, customerPolicyDefs)
+var unionedPolicyDefs = union(alzPolicyDefsJson, intRootConfig.?customerPolicyDefs ?? [])
 
-var unionedPolicySetDefs = union(alzPolicySetDefsJson, customerPolicySetDefs)
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, intRootConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, customerPolicyAssignments)
+var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, intRootConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
@@ -335,23 +320,23 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 
 module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
-    createOrUpdateManagementGroup: intRootManagementGroup.?createOrUpdateManagementGroup != null ? intRootManagementGroup.?createOrUpdateManagementGroup : true
-    managementGroupName: intRootManagementGroup.managementGroupName
-    managementGroupDisplayName: intRootManagementGroup.?managementGroupDisplayName
+    createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
+    managementGroupName: intRootConfig.managementGroupName
+    managementGroupDisplayName: intRootConfig.?managementGroupDisplayName
     managementGroupParentId: tenantRootMgExisting.id
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
-    managementGroupRoleAssignments: customerRbacRoleAssignments
+    managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: intRootManagementGroup.?location != null ? intRootManagementGroup.?location : deployment().location
-    subscriptionsToPlaceInManagementGroup: intRootManagementGroup.?subscriptionsToPlaceInManagementGroup
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-    waitForConsistencyCounterBeforeCustomRoleDefinitions: intRootManagementGroup.?waitForConsistencyCounterBeforeCustomRoleDefinitions
-    waitForConsistencyCounterBeforePolicyAssignments: intRootManagementGroup.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: intRootManagementGroup.?waitForConsistencyCounterBeforeRoleAssignment
-    waitForConsistencyCounterBeforeSubPlacement: intRootManagementGroup.?waitForConsistencyCounterBeforeSubPlacement
+    location: intRootConfig.?location
+    subscriptionsToPlaceInManagementGroup: intRootConfig.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: intRootConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: intRootConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: intRootConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: intRootConfig.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: intRootConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: intRootConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parTelemetryOptOut ? false : true
   }
 }
@@ -361,7 +346,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
 // ================ //
 
 @export()
-type alzCore = {
+type alzCoreType = {
   @description('Optional. Boolean to create or update the management group. If set to false, the module will only check if the management group exists and do a GET on it before it continues to deploy resources to it.')
   createOrUpdateManagementGroup: bool
 
@@ -373,6 +358,21 @@ type alzCore = {
 
   @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
   managementGroupParentId: string?
+
+  @description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
+  customerRbacRoleDefs: array?
+
+  @description('Optional. Customer provided RBAC role assignments.')
+  customerRbacRoleAssignments: array?
+
+  @description('Optional. Additional customer provided policy definitions to be used in tandem with the ALZ policy definitions.')
+  customerPolicyDefs: array?
+
+  @description('Optional. Additional customer provided policy set definitions to be used in tandem with the ALZ policy set definitions.')
+  customerPolicySetDefs: array?
+
+  @description('Optional. Set to true to enable telemetry for the deployment. Set to false to opt-out of telemetry.')
+  customerPolicyAssignments: array?
 
   @description('The location to use for the management group. This is used for the deployment and not the management group itself.')
   location: string?
