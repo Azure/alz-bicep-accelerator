@@ -98,7 +98,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platform 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: platformConfig.?createOrUpdateManagementGroup
     managementGroupName: platformConfig.?managementGroupName ?? 'alz-platform'

@@ -98,12 +98,12 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platformConnectivity 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: platformConnectivityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformConnectivityConfig.?managementGroupName ?? 'alz-platform-connectivity'
     managementGroupDisplayName: platformConnectivityConfig.?managementGroupDisplayName ?? 'Connectivity'
-    managementGroupParentId: platformConnectivityConfig.?managementGroupParentId ?? 'alz-connectivity'
+    managementGroupParentId: platformConnectivityConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformConnectivityConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs

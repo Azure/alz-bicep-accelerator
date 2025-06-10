@@ -98,12 +98,12 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platformManagement 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: platformManagementConfig.?createOrUpdateManagementGroup
     managementGroupName: platformManagementConfig.?managementGroupName ?? 'alz-platform-management'
     managementGroupDisplayName: platformManagementConfig.?managementGroupDisplayName ?? 'Management'
-    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz--management'
+    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformManagementConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
