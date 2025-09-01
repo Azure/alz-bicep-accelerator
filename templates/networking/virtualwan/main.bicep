@@ -50,13 +50,11 @@ param virtualWanHubs virtualWanHubType?
 //=====================
 // VWAN
 //=====================
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.3.0' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.0' = {
   name: 'virtualWan-${uniqueString(resourceGroup().id, virtualWan.name)}'
   params: {
     name: 'virtualWan-${virtualWan.location}'
     allowBranchToBranchTraffic: virtualWan.?allowBranchToBranchTraffic ?? true
-    allowVnetToVnetTraffic: virtualWan.?allowVnetToVnetTraffic ?? true
-    disableVpnEncryption: virtualWan.?disableVpnEncryption ?? false
     location: virtualWan.location
     lock: parGlobalResourceLock ?? parVirtualWanLock
     tags: parTags
@@ -65,28 +63,28 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.3.0' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.2.2' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.0' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHubs)) {
     name: 'virtualWanHub-${i}-${uniqueString(resourceGroup().id, virtualWan.name)}'
     params: {
       name: '${parCompanyPrefix}-vwanhub-${virtualWanHub.hubName}-${virtualWan.?name ?? parCompanyPrefix}-${virtualWan.location}'
       location: virtualWanHub.location
       addressPrefix: virtualWanHub.addressPrefix
-      virtualWanId: resVirtualWan.outputs.resourceId
+      virtualWanResourceId: resVirtualWan.outputs.resourceId
       allowBranchToBranchTraffic: virtualWanHub.allowBranchToBranchTraffic
       // azureFirewallResourceId: resAzFirewallPolicy[i].outputs.?resourceId
       // expressRouteGatewayId: resVirtualNetworkGateway[i].outputs.?resourceId
       // vpnGatewayId: virtualWanHub.vpnGatewayId ?? null
       // p2SVpnGatewayId: virtualWanHub.p2SVpnGatewayId ?? null
       hubRouteTables: virtualWanHub.?routeTableRoutes ?? null
-      hubRoutingPreference: virtualWanHub.?hubRoutingPreference ?? 'ASPath'
+      hubRoutingPreference: virtualWanHub.?hubRoutingPreference ?? 'ASPath' //need to fix
       hubVirtualNetworkConnections: virtualWanHub.?hubVirtualNetworkConnections
-      internetToFirewall: virtualWanHub.?internetToFirewall ?? true
+      internetToFirewall: virtualWanHub.?internetToFirewall ?? true //routing intent change
       preferredRoutingGateway: virtualWanHub.?preferredRoutingGateway ?? 'None'
-      privateToFirewall: virtualWanHub.?privateToFirewall ?? null
+      privateToFirewall: virtualWanHub.?privateToFirewall ?? null //routing intent change
       routeTableRoutes: virtualWanHub.?routeTableRoutes ?? null
       securityProviderName: virtualWanHub.?securityProviderName ?? null
-      securityPartnerProviderId: virtualWanHub.?securityPartnerProviderId ?? null
+      securityPartnerProviderResourceId: virtualWanHub.?securityPartnerProviderId ?? null
       virtualHubRouteTableV2s: virtualWanHub.?virtualHubRouteTableV2s ?? null
       virtualRouterAsn: virtualWanHub.?virtualRouterAsn ?? null
       virtualRouterIps: virtualWanHub.?virtualRouterIps ?? null
@@ -101,7 +99,7 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.2.2' = [
 // Network security
 //=====================
 
-module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.0' = [
+module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.1' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHub.?ddosProtectionPlanResourceId) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
     name: 'ddosPlan-${uniqueString(resourceGroup().id,virtualWanHub.?ddosProtectionPlanResourceId ?? '',virtualWanHub.location)}'
     params: {
@@ -113,7 +111,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.1' = [
   for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.enableAzureFirewall) && empty(virtualWanHub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,virtualWanHub.hubName,virtualWanHub.location)}'
     params: {
@@ -134,7 +132,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
 // Hybrid connectivity
 //=====================
 
-module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.5.0' = [
+module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.8.0' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (virtualWanHub.vpnGatewayEnabled  && !empty(virtualWanHub.?virtualNetworkGatewayConfig)) {
     name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,virtualWanHub.hubName,virtualWanHub.location)}'
     params: {
@@ -153,9 +151,9 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       enableBgpRouteTranslationForNat: virtualWanHub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: virtualWanHub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: virtualWanHub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', virtualWanHub.hubName)
+      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', virtualWanHub.hubName)
       domainNameLabel: virtualWanHub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpZones: virtualWanHub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
+      publicIpAvailabilityZones: virtualWanHub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
         ? virtualWanHub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
         : []
     }
@@ -183,12 +181,6 @@ type virtualWanNetworkType = {
 
   @description('Optional. Allow branch to branch traffic.')
   allowBranchToBranchTraffic: bool?
-
-  @description('Optional. Allow VNet to VNet traffic.')
-  allowVnetToVnetTraffic: bool?
-
-  @description('Optional. Disable VPN encryption.')
-  disableVpnEncryption: bool?
 
   @description('Required. The location of the virtual WAN. Defaults to the location of the resource group.')
   location: string

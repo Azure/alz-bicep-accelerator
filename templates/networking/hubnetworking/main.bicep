@@ -266,7 +266,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 // Hub network
 //=====================
-module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
+module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
     name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
     dependsOn: [
@@ -341,7 +341,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
 // Network security
 //=====================
 
-module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.0' = [
+module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.1' = [
   for (hub, i) in hubNetworks!: if (!empty(hub.?ddosProtectionPlanResourceId) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
     name: 'ddosPlan-${uniqueString(resourceGroup().id,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
     params: {
@@ -353,7 +353,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.1' = [
   for (hub, i) in hubNetworks!: if ((hub.enableAzureFirewall) && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
     params: {
@@ -375,7 +375,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
 // Hybrid connectivity
 //=====================
 
-module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.5.0' = [
+module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.8.0' = [
   for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && !empty(hub.?virtualNetworkGatewayConfig)) {
     name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
     dependsOn: [
@@ -399,16 +399,16 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
+      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
       domainNameLabel: hub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
+      publicIpAvailabilityZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
         ? hub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
         : []
     }
   }
 ]
 
-module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.3.1' = [for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.6.0' = [for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
   name: 'privateDnsZone-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
   scope: resourceGroup(hub.?privateDnsZonesResourceGroup ?? resourceGroup().name)
   params: {
