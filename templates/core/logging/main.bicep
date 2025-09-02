@@ -18,6 +18,9 @@ param parResourceGroupLocation string = 'eastus'
 @description('The name of the Automation Account.')
 param parAutomationAccountName string = 'alz-automation-account'
 
+@description('The flag to enable or disable the Automation Account.')
+param parDisableAutomationAccount bool = true
+
 @description('The location of the Automation Account.')
 param parAutomationAccountLocation string = 'eastus'
 
@@ -38,7 +41,7 @@ param parAutomationAccountSku string = 'Basic'
 - `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 ''')
-param parAutomationAccountLock lockType
+param parAutomationAccountLock lockType?
 
 // Log Analytics Workspace Parameters
 @description('The name of the Log Analytics Workspace.')
@@ -66,45 +69,31 @@ param parLogAnalyticsWorkspaceOnboardSentinel bool = true
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
 ''')
-param parLogAnalyticsWorkspaceLock lockType
+param parLogAnalyticsWorkspaceLock lockType?
 
 // User Assigned Identity Parameters
 @description('The name of the User Assigned Identity utilized for Azure Monitoring Agent.')
 param parUserAssignedIdentityName string = 'alz-logging-mi'
 
-@description('The location of the User Assigned Identity utilized for Azure Monitoring Agent.')
-param parUserAssignedManagedIdentityLocation string = 'eastus'
-
 // Data Collection Rule Parameters
 @description('The name of the data collection rule for VM Insights.')
 param parDataCollectionRuleVMInsightsName string = 'alz-ama-vmi-dcr'
+
+@description('The name of the data collection rule for Change Tracking.')
+param parDataCollectionRuleChangeTrackingName string = 'alz-ama-ct-dcr'
+
+@description('The name of the data collection rule for Microsoft Defender for SQL.')
+param parDataCollectionRuleMDFCSQLName string = 'alz-ama-mdfcsql-dcr'
+
+@description('The experience for the VM Insights data collection rule.')
+param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'
 
 @description('''The lock configuration for the data collection rule for VM Insights.
 - `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
 ''')
-param parDataCollectionRuleVMInsightsLock lockType
-
-@description('The name of the data collection rule for Change Tracking.')
-param parDataCollectionRuleChangeTrackingName string = 'alz-ama-ct-dcr'
-
-@description('''The lock configuration for the data collection rule for Change Tracking.
-- `name` - The name of the lock.
-- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
-- `notes` - Notes about this lock.
-''')
-param parDataCollectionRuleChangeTrackingLock lockType
-
-@description('The name of the data collection rule for Microsoft Defender for SQL.')
-param parDataCollectionRuleMDFCSQLName string = 'alz-ama-mdfcsql-dcr'
-
-@description('''The lock configuration for the data collection rule for Microsoft Defender for SQL.
-- `name` - The name of the lock.
-- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
-- `notes` - Notes about this lock.
-''')
-param parDataCollectionRuleMDFCSQLLock lockType
+param parAmaResourcesLock lockType?
 
 // General Parameters
 @description('The location to deploy resources to.')
@@ -115,20 +104,34 @@ param parTags object = {
   Environment: 'Live'
 }
 
+@description('Enable or disable telemetry.')
+param parEnableTelemetry bool = true
+
 //========================================
 // Resources
 //========================================
 
-resource resResourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
+
+module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
+  name: 'modResourceGroup-${uniqueString(parResourceGroupName,parResourceGroupLocation,parLocation)}'
+  scope: subscription()
+  params: {
+    name: parResourceGroupName
+    location: !empty(parResourceGroupLocation) ? parResourceGroupLocation : parLocation
+    tags: parTags
+    enableTelemetry: parEnableTelemetry
+  }
+}
+
+resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: parResourceGroupName
-  location: !empty(parResourceGroupLocation) ? parResourceGroupLocation : parLocation
-  tags: parTags
+  scope: subscription()
 }
 
 // Automation Account
-module resAutomationAccount 'br/public:avm/res/automation/automation-account:0.10.0' = {
+module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.16.1' = if (!parDisableAutomationAccount) {
   name: '${parAutomationAccountName}-automationAccount-${uniqueString(parResourceGroupName,parAutomationAccountLocation,parLocation)}'
-  scope: resourceGroup(parResourceGroupName)
+  scope: resResourceGroupPointer
   params: {
     name: parAutomationAccountName
     location: !(empty(parAutomationAccountLocation)) ? parAutomationAccountLocation : parLocation
@@ -142,19 +145,18 @@ module resAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
     skuName: parAutomationAccountSku
     diagnosticSettings: [
       {
-        workspaceResourceId: resLogAnalyticsWorkspace.outputs.resourceId
+        workspaceResourceId: modLogAnalyticsWorkspace.outputs.resourceId
       }
     ]
-    lock: parAutomationAccountLock.kind != 'None'
-      ? parAutomationAccountLock
-      : { name: null, kind: 'None', notes: null }
+    lock: parAutomationAccountLock
+    enableTelemetry: parEnableTelemetry
   }
 }
 
 // Log Analytics Workspace
-module resLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.8.0' = {
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.8.0' = {
   name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parResourceGroupName,parLogAnalyticsWorkspaceLocation,parLocation)}'
-  scope: resourceGroup(parResourceGroupName)
+  scope: resResourceGroupPointer
   params: {
     name: parLogAnalyticsWorkspaceName
     location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parLocation
@@ -163,37 +165,25 @@ module resLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspac
     skuCapacityReservationLevel: parLogAnalyticsWorkspaceCapacityReservationLevel
     dataRetention: parLogAnalyticsWorkspaceLogRetentionInDays
     onboardWorkspaceToSentinel: parLogAnalyticsWorkspaceOnboardSentinel
-    lock: parLogAnalyticsWorkspaceLock.kind != 'None'
-      ? parLogAnalyticsWorkspaceLock
-      : { name: null, kind: 'None', notes: null }
+    lock: parLogAnalyticsWorkspaceLock
+    enableTelemetry: parEnableTelemetry
   }
 }
 
-module ptnAzureMonitoringAgent 'ama/main.bicep' = {
-  name: 'uami-dcrs-ama-${uniqueString(parResourceGroupName,parLocation)}'
-  scope: resourceGroup(parResourceGroupName)
+// Azure Monitoring Agent Resources
+module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.0' = {
+  scope: resResourceGroupPointer
   params: {
-    resLogAnalyticsWorkspaceId: resLogAnalyticsWorkspace.outputs.resourceId
-    parUserAssignedIdentityName: parUserAssignedIdentityName
-    parUserAssignedManagedIdentityLocation: !empty(parUserAssignedManagedIdentityLocation)
-      ? parUserAssignedManagedIdentityLocation
-      : parLocation
-    parLogAnalyticsWorkspaceLocation: !empty(parLogAnalyticsWorkspaceLocation)
-      ? parLogAnalyticsWorkspaceLocation
-      : parLocation
-    parDataCollectionRuleVMInsightsName: parDataCollectionRuleVMInsightsName
-    parDataCollectionRuleVMInsightsLock: parDataCollectionRuleVMInsightsLock != 'None'
-      ? parDataCollectionRuleVMInsightsLock
-      : { name: null, kind: 'None', notes: null }
-    parDataCollectionRuleChangeTrackingName: parDataCollectionRuleChangeTrackingName
-    parDataCollectionRuleChangeTrackingLock: parDataCollectionRuleChangeTrackingLock != 'None'
-      ? parDataCollectionRuleChangeTrackingLock
-      : { name: null, kind: 'None', notes: null }
-    parDataCollectionRuleMDFCSQLName: parDataCollectionRuleMDFCSQLName
-    parDataCollectionRuleMDFCSQLLock: parDataCollectionRuleMDFCSQLLock.kind != 'None'
-      ? parDataCollectionRuleMDFCSQLLock
-      : { name: null, kind: 'None', notes: null }
-    parTags: parTags
+    dataCollectionRuleChangeTrackingName: parDataCollectionRuleChangeTrackingName
+    dataCollectionRuleMDFCSQLName: parDataCollectionRuleMDFCSQLName
+    dataCollectionRuleVMInsightsName: parDataCollectionRuleVMInsightsName
+    logAnalyticsWorkspaceResourceId: modLogAnalyticsWorkspace.outputs.resourceId
+    userAssignedIdentityName: parUserAssignedIdentityName
+    dataCollectionRuleVMInsightsExperience: parDataCollectionRuleVMInsightsExperience
+    enableTelemetry: parEnableTelemetry
+    location: parLocation
+    lockConfig: parAmaResourcesLock
+    tags: parTags
   }
 }
 
