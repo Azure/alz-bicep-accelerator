@@ -1,5 +1,5 @@
-metadata name = 'ALZ Bicep - Logging Module'
-metadata description = 'This module deploys the Logging and Monitoring resources for ALZ Bicep'
+metadata name = 'ALZ Bicep Accelerator - Management and Logging'
+metadata description = 'Used to deploy core management and logging resources for ALZ.'
 
 targetScope = 'subscription'
 
@@ -11,8 +11,12 @@ targetScope = 'subscription'
 @description('The name of the Resource Group.')
 param parResourceGroupName string = 'rg-alz-logging-001'
 
-@description('The location of the Resource Group.')
-param parResourceGroupLocation string = 'eastus'
+@description('''Resource Lock Configuration for Resource Group.
+- `name` - The name of the lock.
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+''')
+param parResourceGroupLock lockType?
 
 // Automation Account Parameters
 @description('The name of the Automation Account.')
@@ -40,6 +44,7 @@ param parAutomationAccountSku string = 'Basic'
 @description('''Resource Lock Configuration for Automation Account.
 - `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
 ''')
 param parAutomationAccountLock lockType?
 
@@ -97,12 +102,17 @@ param parAmaResourcesLock lockType?
 
 // General Parameters
 @description('The location to deploy resources to.')
-param parLocation string = deployment().location
+param parPrimaryLocation string = deployment().location
 
 @description('Tags to be applied to resources.')
-param parTags object = {
-  Environment: 'Live'
-}
+param parTags object = {}
+
+@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
+- `name` - The name of the lock.
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+''')
+param parGlobalResourceLock lockType
 
 @description('Enable or disable telemetry.')
 param parEnableTelemetry bool = true
@@ -111,13 +121,13 @@ param parEnableTelemetry bool = true
 // Resources
 //========================================
 
-
 module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
-  name: 'modResourceGroup-${uniqueString(parResourceGroupName,parResourceGroupLocation,parLocation)}'
+  name: 'modResourceGroup-${uniqueString(parResourceGroupName,parPrimaryLocation)}'
   scope: subscription()
   params: {
     name: parResourceGroupName
-    location: !empty(parResourceGroupLocation) ? parResourceGroupLocation : parLocation
+    location: parPrimaryLocation
+    lock: parGlobalResourceLock ?? parResourceGroupLock
     tags: parTags
     enableTelemetry: parEnableTelemetry
   }
@@ -130,11 +140,11 @@ resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01'
 
 // Automation Account
 module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.16.1' = if (!parDisableAutomationAccount) {
-  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parResourceGroupName,parAutomationAccountLocation,parLocation)}'
+  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parResourceGroupName,parAutomationAccountLocation,parPrimaryLocation)}'
   scope: resResourceGroupPointer
   params: {
     name: parAutomationAccountName
-    location: !(empty(parAutomationAccountLocation)) ? parAutomationAccountLocation : parLocation
+    location: !(empty(parAutomationAccountLocation)) ? parAutomationAccountLocation : parPrimaryLocation
     tags: parTags
     managedIdentities: parAutomationAccountUseManagedIdentity
       ? {
@@ -148,24 +158,24 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
         workspaceResourceId: modLogAnalyticsWorkspace.outputs.resourceId
       }
     ]
-    lock: parAutomationAccountLock
+    lock: parGlobalResourceLock ?? parAutomationAccountLock
     enableTelemetry: parEnableTelemetry
   }
 }
 
 // Log Analytics Workspace
-module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.8.0' = {
-  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parResourceGroupName,parLogAnalyticsWorkspaceLocation,parLocation)}'
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.12.0' = {
+  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parResourceGroupName,parLogAnalyticsWorkspaceLocation,parPrimaryLocation)}'
   scope: resResourceGroupPointer
   params: {
     name: parLogAnalyticsWorkspaceName
-    location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parLocation
+    location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parPrimaryLocation
     skuName: parLogAnalyticsWorkspaceSku == 'CapacityReservation' ? parLogAnalyticsWorkspaceSku : null
     tags: parTags
     skuCapacityReservationLevel: parLogAnalyticsWorkspaceCapacityReservationLevel
     dataRetention: parLogAnalyticsWorkspaceLogRetentionInDays
     onboardWorkspaceToSentinel: parLogAnalyticsWorkspaceOnboardSentinel
-    lock: parLogAnalyticsWorkspaceLock
+    lock: parGlobalResourceLock ?? parLogAnalyticsWorkspaceLock
     enableTelemetry: parEnableTelemetry
   }
 }
@@ -181,8 +191,8 @@ module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.0' = {
     userAssignedIdentityName: parUserAssignedIdentityName
     dataCollectionRuleVMInsightsExperience: parDataCollectionRuleVMInsightsExperience
     enableTelemetry: parEnableTelemetry
-    location: parLocation
-    lockConfig: parAmaResourcesLock
+    location: parPrimaryLocation
+    lockConfig: parGlobalResourceLock ?? parAmaResourcesLock
     tags: parTags
   }
 }
@@ -201,4 +211,4 @@ type lockType = {
 
   @description('Optional. Notes about this lock.')
   notes: string?
-}
+}?
