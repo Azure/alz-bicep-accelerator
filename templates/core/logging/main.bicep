@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parResourceGroupName string = 'rg-alz-logging-001'
+param parMgmtLoggingResourceGroup string = 'rg-alz-logging-001'
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -101,7 +101,7 @@ param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'
 param parAmaResourcesLock lockType?
 
 // General Parameters
-@description('The location to deploy resources to.')
+@description('The primary location to deploy resources to.')
 param parPrimaryLocation string = deployment().location
 
 @description('Tags to be applied to resources.')
@@ -122,10 +122,10 @@ param parEnableTelemetry bool = true
 //========================================
 
 module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
-  name: 'modResourceGroup-${uniqueString(parResourceGroupName,parPrimaryLocation)}'
+  name: 'modResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parPrimaryLocation)}'
   scope: subscription()
   params: {
-    name: parResourceGroupName
+    name: parMgmtLoggingResourceGroup
     location: parPrimaryLocation
     lock: parGlobalResourceLock ?? parResourceGroupLock
     tags: parTags
@@ -134,13 +134,13 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
 }
 
 resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parResourceGroupName
+  name: parMgmtLoggingResourceGroup
   scope: subscription()
 }
 
 // Automation Account
 module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.16.1' = if (!parDisableAutomationAccount) {
-  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parResourceGroupName,parAutomationAccountLocation,parPrimaryLocation)}'
+  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parPrimaryLocation)}'
   scope: resResourceGroupPointer
   params: {
     name: parAutomationAccountName
@@ -165,7 +165,7 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 
 // Log Analytics Workspace
 module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.12.0' = {
-  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parResourceGroupName,parLogAnalyticsWorkspaceLocation,parPrimaryLocation)}'
+  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parPrimaryLocation)}'
   scope: resResourceGroupPointer
   params: {
     name: parLogAnalyticsWorkspaceName

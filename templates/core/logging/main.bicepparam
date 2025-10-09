@@ -1,7 +1,7 @@
 using 'main.bicep'
 
 // Resource Group Parameters
-param parResourceGroupName = 'rg-alz-prod-001'
+param parMgmtLoggingResourceGroup = 'rg-alz-prod-001'
 
 // Automation Account Parameters
 param parAutomationAccountName = 'aa-alz-prod-001'

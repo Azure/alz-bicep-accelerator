@@ -1,6 +1,5 @@
 using './main.bicep'
 
-param parCompanyPrefix = 'alz'
 param parGlobalResourceLock = {
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'

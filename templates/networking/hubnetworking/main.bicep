@@ -1,12 +1,25 @@
-metadata name = 'ALZ Bicep - Hub Networking'
-metadata description = 'ALZ Bicep Module used to set up hub networking for Azure Virtual WAN.'
+metadata name = 'ALZ Bicep Accelerator - Hub Networking'
+metadata description = 'Used to deploy hub networking resources for ALZ.'
+
+targetScope = 'subscription'
 
 //================================
 // Parameters
 //================================
 
-@sys.description('Prefix value which will be prepended to all resource names.')
-param parCompanyPrefix string = 'alz'
+// Resource Group Parameters
+@description('The name of the Resource Group.')
+param parHubNetworkingResourceGroupName string = 'rg-alz-hubnetworking-001'
+
+@description('''Resource Lock Configuration for Resource Group.
+- `name` - The name of the lock.
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+''')
+param parResourceGroupLock lockType?
+
+@description('The name of the DNS Resource Group.')
+param parDnsResourceGroupName string = 'rg-alz-dns-001'
 
 @sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
 
@@ -63,16 +76,6 @@ param parAzureFirewallLock lockType = {
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
-@sys.description('''Resource Lock Configuration for Hub Route Table.
-
-- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
-- `notes` - Notes about this lock.
-
-''')
-param parHubRouteTableLock lockType = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
 
 @sys.description('''Resource Lock Configuration for Private DNS Zone(s).
 
@@ -100,18 +103,35 @@ param parVirtualNetworkGatewayLock lockType = {
 param parTags object = {}
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = false
 
 @description('Optional. The hub virtual networks to create.')
 param hubNetworks hubVirtualNetworkType?
+
+// General Parameters
+@description('The primary location to deploy resources to.')
+param parPrimaryLocation string = deployment().location
 
 //=====================
 // Foundational
 //=====================
 
+module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
+  name: 'modResourceGroup-${uniqueString(parHubNetworkingResourceGroupName,parPrimaryLocation)}'
+  scope: subscription()
+  params: {
+    name: parHubNetworkingResourceGroupName
+    location: parPrimaryLocation
+    lock: parGlobalResourceLock ?? parResourceGroupLock
+    tags: parTags
+    enableTelemetry: parEnableTelemetry
+  }
+}
+
 module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = [
   for (hub, i) in hubNetworks!: if (hub.enableBastion) {
     name: '${hub.hubName}-bastionNsg-${uniqueString(resourceGroup().id,hub.location)}'
+    scope: resourceGroup(parHubNetworkingResourceGroupName)
     params: {
       name: 'nsg-bastion-${hub.hubName}-${hub.location}'
       location: hub.location
@@ -347,7 +367,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
     params: {
       name: '${parCompanyPrefix}-ddos-plan-${hub.location}'
       location: hub.location
-      enableTelemetry: parTelemetryOptOut
+      enableTelemetry: parEnableTelemetry
       tags: parTags
     }
   }
@@ -395,7 +415,7 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
       vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
       skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
-      enableTelemetry: parTelemetryOptOut
+      enableTelemetry: parEnableTelemetry
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
@@ -421,7 +441,7 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
     )
     tags: parTags
     lock: parGlobalResourceLock ?? parPrivateDNSZonesLock
-    enableTelemetry: parTelemetryOptOut
+    enableTelemetry: parEnableTelemetry
   }
 }]
 
