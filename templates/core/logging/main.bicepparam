@@ -1,10 +1,10 @@
 using 'main.bicep'
 
 // Resource Group Parameters
-param parResourceGroupName = 'rg-alz-logging-001'
+param parResourceGroupName = 'rg-alz-prod-001'
 
 // Automation Account Parameters
-param parAutomationAccountName = 'alz-aa-$()'
+param parAutomationAccountName = 'aa-alz-prod-001'
 param parAutomationAccountLocation = parPrimaryLocation
 param parDisableAutomationAccount = true
 param parAutomationAccountUseManagedIdentity = true
@@ -16,7 +16,7 @@ param parAutomationAccountLock = {
 }
 
 // Log Analytics Workspace Parameters
-param parLogAnalyticsWorkspaceName = 'alz-log-analytics'
+param parLogAnalyticsWorkspaceName = 'law-alz-prod-001'
 param parLogAnalyticsWorkspaceLocation = parPrimaryLocation
 param parLogAnalyticsWorkspaceSku = 'PerGB2018'
 param parLogAnalyticsWorkspaceCapacityReservationLevel = 100
@@ -24,10 +24,10 @@ param parLogAnalyticsWorkspaceLogRetentionInDays = 365
 param parLogAnalyticsWorkspaceOnboardSentinel = true
 
 // Data Collection Rule Parameters
-param parUserAssignedIdentityName = 'alz-logging-mi'
-param parDataCollectionRuleVMInsightsName = 'alz-ama-vmi-dcr'
-param parDataCollectionRuleChangeTrackingName = 'alz-ama-ct-dcr'
-param parDataCollectionRuleMDFCSQLName = 'alz-ama-mdfcsql-dcr'
+param parUserAssignedIdentityName = 'mi-alz-prod-001'
+param parDataCollectionRuleVMInsightsName = 'dcr-vmi-alz-prod-001'
+param parDataCollectionRuleChangeTrackingName = 'dcr-ct-alz-prod-001'
+param parDataCollectionRuleMDFCSQLName = 'dcr-mdfcsql-alz-prod-001'
 
 // General Parameters
 param parGlobalResourceLock = {
