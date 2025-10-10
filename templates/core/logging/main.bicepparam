@@ -10,10 +10,6 @@ param parDisableAutomationAccount = true
 param parAutomationAccountUseManagedIdentity = true
 param parAutomationAccountPublicNetworkAccess = true
 param parAutomationAccountSku = 'Basic'
-param parAutomationAccountLock = {
-  name: 'AutomationAccountLock'
-  kind: 'CanNotDelete'
-}
 
 // Log Analytics Workspace Parameters
 param parLogAnalyticsWorkspaceName = 'law-alz-${parPrimaryLocation}'
@@ -32,9 +28,9 @@ param parDataCollectionRuleMDFCSQLName = 'dcr-mdfcsql-alz-${parPrimaryLocation}'
 // General Parameters
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
-  kind: 'ReadOnly'
+  kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
 }
 param parTags = {}
 param parPrimaryLocation = 'eastus'
-param parEnableTelemetry = false
+param parEnableTelemetry = true

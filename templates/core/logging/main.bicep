@@ -121,8 +121,8 @@ param parEnableTelemetry bool = true
 // Resources
 //========================================
 
-module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
-  name: 'modResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parPrimaryLocation)}'
+module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
+  name: 'modMgmtLoggingResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parPrimaryLocation)}'
   scope: subscription()
   params: {
     name: parMgmtLoggingResourceGroup
@@ -136,6 +136,9 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
 resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: parMgmtLoggingResourceGroup
   scope: subscription()
+  dependsOn: [
+    modMgmtLoggingResourceGroup
+  ]
 }
 
 // Automation Account

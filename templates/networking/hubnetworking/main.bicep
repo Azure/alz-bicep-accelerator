@@ -104,7 +104,7 @@ param parPrimaryLocation string = deployment().location
 param parTags object = {}
 
 @description('Enable or disable telemetry.')
-param parEnableTelemetry bool = false
+param parEnableTelemetry bool = true
 
 //========================================
 // Resources
@@ -126,6 +126,9 @@ module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group
 resource resHubNetworkingResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: parHubNetworkingResourceGroupName
   scope: subscription()
+  dependsOn: [
+    modHubNetworkingResourceGroup
+  ]
 }
 
 module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
@@ -143,6 +146,9 @@ module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = 
 resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: parDnsResourceGroupName
   scope: subscription()
+  dependsOn: [
+    modDnsResourceGroup
+  ]
 }
 
 // Bastion Network Security Group
@@ -297,6 +303,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
           }
         }
       ]
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -304,7 +311,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 // Hub Networking
 //=====================
-module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
+module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
     name: 'hubNetwork-${hub.hubName}-${uniqueString(parHubNetworkingResourceGroupName,hub.location)}'
     scope: resHubNetworkingResourceGroupPointer
@@ -320,10 +327,8 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
           peeringSettings: (hub.?enablePeering ?? false) ? hub.?peeringSettings : null
           ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? null
           enableBastion: hub.enableBastion
-          lock: parGlobalResourceLock ?? parVirtualNetworkLock
           vnetEncryption: hub.?vnetEncryption ?? false
           location: hub.location
-          tags: parTags
           routes: hub.?routes ?? null
           routeTableName: hub.?routeTableName ?? null
           bastionHost: hub.enableBastion
@@ -339,7 +344,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
                 location: hub.?azureFirewallSettings.?location
                 firewallPolicyId: hub.?azureFirewallSettings.?firewallPolicyId ?? resAzFirewallPolicy[i].?outputs.resourceId
-                threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Basic')
+                threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Standard')
                   ? 'Alert'
                   : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
                 zones: hub.?azureFirewallSettings.?zones ?? null
@@ -370,6 +375,9 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
                 }
               : null
           ]
+          lock: parGlobalResourceLock ?? parVirtualNetworkLock
+          tags: parTags
+          enableTelemetry: parEnableTelemetry
         }
       }
     }
@@ -387,8 +395,9 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
     params: {
       name: 'ddos-alz-${hub.location}'
       location: hub.location
-      enableTelemetry: parEnableTelemetry
+      lock: parGlobalResourceLock ?? parDdosLock
       tags: parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -400,14 +409,19 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
     params: {
       name: 'afwp-alz-${hub.location}'
       location: hub.location
-      lock: parGlobalResourceLock ?? parAzureFirewallLock
       tier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
+      threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Standard')
+        ? 'Alert'
+        : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
       enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
         : hub.?azureFirewallSettings.?dnsProxyEnabled
       servers: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? null
         : hub.?azureFirewallSettings.?firewallDnsServers
+      lock: parGlobalResourceLock ?? parAzureFirewallLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -416,7 +430,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
 // Hybrid Connectivity
 //=====================
 
-module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.5.0' = [
+module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
   for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && !empty(hub.?virtualNetworkGatewayConfig)) {
     name: 'virtualNetworkGateway-${uniqueString(parHubNetworkingResourceGroupName,hub.hubName,hub.location)}'
     scope: resHubNetworkingResourceGroupPointer
@@ -433,39 +447,53 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
           : null
       }
       location: hub.location
-      lock: parGlobalResourceLock ?? parVirtualNetworkGatewayLock
       gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
       vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
       skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
-      enableTelemetry: parEnableTelemetry
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
+      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.hubName)
       domainNameLabel: hub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
+      publicIpAvailabilityZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
         ? hub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
         : []
+      lock: parGlobalResourceLock ?? parVirtualNetworkGatewayLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
 
-module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.3.1' = [for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
-  name: 'privateDnsZone-${hub.hubName}-${uniqueString(parDnsResourceGroupName,hub.location)}'
-  scope: resDnsResourceGroup
-  params: {
-    location: hub.location
-    privateLinkPrivateDnsZones: empty(hub.?privateDnsZones) ? null : hub.?privateDnsZones
-    virtualNetworkResourceIdsToLinkTo: union(
-      [resourceId('Microsoft.Network/virtualNetworks', hub.hubName)],
-      !empty(hub.?virtualNetworkIdToLinkFailover) ? [hub.?virtualNetworkIdToLinkFailover] : [],
-      hub.?virtualNetworkResourceIdsToLinkTo ?? []
-    )
-    tags: parTags
-    lock: parGlobalResourceLock ?? parPrivateDNSZonesLock
-    enableTelemetry: parEnableTelemetry
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
+  for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
+    name: 'privateDnsZone-${hub.hubName}-${uniqueString(parDnsResourceGroupName,hub.location)}'
+    scope: resDnsResourceGroup
+    params: {
+      location: hub.location
+      privateLinkPrivateDnsZones: empty(hub.?privateDnsZones) ? null : hub.?privateDnsZones
+      virtualNetworkLinks: [
+        for id in union(
+          [
+            resourceId(
+              subscription().subscriptionId,
+              parHubNetworkingResourceGroupName,
+              'Microsoft.Network/virtualNetworks',
+              hub.hubName
+            )
+          ],
+          !empty(hub.?virtualNetworkIdToLinkFailover) ? [hub.?virtualNetworkIdToLinkFailover] : [],
+          hub.?virtualNetworkResourceIdsToLinkTo ?? []
+        ): {
+          virtualNetworkResourceId: id
+        }
+      ]
+      lock: parGlobalResourceLock ?? parPrivateDNSZonesLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}]
+]
 
 //========================================
 // Definitions
@@ -623,7 +651,6 @@ type peeringSettingsType = {
 }[]?
 
 type azureFirewallType = {
-
   @description('Optional. The name of the Azure Firewall.')
   azureFirewallName: string?
 
