@@ -3,9 +3,9 @@ metadata description = 'Used to deploy hub networking resources for ALZ.'
 
 targetScope = 'subscription'
 
-//================================
+//========================================
 // Parameters
-//================================
+//========================================
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
@@ -21,11 +21,15 @@ param parResourceGroupLock lockType?
 @description('The name of the DNS Resource Group.')
 param parDnsResourceGroupName string = 'rg-alz-dns-001'
 
-@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
+// Hub Networking Parameters
+@description('The hub virtual networks to create.')
+param hubNetworks hubVirtualNetworkType?
 
+// Resource Lock Parameters
+@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parGlobalResourceLock lockType = {
   kind: 'None'
@@ -33,10 +37,9 @@ param parGlobalResourceLock lockType = {
 }
 
 @sys.description('''Resource Lock Configuration for DDoS Plan.
-
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parDdosLock lockType = {
   kind: 'None'
@@ -44,10 +47,9 @@ param parDdosLock lockType = {
 }
 
 @sys.description('''Resource Lock Configuration for Virtual Network.
-
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parVirtualNetworkLock lockType = {
   kind: 'None'
@@ -55,33 +57,29 @@ param parVirtualNetworkLock lockType = {
 }
 
 @sys.description('''Resource Lock Configuration for Bastion.
-
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parBastionLock lockType = {
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
-@sys.description(''' Resource Lock Configuration for Azure Firewall.
-
+@sys.description('''Resource Lock Configuration for Azure Firewall.
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parAzureFirewallLock lockType = {
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
-
 @sys.description('''Resource Lock Configuration for Private DNS Zone(s).
-
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parPrivateDNSZonesLock lockType = {
   kind: 'None'
@@ -89,34 +87,31 @@ param parPrivateDNSZonesLock lockType = {
 }
 
 @sys.description('''Resource Lock Configuration for ExpressRoute Virtual Network Gateway.
-
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
 param parVirtualNetworkGatewayLock lockType = {
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
 }
 
-@sys.description('Tags you would like to be applied to all resources in this module.')
-param parTags object = {}
-
-@sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parEnableTelemetry bool = false
-
-@description('Optional. The hub virtual networks to create.')
-param hubNetworks hubVirtualNetworkType?
-
 // General Parameters
 @description('The primary location to deploy resources to.')
 param parPrimaryLocation string = deployment().location
 
-//=====================
-// Foundational
-//=====================
+@description('Tags to be applied to all resources.')
+param parTags object = {}
 
-module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
+@description('Enable or disable telemetry.')
+param parEnableTelemetry bool = false
+
+//========================================
+// Resources
+//========================================
+
+// Resource Group
+module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
   name: 'modResourceGroup-${uniqueString(parHubNetworkingResourceGroupName,parPrimaryLocation)}'
   scope: subscription()
   params: {
@@ -128,14 +123,37 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
   }
 }
 
+resource resHubNetworkingResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
+  name: parHubNetworkingResourceGroupName
+  scope: subscription()
+}
+
+module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
+  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parPrimaryLocation)}'
+  scope: subscription()
+  params: {
+    name: parDnsResourceGroupName
+    location: parPrimaryLocation
+    lock: parGlobalResourceLock ?? parResourceGroupLock
+    tags: parTags
+    enableTelemetry: parEnableTelemetry
+  }
+}
+
+resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
+  name: parDnsResourceGroupName
+  scope: subscription()
+}
+
+// Bastion Network Security Group
 module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = [
   for (hub, i) in hubNetworks!: if (hub.enableBastion) {
-    name: '${hub.hubName}-bastionNsg-${uniqueString(resourceGroup().id,hub.location)}'
-    scope: resourceGroup(parHubNetworkingResourceGroupName)
+    name: '${hub.hubName}-bastionNsg-${uniqueString(parHubNetworkingResourceGroupName,hub.location)}'
+    scope: resHubNetworkingResourceGroupPointer
     params: {
-      name: 'nsg-bastion-${hub.hubName}-${hub.location}'
+      name: 'nsg-bas-alz-${hub.location}'
       location: hub.location
-      lock: parGlobalResourceLock ?? {}
+      lock: parGlobalResourceLock ?? parBastionLock
       securityRules: [
         // Inbound Rules
         {
@@ -284,11 +302,12 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 ]
 
 //=====================
-// Hub network
+// Hub Networking
 //=====================
 module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
-    name: 'hubNetwork-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
+    name: 'hubNetwork-${hub.hubName}-${uniqueString(parHubNetworkingResourceGroupName,hub.location)}'
+    scope: resHubNetworkingResourceGroupPointer
     dependsOn: [
       resBastionNsg[i]
     ]
@@ -319,7 +338,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
             ? {
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
                 location: hub.?azureFirewallSettings.?location
-                firewallPolicyId: hub.?azureFirewallSettings.?firewallPolicyId ?? resAzFirewallPolicy[i].outputs.resourceId
+                firewallPolicyId: hub.?azureFirewallSettings.?firewallPolicyId ?? resAzFirewallPolicy[i].?outputs.resourceId
                 threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Basic')
                   ? 'Alert'
                   : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
@@ -345,7 +364,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
                         }
                       ]
                   networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.enableBastion)
-                    ? resBastionNsg[i].outputs.resourceId
+                    ? resBastionNsg[i].?outputs.resourceId
                     : subnet.?networkSecurityGroupId ?? null
                   routeTable: subnet.?routeTable ?? null
                 }
@@ -358,14 +377,15 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.2.3' = [
 ]
 
 //=====================
-// Network security
+// Network Security
 //=====================
 
-module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.0' = [
+module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
   for (hub, i) in hubNetworks!: if (!empty(hub.?ddosProtectionPlanResourceId) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
-    name: 'ddosPlan-${uniqueString(resourceGroup().id,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
+    name: 'ddosPlan-${uniqueString(parHubNetworkingResourceGroupName,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
+    scope: resHubNetworkingResourceGroupPointer
     params: {
-      name: '${parCompanyPrefix}-ddos-plan-${hub.location}'
+      name: 'ddos-alz-${hub.location}'
       location: hub.location
       enableTelemetry: parEnableTelemetry
       tags: parTags
@@ -373,11 +393,12 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
   for (hub, i) in hubNetworks!: if ((hub.enableAzureFirewall) && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
-    name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    name: 'azFirewallPolicy-${uniqueString(parHubNetworkingResourceGroupName,hub.hubName,hub.location)}'
+    scope: resHubNetworkingResourceGroupPointer
     params: {
-      name: '${parCompanyPrefix}-azfwpolicy-${hub.hubName}-${hub.location}'
+      name: 'afwp-alz-${hub.location}'
       location: hub.location
       lock: parGlobalResourceLock ?? parAzureFirewallLock
       tier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
@@ -392,17 +413,18 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
 ]
 
 //=====================
-// Hybrid connectivity
+// Hybrid Connectivity
 //=====================
 
 module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.5.0' = [
   for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && !empty(hub.?virtualNetworkGatewayConfig)) {
-    name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,hub.hubName,hub.location)}'
+    name: 'virtualNetworkGateway-${uniqueString(parHubNetworkingResourceGroupName,hub.hubName,hub.location)}'
+    scope: resHubNetworkingResourceGroupPointer
     dependsOn: [
       resHubNetwork[i]
     ]
     params: {
-      name: '${parCompanyPrefix}-${toLower(hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'vpn')}-${hub.hubName}-${hub.location}'
+      name: 'vgw-${hub.hubName}-${hub.location}'
       clusterSettings: {
         clusterMode: any(hub.?virtualNetworkGatewayConfig.?vpnMode)
         asn: hub.?virtualNetworkGatewayConfig.?asn ?? 65515
@@ -429,8 +451,8 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
 ]
 
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.3.1' = [for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
-  name: 'privateDnsZone-${hub.hubName}-${uniqueString(resourceGroup().id,hub.location)}'
-  scope: resourceGroup(hub.?privateDnsZonesResourceGroup ?? resourceGroup().name)
+  name: 'privateDnsZone-${hub.hubName}-${uniqueString(parDnsResourceGroupName,hub.location)}'
+  scope: resDnsResourceGroup
   params: {
     location: hub.location
     privateLinkPrivateDnsZones: empty(hub.?privateDnsZones) ? null : hub.?privateDnsZones
@@ -445,10 +467,11 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
   }
 }]
 
-//================================
+//========================================
 // Definitions
-//================================
+//========================================
 
+// Lock Type
 type lockType = {
   @description('Optional. Specify the name of lock.')
   name: string?
@@ -460,6 +483,7 @@ type lockType = {
   notes: string?
 }
 
+// Hub Networking Types
 type hubNetworkingType = {
   @description('Required. ALZ network type')
   networkType: 'hub-and-spoke'
