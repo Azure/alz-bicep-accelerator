@@ -50,13 +50,12 @@ param virtualWanHubs virtualWanHubType?
 //=====================
 // VWAN
 //=====================
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.3.0' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
   name: 'virtualWan-${uniqueString(resourceGroup().id, virtualWan.name)}'
   params: {
     name: 'virtualWan-${virtualWan.location}'
     allowBranchToBranchTraffic: virtualWan.?allowBranchToBranchTraffic ?? true
-    allowVnetToVnetTraffic: virtualWan.?allowVnetToVnetTraffic ?? true
-    disableVpnEncryption: virtualWan.?disableVpnEncryption ?? false
+    roleAssignments: virtualWan.?roleAssignments
     location: virtualWan.location
     lock: parGlobalResourceLock ?? parVirtualWanLock
     tags: parTags
@@ -65,32 +64,31 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.3.0' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.2.2' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHubs)) {
     name: 'virtualWanHub-${i}-${uniqueString(resourceGroup().id, virtualWan.name)}'
     params: {
       name: '${parCompanyPrefix}-vwanhub-${virtualWanHub.hubName}-${virtualWan.?name ?? parCompanyPrefix}-${virtualWan.location}'
       location: virtualWanHub.location
       addressPrefix: virtualWanHub.addressPrefix
-      virtualWanId: resVirtualWan.outputs.resourceId
+      virtualWanResourceId: resVirtualWan.outputs.resourceId
       allowBranchToBranchTraffic: virtualWanHub.allowBranchToBranchTraffic
-      // azureFirewallResourceId: resAzFirewallPolicy[i].outputs.?resourceId
-      // expressRouteGatewayId: resVirtualNetworkGateway[i].outputs.?resourceId
-      // vpnGatewayId: virtualWanHub.vpnGatewayId ?? null
-      // p2SVpnGatewayId: virtualWanHub.p2SVpnGatewayId ?? null
+      azureFirewallResourceId: resAzFirewallPolicy[i].?outputs.?resourceId
+      expressRouteGatewayResourceId: resVirtualNetworkGateway[i].?outputs.?resourceId
+      vpnGatewayResourceId: virtualWanHub.?vpnGatewayId ?? null
+      p2SVpnGatewayResourceId: virtualWanHub.?p2SVpnGatewayId ?? null
       hubRouteTables: virtualWanHub.?routeTableRoutes ?? null
       hubRoutingPreference: virtualWanHub.?hubRoutingPreference ?? 'ASPath'
       hubVirtualNetworkConnections: virtualWanHub.?hubVirtualNetworkConnections
-      internetToFirewall: virtualWanHub.?internetToFirewall ?? true
       preferredRoutingGateway: virtualWanHub.?preferredRoutingGateway ?? 'None'
-      privateToFirewall: virtualWanHub.?privateToFirewall ?? null
+      routingIntent: virtualWanHub.?routingIntent ?? null
       routeTableRoutes: virtualWanHub.?routeTableRoutes ?? null
       securityProviderName: virtualWanHub.?securityProviderName ?? null
-      securityPartnerProviderId: virtualWanHub.?securityPartnerProviderId ?? null
+      securityPartnerProviderResourceId: virtualWanHub.?securityPartnerProviderId ?? null
       virtualHubRouteTableV2s: virtualWanHub.?virtualHubRouteTableV2s ?? null
       virtualRouterAsn: virtualWanHub.?virtualRouterAsn ?? null
       virtualRouterIps: virtualWanHub.?virtualRouterIps ?? null
-      // lock: parGlobalResourceLock.kind != 'None' ? { kind: parGlobalResourceLock.kind } : virtualWanHub.lock
+      lock: parGlobalResourceLock ?? virtualWanHub.?lock
       tags: parTags ?? null
       enableTelemetry: parTelemetryOptOut
     }
@@ -184,11 +182,8 @@ type virtualWanNetworkType = {
   @description('Optional. Allow branch to branch traffic.')
   allowBranchToBranchTraffic: bool?
 
-  @description('Optional. Allow VNet to VNet traffic.')
-  allowVnetToVnetTraffic: bool?
-
-  @description('Optional. Disable VPN encryption.')
-  disableVpnEncryption: bool?
+  @description('Optional. Array of role assignments to create.')
+  roleAssignments: roleAssignmentType?
 
   @description('Required. The location of the virtual WAN. Defaults to the location of the resource group.')
   location: string
@@ -199,7 +194,7 @@ type virtualWanNetworkType = {
   @description('Optional. Tags of the resource.')
   tags: object?
 
-  @description('Optional. The type of the virtual WAN. Defaults to Basic.')
+  @description('Optional. The type of the virtual WAN.')
   type: 'Basic' | 'Standard'?
 }
 
@@ -229,13 +224,19 @@ type virtualWanHubType = {
   p2SVpnGatewayId: string?
 
   @description('Optional. The preferred routing preference for this virtual hub.')
-  hubRoutingPreference: ('ASPath' | 'VpnGateway' | 'ExpressRoute' | '' )?
+  hubRoutingPreference: ('ASPath' | 'VpnGateway' | 'ExpressRoute' )?
 
   @description('Optional. The hub virtual network connections and assocaited properties.')
   hubVirtualNetworkConnections: array?
 
+  @description('Optional. The routing intent configuration to create for the virtual hub.')
+  routingIntent: {
+    privateToFirewall: bool?
+    internetToFirewall: bool?
+  }?
+
   @description('Optional. The preferred routing gateway types.')
-  preferredRoutingGateway: ('VpnGateway' | 'ExpressRoute' | 'None' | '')?
+  preferredRoutingGateway: ('VpnGateway' | 'ExpressRoute' | 'None' )?
 
   @description('Optional. VirtualHub route tables.')
   routeTableRoutes: array?
@@ -450,11 +451,6 @@ type virtualNetworkGatewayConfigType = {
   gatewayType: 'Vpn' | 'ExpressRoute'?
   skuName:
     | 'Basic'
-    | 'VpnGw1'
-    | 'VpnGw2'
-    | 'VpnGw3'
-    | 'VpnGw4'
-    | 'VpnGw5'
     | 'VpnGw1AZ'
     | 'VpnGw2AZ'
     | 'VpnGw3AZ'
