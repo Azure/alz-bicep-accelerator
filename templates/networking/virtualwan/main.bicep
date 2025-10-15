@@ -100,19 +100,20 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
 //=====================
 
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.0' = [
-  for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHub.?ddosProtectionPlanResourceId) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
-    name: 'ddosPlan-${uniqueString(resourceGroup().id,virtualWanHub.?ddosProtectionPlanResourceId ?? '',virtualWanHub.location)}'
+  for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.?ddosProtectionPlanSettings.?enableDDosProtection ?? false) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
+    name: 'ddosPlan-${uniqueString(resourceGroup().id, virtualWanHub.?ddosProtectionPlanSettings.?name ?? '', virtualWanHub.location)}'
     params: {
       name: '${parCompanyPrefix}-ddos-plan-${virtualWanHub.location}'
       location: virtualWanHub.location
-      enableTelemetry: parTelemetryOptOut
+      lock: parGlobalResourceLock.kind != 'None' ? parGlobalResourceLock : parDdosLock
       tags: parTags
+      enableTelemetry: parTelemetryOptOut
     }
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
-  for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.enableAzureFirewall) && empty(virtualWanHub.?azureFirewallSettings.?firewallPolicyId)) {
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
+  for (virtualWanHub, i) in virtualWanHubs!: if (((virtualWanHub.?azureFirewallSettings.?enableAzureFirewall ?? false)) && empty(virtualWanHub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,virtualWanHub.hubName,virtualWanHub.location)}'
     params: {
       name: '${parCompanyPrefix}-azfwpolicy-${virtualWanHub.hubName}-${virtualWanHub.location}'
@@ -124,6 +125,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.2.0' = [
       servers: virtualWanHub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? null
         : virtualWanHub.?azureFirewallSettings.?firewallDnsServers
+      lock: parGlobalResourceLock ?? virtualWanHub.?azureFirewallSettings.?lock
     }
   }
 ]
@@ -262,8 +264,8 @@ type virtualWanHubType = {
   @description('Optional. Switch to enable/disable VPN virtual network gateway deployment.')
   vpnGatewayEnabled: bool
 
-  @description('Optional. Switch to enable/disable Azure Firewall deployment for the hub.')
-  enableAzureFirewall: bool
+  @description('Optional. The DDoS protection plan resource ID.')
+  ddosProtectionPlanSettings: ddosProtectionType?
 
   @description('Optional. Lock settings.')
   lock: lockType?
@@ -296,8 +298,8 @@ type azureFirewallType = {
   @description('Optional. Hub IP addresses.')
   hubIpAddresses: object?
 
-  @description('Optional. Virtual Hub ID.')
-  virtualHub: string?
+  @description('Optional. Switch to enable/disable AzureFirewall deployment for the hub.')
+  enableAzureFirewall: bool
 
   @description('Optional. Additional public IP configurations.')
   additionalPublicIpConfigurations: array?
@@ -316,9 +318,6 @@ type azureFirewallType = {
 
   @description('Optional. Firewall policy ID.')
   firewallPolicyId: string?
-
-  @description('Optional. The location of the virtual network. Defaults to the location of the resource group.')
-  location: string?
 
   @description('Optional. Lock settings.')
   lock: lockType?
@@ -359,6 +358,20 @@ type azureFirewallType = {
   @description('Optional. Array of custom DNS servers used by Azure Firewall.')
   firewallDnsServers: array?
 }?
+
+type ddosProtectionType = {
+  @description('Optional. Friendly logical name for this DDoS protection configuration instance.')
+  name: string?
+
+  @description()
+  enableDDosProtection: bool
+
+  @description('Optional. Enable/Disable usage telemetry for module.')
+  enableTelemetry: bool?
+
+  @description('Optional. Tags of the resource.')
+  tags: object?
+}
 
 type roleAssignmentType = {
   @description('Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated.')
