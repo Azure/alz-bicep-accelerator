@@ -1,33 +1,26 @@
 using './main.bicep'
 
-param parCompanyPrefix = 'alz'
-param parGlobalResourceLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parDdosLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parTags = {}
-param parTelemetryOptOut = false
+// Resource Group Parameters
+param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${hubNetworks[0].location}'
+param parDnsResourceGroupName = 'rg-dns-alz-${hubNetworks[0].location}'
 
+// Hub Networking Parameters
 param hubNetworks = [
   {
-    hubName: 'hub1'
+    hubName: 'vnet-alz-eastus'
     location: 'eastus'
     vpnGatewayEnabled: false
     addressPrefixes: [
       '10.0.0.0/16'
     ]
+
     enablePrivateDnsZones: true
-    privateDnsZones: [
-      'privatelink.azconfig.io'
-  'privatelink.azure-api.net'
-  'privatelink.azure-automation.net'
-    ]
-    enableAzureFirewall: false
-    enableBastion: false
+    privateDnsZones: []
+    azureFirewallSettings:{
+      azureSkuTier: 'Standard'
+    }
+    enableAzureFirewall: true
+    enableBastion: true
     bastionHost: {
       skuName: 'Standard'
     }
@@ -74,7 +67,7 @@ param hubNetworks = [
     ]
   }
   {
-    hubName: 'hub2'
+    hubName: 'vnet-alz-westus'
     location: 'westus'
     vpnGatewayEnabled: false
     addressPrefixes: [
@@ -88,6 +81,7 @@ param hubNetworks = [
     azureFirewallSettings: {
       azureSkuTier: 'Basic'
       location: 'westus'
+      zones: []
     }
     subnets: [
       {
@@ -117,3 +111,12 @@ param hubNetworks = [
     ]
   }
 ]
+
+// General Parameters
+param parGlobalResourceLock = {
+  name: 'GlobalResourceLock'
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+}
+param parTags = {}
+param parEnableTelemetry = true
