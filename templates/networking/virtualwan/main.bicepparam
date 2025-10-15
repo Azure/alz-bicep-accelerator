@@ -1,32 +1,25 @@
 using './main.bicep'
 
-param parCompanyPrefix = 'alz'
-param parGlobalResourceLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parDdosLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parTags = {}
-param parTelemetryOptOut = false
 
+//Resource Group Parameters
+param parVirtualWanResourceGroupName = 'rg-virtualwan-alz-${virtualWan.location}'
+param parDnsResourceGroupName = 'rg-dns-alz-${virtualWan.location}'
+
+
+// Virtual WAN Parameters
 param virtualWan = {
-  name: 'alz-vwan'
+  name: 'vwan-alz-eastus'
   location: 'eastus'
   allowBranchToBranchTraffic: true
-  allowVnetToVnetTraffic: true
-  disableVpnEncryption: false
   type: 'Standard'
   lock: {
     kind: 'None'
     name: 'vwan-lock'
     notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
   }
-  tags: {}
 }
 
+// Virtual WAN Hub Parameters
 param virtualWanHubs = [
   {
     hubName: 'hub1'
@@ -39,8 +32,15 @@ param virtualWanHubs = [
       gatewayType: 'Vpn'
       vpnMode: 'activeActiveNoBgp'
     }
-    enableAzureFirewall: true
-    enableTelemetry: parTelemetryOptOut
+    ddosProtectionPlanSettings:{
+      enableDDosProtection: true
+      name: 'ddos-eastus'
+      tags: {}
+    }
+    azureFirewallSettings: {
+      enableAzureFirewall: true
+    }
+    enableTelemetry: parEnableTelemetry
   }
   {
     hubName: 'hub2'
@@ -53,7 +53,18 @@ param virtualWanHubs = [
       gatewayType: 'Vpn'
       vpnMode: 'activeActiveNoBgp'
     }
-    enableAzureFirewall: true
-    enableTelemetry: parTelemetryOptOut
+    azureFirewallSettings: {
+      enableAzureFirewall: true
+    }
+    enableTelemetry: parEnableTelemetry
   }
 ]
+
+// General Parameters
+param parGlobalResourceLock = {
+  name: 'GlobalResourceLock'
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+}
+param parTags = {}
+param parEnableTelemetry = true

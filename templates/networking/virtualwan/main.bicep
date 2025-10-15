@@ -1,96 +1,153 @@
 metadata name = 'ALZ Bicep'
 metadata description = 'ALZ Bicep Module used to set up Azure Landing Zones'
 
+targetScope = 'subscription'
+
 //================================
 // Parameters
 //================================
 
-@sys.description('Prefix value which will be prepended to all resource names.')
-param parCompanyPrefix string = 'alz'
+// Resource Group Parameters
+@description('The name of the Resource Group.')
+param parVwanResourceGroupName string = 'rg-alz-hubnetworking-001'
 
-@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
-
+@description('''Resource Lock Configuration for Resource Group.
+- `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
-
 ''')
-param parGlobalResourceLock lockType = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
+param parResourceGroupLock lockType?
 
-@sys.description('''Resource Lock Configuration for DDoS Plan.
+@description('The name of the DNS Resource Group.')
+param parDnsResourceGroupName string = 'rg-alz-dns-001'
 
-- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
-- `notes` - Notes about this lock.
-
-''')
-param parDdosLock lockType = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-
-param parVirtualWanLock lockType = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-
-@sys.description('Tags you would like to be applied to all resources in this module.')
-param parTags object = {}
-
-@sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
-
+// VWAN Parameters
 @description('Optional. The virtual WAN settings to create.')
 param virtualWan virtualWanNetworkType
 
 @description('Optional. The virtual WAN hubs to create.')
 param virtualWanHubs virtualWanHubType?
 
-//=====================
-// VWAN
-//=====================
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
-  name: 'virtualWan-${uniqueString(resourceGroup().id, virtualWan.name)}'
+// Resource Lock Parameters
+@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
+- `name` - The name of the lock.
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+''')
+param parGlobalResourceLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+@sys.description('''Resource Lock Configuration for Private DNS Zone(s).
+- `name` - The name of the lock.
+- `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
+- `notes` - Notes about this lock.
+''')
+param parPrivateDNSZonesLock lockType = {
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
+}
+
+// General Parameters
+@description('The primary location to deploy resources to.')
+param parPrimaryLocation string = deployment().location
+
+@description('Tags to be applied to all resources.')
+param parTags object = {}
+
+@description('Enable or disable telemetry.')
+param parEnableTelemetry bool = true
+
+//========================================
+// Resources
+//========================================
+
+// Resource Group
+module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
+  name: 'modResourceGroup-${uniqueString(parVwanResourceGroupName,parPrimaryLocation)}'
+  scope: subscription()
   params: {
-    name: 'virtualWan-${virtualWan.location}'
+    name: parVwanResourceGroupName
+    location: parPrimaryLocation
+    lock: parGlobalResourceLock ?? parResourceGroupLock
+    tags: parTags
+    enableTelemetry: parEnableTelemetry
+  }
+}
+
+resource resVwanResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
+  name: parVwanResourceGroupName
+  scope: subscription()
+  dependsOn: [
+    modHubNetworkingResourceGroup
+  ]
+}
+
+module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
+  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parPrimaryLocation)}'
+  scope: subscription()
+  params: {
+    name: parDnsResourceGroupName
+    location: parPrimaryLocation
+    lock: parGlobalResourceLock ?? parResourceGroupLock
+    tags: parTags
+    enableTelemetry: parEnableTelemetry
+  }
+}
+
+resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
+  name: parDnsResourceGroupName
+  scope: subscription()
+  dependsOn: [
+    modDnsResourceGroup
+  ]
+}
+
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
+  name: 'virtualWan-${uniqueString(parVwanResourceGroupName, virtualWan.name)}'
+  scope: resVwanResourceGroupPointer
+  params: {
+    name: virtualWan.?name ?? 'vwan-alz-${parPrimaryLocation}'
     allowBranchToBranchTraffic: virtualWan.?allowBranchToBranchTraffic ?? true
     roleAssignments: virtualWan.?roleAssignments
     location: virtualWan.location
-    lock: parGlobalResourceLock ?? parVirtualWanLock
+    lock: parGlobalResourceLock ?? virtualWan.?lock
     tags: parTags
     type: virtualWan.?type ?? 'Standard'
-    enableTelemetry: parTelemetryOptOut
+    enableTelemetry: parEnableTelemetry
   }
 }
 
 module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHubs)) {
-    name: 'virtualWanHub-${i}-${uniqueString(resourceGroup().id, virtualWan.name)}'
+    name: 'virtualWanHub-${i}-${uniqueString(parVwanResourceGroupName, virtualWan.name)}'
+    scope: resVwanResourceGroupPointer
     params: {
-      name: '${parCompanyPrefix}-vwanhub-${virtualWanHub.hubName}-${virtualWan.?name ?? parCompanyPrefix}-${virtualWan.location}'
+      name: virtualWanHub.?hubName ?? 'vwanhub-alz-${virtualWanHub.location}'
       location: virtualWanHub.location
       addressPrefix: virtualWanHub.addressPrefix
       virtualWanResourceId: resVirtualWan.outputs.resourceId
+      virtualRouterAutoScaleConfiguration: virtualWanHub.?virtualRouterAutoScaleConfiguration
       allowBranchToBranchTraffic: virtualWanHub.allowBranchToBranchTraffic
       azureFirewallResourceId: resAzFirewallPolicy[i].?outputs.?resourceId
       expressRouteGatewayResourceId: resVirtualNetworkGateway[i].?outputs.?resourceId
-      vpnGatewayResourceId: virtualWanHub.?vpnGatewayId ?? null
-      p2SVpnGatewayResourceId: virtualWanHub.?p2SVpnGatewayId ?? null
-      hubRouteTables: virtualWanHub.?routeTableRoutes ?? null
+      vpnGatewayResourceId: virtualWanHub.?vpnGatewayId
+      p2SVpnGatewayResourceId: virtualWanHub.?p2SVpnGatewayId
+      hubRouteTables: virtualWanHub.?routeTableRoutes
       hubRoutingPreference: virtualWanHub.?hubRoutingPreference ?? 'ASPath'
       hubVirtualNetworkConnections: virtualWanHub.?hubVirtualNetworkConnections
       preferredRoutingGateway: virtualWanHub.?preferredRoutingGateway ?? 'None'
-      routingIntent: virtualWanHub.?routingIntent ?? null
-      routeTableRoutes: virtualWanHub.?routeTableRoutes ?? null
-      securityProviderName: virtualWanHub.?securityProviderName ?? null
-      securityPartnerProviderResourceId: virtualWanHub.?securityPartnerProviderId ?? null
-      virtualHubRouteTableV2s: virtualWanHub.?virtualHubRouteTableV2s ?? null
-      virtualRouterAsn: virtualWanHub.?virtualRouterAsn ?? null
-      virtualRouterIps: virtualWanHub.?virtualRouterIps ?? null
+      routingIntent: virtualWanHub.?routingIntent
+      routeTableRoutes: virtualWanHub.?routeTableRoutes
+      securityProviderName: virtualWanHub.?securityProviderName
+      securityPartnerProviderResourceId: virtualWanHub.?securityPartnerProviderId
+      virtualHubRouteTableV2s: virtualWanHub.?virtualHubRouteTableV2s
+      virtualRouterAsn: virtualWanHub.?virtualRouterAsn
+      virtualRouterIps: virtualWanHub.?virtualRouterIps
       lock: parGlobalResourceLock ?? virtualWanHub.?lock
-      tags: parTags ?? null
-      enableTelemetry: parTelemetryOptOut
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -98,25 +155,26 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
 //=====================
 // Network security
 //=====================
-
-module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.0' = [
-  for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.?ddosProtectionPlanSettings.?enableDDosProtection ?? false) && (parDdosLock.kind != 'None' || parGlobalResourceLock.kind != 'None')) {
-    name: 'ddosPlan-${uniqueString(resourceGroup().id, virtualWanHub.?ddosProtectionPlanSettings.?name ?? '', virtualWanHub.location)}'
+module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
+  for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.?ddosProtectionPlanSettings.?enableDDosProtection ?? false) && (virtualWanHub.?ddosProtectionPlanSettings.?lock != 'None' || parGlobalResourceLock.kind != 'None')) {
+    name: 'ddosPlan-${uniqueString(parVwanResourceGroupName, virtualWanHub.?ddosProtectionPlanSettings.?name ?? '', virtualWanHub.location)}'
+    scope: resVwanResourceGroupPointer
     params: {
-      name: '${parCompanyPrefix}-ddos-plan-${virtualWanHub.location}'
+      name: virtualWanHub.?ddosProtectionPlanSettings.?name ?? 'ddos-alz-${virtualWanHub.location}'
       location: virtualWanHub.location
-      lock: parGlobalResourceLock.kind != 'None' ? parGlobalResourceLock : parDdosLock
+      lock: parGlobalResourceLock ?? virtualWanHub.?ddosProtectionPlanSettings.?lock
       tags: parTags
-      enableTelemetry: parTelemetryOptOut
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
-
 module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (((virtualWanHub.?azureFirewallSettings.?enableAzureFirewall ?? false)) && empty(virtualWanHub.?azureFirewallSettings.?firewallPolicyId)) {
-    name: 'azFirewallPolicy-${uniqueString(resourceGroup().id,virtualWanHub.hubName,virtualWanHub.location)}'
+    name: 'azFirewallPolicy-${uniqueString(parVwanResourceGroupName, virtualWanHub.hubName, virtualWanHub.location)}'
+    scope: resVwanResourceGroupPointer
     params: {
-      name: '${parCompanyPrefix}-azfwpolicy-${virtualWanHub.hubName}-${virtualWanHub.location}'
+      name: virtualWanHub.?azureFirewallSettings.?name ?? 'azfwpolicy-alz-${virtualWanHub.location}'
+      threatIntelMode: virtualWanHub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
       location: virtualWanHub.location
       tier: virtualWanHub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
       enableProxy: virtualWanHub.?azureFirewallSettings.?azureSkuTier == 'Basic'
@@ -126,6 +184,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
         ? null
         : virtualWanHub.?azureFirewallSettings.?firewallDnsServers
       lock: parGlobalResourceLock ?? virtualWanHub.?azureFirewallSettings.?lock
+      tags: parTags
     }
   }
 ]
@@ -133,19 +192,19 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
 //=====================
 // Hybrid connectivity
 //=====================
-
-module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.5.0' = [
-  for (virtualWanHub, i) in virtualWanHubs!: if (virtualWanHub.vpnGatewayEnabled  && !empty(virtualWanHub.?virtualNetworkGatewayConfig)) {
-    name: 'virtualNetworkGateway-${uniqueString(resourceGroup().id,virtualWanHub.hubName,virtualWanHub.location)}'
+module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
+  for (virtualWanHub, i) in virtualWanHubs!: if ((virtualWanHub.?virtualNetworkGatewayConfig.?enableVirtualNetworkGateway ?? false) && !empty(virtualWanHub.?virtualNetworkGatewayConfig)) {
+    name: 'virtualNetworkGateway-${uniqueString(parVwanResourceGroupName, virtualWanHub.hubName, virtualWanHub.location)}'
+    scope: resVwanResourceGroupPointer
+    dependsOn: [
+      resVirtualWanHub[i]
+    ]
     params: {
-      name: '${parCompanyPrefix}-${toLower(virtualWanHub.?virtualNetworkGatewayConfig.?gatewayType ?? 'vpn')}-${virtualWanHub.hubName}-${virtualWanHub.location}'
+      name: virtualWanHub.?virtualNetworkGatewayConfig.?name ?? 'vgw-${virtualWanHub.hubName}-${virtualWanHub.location}'
       clusterSettings: {
-        clusterMode: any(virtualWanHub.?virtualNetworkGatewayConfig.?vpnMode)
+        clusterMode: virtualWanHub.?virtualNetworkGatewayConfig.?vpnMode
         asn: virtualWanHub.?virtualNetworkGatewayConfig.?asn ?? 65515
-        customBgpIpAddresses: (virtualWanHub.?virtualNetworkGatewayConfig.?vpnMode == 'activePassiveBgp' || virtualWanHub.?virtualNetworkGatewayConfig.?vpnMode == 'activeActiveBgp')
-          ? (virtualWanHub.?virtualNetworkGatewayConfig.?customBgpIpAddresses)
-          : null
-      }
+        customBgpIpAddresses: virtualWanHub.?virtualNetworkGatewayConfig.?customBgpIpAddresses
       location: virtualWanHub.location
       gatewayType: virtualWanHub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
       vpnType: virtualWanHub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
@@ -153,14 +212,50 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       enableBgpRouteTranslationForNat: virtualWanHub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: virtualWanHub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: virtualWanHub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      vNetResourceId: resourceId('Microsoft.Network/virtualNetworks', virtualWanHub.hubName)
+      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', virtualWanHub.hubName)
       domainNameLabel: virtualWanHub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpZones: virtualWanHub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
-        ? virtualWanHub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
+      publicIpAvailabilityZones: virtualWanHub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
+        ? (virtualWanHub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3])
         : []
+      lock: parGlobalResourceLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
+
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
+  for (hub, i) in hubNetworks!: if (hub.?enablePrivateDnsZones ?? false) {
+    name: 'privateDnsZone-${hub.hubName}-${uniqueString(parDnsResourceGroupName, virtualWanHub.hubName, virtualWanHub.location)}'
+    scope: resDnsResourceGroup
+    params: {
+      location: hub.location
+      privateLinkPrivateDnsZones: empty(hub.?privateDnsZones) ? null : hub.?privateDnsZones
+      virtualNetworkLinks: [
+        for id in union(
+          [
+            resourceId(
+              subscription().subscriptionId,
+              parVwanResourceGroupName,
+              'Microsoft.Network/virtualNetworks',
+              hub.hubName
+            )
+          ],
+          !empty(hub.?virtualNetworkIdToLinkFailover) ? [hub.?virtualNetworkIdToLinkFailover] : [],
+          hub.?virtualNetworkResourceIdsToLinkTo ?? []
+        ): {
+          virtualNetworkResourceId: id
+        }
+      ]
+      lock: parGlobalResourceLock ?? parPrivateDNSZonesLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
+
+
 
 //================================
 // Definitions
@@ -171,7 +266,7 @@ type lockType = {
   name: string?
 
   @description('Optional. The lock settings of the service.')
-  kind: ('CanNotDelete' | 'ReadOnly' | 'None')
+  kind: ('CanNotDelete' | 'ReadOnly' | 'None' |  null)
 
   @description('Optional. Notes about this lock.')
   notes: string?
@@ -209,6 +304,11 @@ type virtualWanHubType = {
 
   @description('Required. The address prefixes for the virtual network.')
   addressPrefix: string
+
+  @description('Optional. The virtual router auto scale configuration.')
+  virtualRouterAutoScaleConfiguration: {
+    minInstances: int
+  }?
 
   @description('Required. The location of the virtual WAN hub.')
   allowBranchToBranchTraffic: bool
@@ -261,9 +361,6 @@ type virtualWanHubType = {
   @description('Optional. The virtual network gateway configuration.')
   virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType?
 
-  @description('Optional. Switch to enable/disable VPN virtual network gateway deployment.')
-  vpnGatewayEnabled: bool
-
   @description('Optional. The DDoS protection plan resource ID.')
   ddosProtectionPlanSettings: ddosProtectionType?
 
@@ -295,6 +392,9 @@ type peeringSettingsType = {
 }[]?
 
 type azureFirewallType = {
+  @description('Optional. Name of Azure Firewall.')
+  name: string?
+
   @description('Optional. Hub IP addresses.')
   hubIpAddresses: object?
 
@@ -343,9 +443,6 @@ type azureFirewallType = {
   @description('Optional. Role assignments.')
   roleAssignments: roleAssignmentType?
 
-  @description('Optional. Tags of the resource.')
-  tags: object?
-
   @description('Optional. Threat Intel mode.')
   threatIntelMode: ('Alert' | 'Deny' | 'Off')?
 
@@ -363,14 +460,14 @@ type ddosProtectionType = {
   @description('Optional. Friendly logical name for this DDoS protection configuration instance.')
   name: string?
 
-  @description()
-  enableDDosProtection: bool
+  @description('Optonal. Enable/Disable DDoS protection.')
+  enableDDosProtection: bool?
+
+  @description('Optional. Lock settings.')
+  lock: lockType?
 
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
-
-  @description('Optional. Tags of the resource.')
-  tags: object?
 }
 
 type roleAssignmentType = {
@@ -461,7 +558,16 @@ type subnetOptionsType = ({
 })[]
 
 type virtualNetworkGatewayConfigType = {
+  @description('Optional. Name of the virtual network gateway.')
+  name: string?
+
+  @description('Optional. Enable/disable the virtual network gateway.')
+  enableVirtualNetworkGateway: bool?
+
+  @description('Optional. The gateway type. Set to Vpn or ExpressRoute.')
   gatewayType: 'Vpn' | 'ExpressRoute'?
+
+  @description('Required. The SKU of the gateway.')
   skuName:
     | 'Basic'
     | 'VpnGw1AZ'
@@ -475,16 +581,40 @@ type virtualNetworkGatewayConfigType = {
     | 'ErGw1AZ'
     | 'ErGw2AZ'
     | 'ErGw3AZ'
+
+  @description('Required. VPN mode and BGP configuration.')
   vpnMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'
+
+  @description('Optional. The VPN type. Defaults to RouteBased if not specified.')
   vpnType: 'RouteBased' | 'PolicyBased'?
+
+  @description('Optional. The gateway generation.')
   vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
+
+  @description('Optional. Enable/disable BGP route translation for NAT.')
   enableBgpRouteTranslationForNat: bool?
+
+  @description('Optional. Enable/disable DNS forwarding.')
   enableDnsForwarding: bool?
+
+  @description('Optional. ASN to use for BGP.')
   asn: int?
+
+  @description('Optional. Custom BGP IP addresses (when BGP enabled modes are used).')
   customBgpIpAddresses: string[]?
+
+  @description('Optional. Availability zones for public IPs.')
   publicIpZones: array?
+
+  @description('Optional. Client root certificate data (Base64) for P2S.')
   clientRootCertData: string?
+
+  @description('Optional. VPN client address pool CIDR prefix.')
   vpnClientAddressPoolPrefix: string?
+
+  @description('Optional. Azure AD configuration for VPN client (OpenVPN).')
   vpnClientAadConfiguration: object?
+
+  @description('Optional. Array of domain name labels for public IPs.')
   domainNameLabel: string[]?
 }
