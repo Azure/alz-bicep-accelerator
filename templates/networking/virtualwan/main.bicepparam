@@ -26,12 +26,6 @@ param virtualWanHubs = [
     location: 'eastus'
     addressPrefix: '10.100.0.0/23'
     allowBranchToBranchTraffic: true
-    vpnGatewayEnabled: true
-    virtualNetworkGatewayConfig: {
-      skuName: 'VpnGw1AZ'
-      gatewayType: 'Vpn'
-      vpnMode: 'activeActiveNoBgp'
-    }
     ddosProtectionPlanSettings:{
       enableDDosProtection: true
       name: 'ddos-eastus'
@@ -47,12 +41,6 @@ param virtualWanHubs = [
     location: 'westus2'
     addressPrefix: '10.200.0.0/23'
     allowBranchToBranchTraffic: true
-    vpnGatewayEnabled: true
-    virtualNetworkGatewayConfig: {
-      skuName: 'VpnGw1AZ'
-      gatewayType: 'Vpn'
-      vpnMode: 'activeActiveNoBgp'
-    }
     azureFirewallSettings: {
       enableAzureFirewall: true
     }
