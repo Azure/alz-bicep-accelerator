@@ -1,28 +1,32 @@
 using './main.bicep'
 
 // Resource Group Parameters
-param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${hubNetworks[0].location}'
-param parDnsResourceGroupName = 'rg-dns-alz-${hubNetworks[0].location}'
+param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-eastus'
+param parDnsResourceGroupName = 'rg-dns-alz-eastus'
 
 // Hub Networking Parameters
 param hubNetworks = [
   {
-    hubName: 'vnet-alz-eastus'
+    name: 'vnet-alz-eastus'
     location: 'eastus'
     vpnGatewayEnabled: false
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-
-    enablePrivateDnsZones: true
-    privateDnsZones: []
-    azureFirewallSettings:{
+    privateDnsSettings: {
+      enablePrivateDnsZones: true
+      privateDnsZones: []
+    }
+    azureFirewallSettings: {
       azureSkuTier: 'Standard'
     }
     enableAzureFirewall: true
     enableBastion: true
     bastionHost: {
       skuName: 'Standard'
+    }
+    bastionNsg: {
+      name: 'nsg-AzureBastionSubnet'
     }
     enablePeering: false
     dnsServers: []
@@ -43,31 +47,23 @@ param hubNetworks = [
       {
         name: 'AzureBastionSubnet'
         addressPrefix: '10.0.15.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'GatewaySubnet'
         addressPrefix: '10.0.20.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallSubnet'
         addressPrefix: '10.0.254.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '10.0.253.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
     ]
   }
   {
-    hubName: 'vnet-alz-westus'
+    name: 'vnet-alz-westus'
     location: 'westus'
     vpnGatewayEnabled: false
     addressPrefixes: [
@@ -87,26 +83,18 @@ param hubNetworks = [
       {
         name: 'AzureBastionSubnet'
         addressPrefix: '20.0.15.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'GatewaySubnet'
         addressPrefix: '20.0.252.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallSubnet'
         addressPrefix: '20.0.254.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '20.0.253.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
     ]
   }
