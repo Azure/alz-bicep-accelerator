@@ -364,7 +364,7 @@ type virtualWanHubType = {
 
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
-}[]
+}[]?
 
 type peeringSettingsType = {
   @description('Optional. Allow forwarded traffic.')

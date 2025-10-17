@@ -34,6 +34,7 @@ param virtualWanHubs = [
     azureFirewallSettings: {
       enableAzureFirewall: true
     }
+    enablePrivateDnsZones: true
     enableTelemetry: parEnableTelemetry
   }
   {
