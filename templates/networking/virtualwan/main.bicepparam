@@ -1,59 +1,59 @@
 using './main.bicep'
 
-param parCompanyPrefix = 'alz'
-param parGlobalResourceLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parDdosLock = {
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
-}
-param parTags = {}
-param parTelemetryOptOut = false
 
+//Resource Group Parameters
+param parVirtualWanResourceGroupName = 'rg-virtualwan-alz-${virtualWan.location}'
+param parDnsResourceGroupName = 'rg-dns-alz-${virtualWan.location}'
+
+
+// Virtual WAN Parameters
 param virtualWan = {
-  name: 'alz-vwan'
+  name: 'vwan-alz-eastus'
   location: 'eastus'
   allowBranchToBranchTraffic: true
-  allowVnetToVnetTraffic: true
-  disableVpnEncryption: false
   type: 'Standard'
   lock: {
     kind: 'None'
     name: 'vwan-lock'
     notes: 'This lock was created by the ALZ Bicep Hub Networking Module.'
   }
-  tags: {}
 }
 
+// Virtual WAN Hub Parameters
 param virtualWanHubs = [
   {
     hubName: 'hub1'
     location: 'eastus'
     addressPrefix: '10.100.0.0/23'
     allowBranchToBranchTraffic: true
-    vpnGatewayEnabled: true
-    virtualNetworkGatewayConfig: {
-      skuName: 'VpnGw1AZ'
-      gatewayType: 'Vpn'
-      vpnMode: 'activeActiveNoBgp'
+    ddosProtectionPlanSettings:{
+      enableDDosProtection: true
+      name: 'ddos-eastus'
+      tags: {}
     }
-    enableAzureFirewall: true
-    enableTelemetry: parTelemetryOptOut
+    azureFirewallSettings: {
+      enableAzureFirewall: true
+    }
+    enablePrivateDnsZones: true
+    enableTelemetry: parEnableTelemetry
   }
   {
     hubName: 'hub2'
     location: 'westus2'
     addressPrefix: '10.200.0.0/23'
     allowBranchToBranchTraffic: true
-    vpnGatewayEnabled: true
-    virtualNetworkGatewayConfig: {
-      skuName: 'VpnGw1AZ'
-      gatewayType: 'Vpn'
-      vpnMode: 'activeActiveNoBgp'
+    azureFirewallSettings: {
+      enableAzureFirewall: true
     }
-    enableAzureFirewall: true
-    enableTelemetry: parTelemetryOptOut
+    enableTelemetry: parEnableTelemetry
   }
 ]
+
+// General Parameters
+param parGlobalResourceLock = {
+  name: 'GlobalResourceLock'
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+}
+param parTags = {}
+param parEnableTelemetry = true

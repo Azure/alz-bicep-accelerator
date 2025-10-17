@@ -517,6 +517,35 @@ type hubNetworkingType = {
   networkType: 'hub-and-spoke'
 }
 
+type bastionHostType = {
+  @description('Optional. Enable/Disable copy/paste functionality.')
+  disableCopyPaste: bool?
+
+  @description('Optional. Enable/Disable file copy functionality.')
+  enableFileCopy: bool?
+
+  @description('Optional. Enable/Disable IP connect functionality.')
+  enableIpConnect: bool?
+
+  @description('Optional. Enable/Disable shareable link functionality.')
+  enableShareableLink: bool?
+
+  @description('Optional. Enable/Disable Kerberos authentication.')
+  enableKerberos: bool?
+
+  @description('Optional. The number of scale units for the Bastion host. Defaults to 4.')
+  scaleUnits: int?
+
+  @description('Optional. The SKU name of the Bastion host. Defaults to Standard.')
+  skuName: 'Basic' | 'Developer' | 'Premium' | 'Standard'?
+
+  @description('Optional. The name of the bastion host.')
+  bastionHostName: string?
+
+  @description('Optional. The bastion\'s outbound ssh and rdp ports.')
+  outboundSshRdpPorts: array?
+}?
+
 type hubVirtualNetworkType = {
   @description('Required. The name of the hub.')
   hubName: string
@@ -603,34 +632,7 @@ type hubVirtualNetworkType = {
   vpnGatewayEnabled: bool
 
   @description('Optional. The Azure Bastion config.')
-  bastionHost: {
-    @description('Optional. Enable/Disable copy/paste functionality.')
-    disableCopyPaste: bool?
-
-    @description('Optional. Enable/Disable file copy functionality.')
-    enableFileCopy: bool?
-
-    @description('Optional. Enable/Disable IP connect functionality.')
-    enableIpConnect: bool?
-
-    @description('Optional. Enable/Disable shareable link functionality.')
-    enableShareableLink: bool?
-
-    @description('Optional. Enable/Disable Kerberos authentication.')
-    enableKerberos: bool?
-
-    @description('Optional. The number of scale units for the Bastion host. Defaults to 4.')
-    scaleUnits: int?
-
-    @description('Optional. The SKU name of the Bastion host. Defaults to Standard.')
-    skuName: 'Basic' | 'Developer' | 'Premium' | 'Standard'?
-
-    @description('Optional. The name of the bastion host.')
-    bastionHostName: string?
-
-    @description('Optional. The bastion\'s outbound ssh and rdp ports\'.')
-    outboundSshRdpPorts: array?
-  }?
+  bastionHost: bastionHostType?
 }[]
 
 type peeringSettingsType = {
