@@ -15,14 +15,15 @@ param hubNetworks = [
       '10.0.0.0/16'
     ]
     privateDnsSettings: {
-      enablePrivateDnsZones: true
+      enablePrivateDnsZones: false
+      enablePrivateDnsResolver: true
       privateDnsZones: []
     }
     azureFirewallSettings: {
       azureSkuTier: 'Standard'
     }
-    enableAzureFirewall: true
-    enableBastion: true
+    enableAzureFirewall: false
+    enableBastion: false
     bastionHost: {
       skuName: 'Standard'
     }
@@ -61,10 +62,12 @@ param hubNetworks = [
       {
         name: 'PrivateDNSResolverInboundSubnet'
         addressPrefix: '10.0.4.0/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
         name: 'PrivateDNSResolverOutboundSubnet'
         addressPrefix: '10.0.4.16/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
   }
@@ -80,7 +83,7 @@ param hubNetworks = [
     enablePeering: false
     privateDnsSettings: {
       enablePrivateDnsResolver: false
-      enablePrivateDnsZones: true
+      enablePrivateDnsZones: false
     }
     dnsServers: []
     routes: []
@@ -109,10 +112,12 @@ param hubNetworks = [
       {
         name: 'PrivateDNSResolverInboundSubnet'
         addressPrefix: '20.0.4.0/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
         name: 'PrivateDNSResolverOutboundSubnet'
         addressPrefix: '20.0.4.16/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
   }
