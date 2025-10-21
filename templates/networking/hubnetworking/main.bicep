@@ -299,7 +299,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
           routeTableName: hub.?routeTableName ?? null
           bastionHost: hub.enableBastion
             ? {
-                bastionHostName: hub.?bastionHost.?bastionHostName ?? '$bas-alz-${hub.location}'
+                bastionHostName: hub.?bastionHost.?bastionHostName ?? 'bas-alz-${hub.location}'
                 skuName: hub.?bastionHost.?skuName ?? 'Standard'
               }
             : null
@@ -420,7 +420,7 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
       enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.name)
+      virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
       domainNameLabel: hub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
       publicIpAvailabilityZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
         ? hub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
@@ -474,13 +474,13 @@ module resPrivateDnsResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
       resHubNetwork[i]
     ]
     params: {
-      name: hub.?privateDnsSettings.?privateDnsResolverName ?? 'dnspr-alz-${hub.name}'
+      name: hub.?privateDnsSettings.?privateDnsResolverName ?? 'dnspr-alz-${hub.location}'
       location: hub.location
-      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', hub.name)
+      virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
       inboundEndpoints: hub.?privateDnsSettings.?inboundEndpoints ?? [
         {
-          name: 'pip-alz-${hub.name}-${uniqueString(parPrivateDnsResolverResourceGroupName,hub.name)}'
-          subnetResourceId: resourceId('Microsoft.Network/virtualNetworks/subnets', hub.name, 'PrivateDNSResolverInboundSubnet')
+          name: 'pip-dnsprinbound-alz-${hub.location}'
+          subnetResourceId: '${resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId}/subnets/PrivateDNSResolverInboundSubnet'
         }
       ]
       outboundEndpoints: hub.?privateDnsSettings.?outboundEndpoints ?? []

@@ -26,9 +26,6 @@ param hubNetworks = [
     bastionHost: {
       skuName: 'Standard'
     }
-    bastionNsg: {
-      name: 'nsg-AzureBastionSubnet'
-    }
     enablePeering: false
     dnsServers: []
     routes: []
@@ -81,6 +78,10 @@ param hubNetworks = [
     enableAzureFirewall: false
     enableBastion: false
     enablePeering: false
+    privateDnsSettings: {
+      enablePrivateDnsResolver: false
+      enablePrivateDnsZones: true
+    }
     dnsServers: []
     routes: []
     azureFirewallSettings: {
@@ -90,28 +91,28 @@ param hubNetworks = [
     }
     subnets: [
       {
-        name: 'snet-bas-alz'
+        name: 'AzureBastionSubnet'
         addressPrefix: '20.0.15.0/24'
       }
       {
-        name: 'snet-vgw-alz'
+        name: 'GatewaySubnet'
         addressPrefix: '20.0.20.0/24'
       }
       {
-        name: 'snet-dnspr-in-alz'
-        addressPrefix: '20.0.4.0/28'
-      }
-      {
-        name: 'snet-dnspr-out-alz'
-        addressPrefix: '20.0.4.16/28'
-      }
-      {
-        name: 'snet-fw-alz'
+        name: 'AzureFirewallSubnet'
         addressPrefix: '20.0.254.0/24'
       }
       {
-        name: 'snet-fw-mgmt-alz'
+        name: 'AzureFirewallManagementSubnet'
         addressPrefix: '20.0.253.0/24'
+      }
+      {
+        name: 'PrivateDNSResolverInboundSubnet'
+        addressPrefix: '20.0.4.0/28'
+      }
+      {
+        name: 'PrivateDNSResolverOutboundSubnet'
+        addressPrefix: '20.0.4.16/28'
       }
     ]
   }
