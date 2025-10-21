@@ -50,8 +50,10 @@ param parPrivateDNSZonesLock lockType = {
 }
 
 // General Parameters
-@description('The primary location to deploy resources to.')
-param parPrimaryLocation string = deployment().location
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
 
 @description('Tags to be applied to all resources.')
 param parTags object = {}
@@ -65,11 +67,11 @@ param parEnableTelemetry bool = true
 
 // Resource Group
 module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modResourceGroup-${uniqueString(parVirtualWanResourceGroupName,parPrimaryLocation)}'
+  name: 'modResourceGroup-${uniqueString(parVirtualWanResourceGroupName,parLocations[0])}'
   scope: subscription()
   params: {
     name: parVirtualWanResourceGroupName
-    location: parPrimaryLocation
+    location: parLocations[0]
     lock: parGlobalResourceLock ?? parResourceGroupLock
     tags: parTags
     enableTelemetry: parEnableTelemetry
@@ -85,11 +87,11 @@ resource resVwanResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04
 }
 
 module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parPrimaryLocation)}'
+  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parLocations[0])}'
   scope: subscription()
   params: {
     name: parDnsResourceGroupName
-    location: parPrimaryLocation
+    location: parLocations[0]
     lock: parGlobalResourceLock ?? parResourceGroupLock
     tags: parTags
     enableTelemetry: parEnableTelemetry
@@ -108,7 +110,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
   name: 'virtualWan-${uniqueString(parVirtualWanResourceGroupName, virtualWan.name)}'
   scope: resVwanResourceGroupPointer
   params: {
-    name: virtualWan.?name ?? 'vwan-alz-${parPrimaryLocation}'
+    name: virtualWan.?name ?? 'vwan-alz-${parLocations[0]}'
     allowBranchToBranchTraffic: virtualWan.?allowBranchToBranchTraffic ?? true
     type: virtualWan.?type ?? 'Standard'
     roleAssignments: virtualWan.?roleAssignments

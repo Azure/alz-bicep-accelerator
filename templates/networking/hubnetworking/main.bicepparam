@@ -1,14 +1,15 @@
 using './main.bicep'
 
 // Resource Group Parameters
-param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-eastus'
-param parDnsResourceGroupName = 'rg-dns-alz-eastus'
+param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${parLocations[0]}'
+param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
+param parPrivateDnsResolverResourceGroupName = 'rg-dnsresolver-alz-${parLocations[0]}'
 
 // Hub Networking Parameters
 param hubNetworks = [
   {
-    name: 'vnet-alz-eastus'
-    location: 'eastus'
+    name: 'vnet-alz-${parLocations[0]}'
+    location: parLocations[0]
     vpnGatewayEnabled: false
     addressPrefixes: [
       '10.0.0.0/16'
@@ -60,40 +61,56 @@ param hubNetworks = [
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '10.0.253.0/24'
       }
+      {
+        name: 'PrivateDNSResolverInboundSubnet'
+        addressPrefix: '10.0.4.0/28'
+      }
+      {
+        name: 'PrivateDNSResolverOutboundSubnet'
+        addressPrefix: '10.0.4.16/28'
+      }
     ]
   }
   {
-    name: 'vnet-alz-westus'
-    location: 'westus'
+    name: 'vnet-alz-${parLocations[1]}'
+    location: parLocations[1]
     vpnGatewayEnabled: false
     addressPrefixes: [
       '20.0.0.0/16'
     ]
-    enableAzureFirewall: true
+    enableAzureFirewall: false
     enableBastion: false
     enablePeering: false
     dnsServers: []
     routes: []
     azureFirewallSettings: {
       azureSkuTier: 'Basic'
-      location: 'westus'
+      location: parLocations[1]
       zones: []
     }
     subnets: [
       {
-        name: 'AzureBastionSubnet'
+        name: 'snet-bas-alz'
         addressPrefix: '20.0.15.0/24'
       }
       {
-        name: 'GatewaySubnet'
-        addressPrefix: '20.0.252.0/24'
+        name: 'snet-vgw-alz'
+        addressPrefix: '20.0.20.0/24'
       }
       {
-        name: 'AzureFirewallSubnet'
+        name: 'snet-dnspr-in-alz'
+        addressPrefix: '20.0.4.0/28'
+      }
+      {
+        name: 'snet-dnspr-out-alz'
+        addressPrefix: '20.0.4.16/28'
+      }
+      {
+        name: 'snet-fw-alz'
         addressPrefix: '20.0.254.0/24'
       }
       {
-        name: 'AzureFirewallManagementSubnet'
+        name: 'snet-fw-mgmt-alz'
         addressPrefix: '20.0.253.0/24'
       }
     ]
@@ -101,6 +118,10 @@ param hubNetworks = [
 ]
 
 // General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
