@@ -101,8 +101,10 @@ param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'
 param parAmaResourcesLock lockType?
 
 // General Parameters
-@description('The primary location to deploy resources to.')
-param parPrimaryLocation string = deployment().location
+@description('The primary locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
 
 @description('Tags to be applied to resources.')
 param parTags object = {}
@@ -122,11 +124,11 @@ param parEnableTelemetry bool = true
 //========================================
 
 module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
-  name: 'modMgmtLoggingResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parPrimaryLocation)}'
+  name: 'modMgmtLoggingResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parLocations[0])}'
   scope: subscription()
   params: {
     name: parMgmtLoggingResourceGroup
-    location: parPrimaryLocation
+    location: parLocations[0]
     lock: parGlobalResourceLock ?? parResourceGroupLock
     tags: parTags
     enableTelemetry: parEnableTelemetry
@@ -143,11 +145,11 @@ resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01'
 
 // Automation Account
 module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.16.1' = if (!parDisableAutomationAccount) {
-  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parPrimaryLocation)}'
+  name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
     name: parAutomationAccountName
-    location: !(empty(parAutomationAccountLocation)) ? parAutomationAccountLocation : parPrimaryLocation
+    location: !(empty(parAutomationAccountLocation)) ? parAutomationAccountLocation : parLocations[0]
     tags: parTags
     managedIdentities: parAutomationAccountUseManagedIdentity
       ? {
@@ -168,11 +170,11 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 
 // Log Analytics Workspace
 module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.12.0' = {
-  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parPrimaryLocation)}'
+  name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
     name: parLogAnalyticsWorkspaceName
-    location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parPrimaryLocation
+    location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parLocations[0]
     skuName: parLogAnalyticsWorkspaceSku == 'CapacityReservation' ? parLogAnalyticsWorkspaceSku : null
     tags: parTags
     skuCapacityReservationLevel: parLogAnalyticsWorkspaceCapacityReservationLevel
@@ -194,7 +196,7 @@ module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.0' = {
     userAssignedIdentityName: parUserAssignedIdentityName
     dataCollectionRuleVMInsightsExperience: parDataCollectionRuleVMInsightsExperience
     enableTelemetry: parEnableTelemetry
-    location: parPrimaryLocation
+    location: parLocations[0]
     lockConfig: parGlobalResourceLock ?? parAmaResourcesLock
     tags: parTags
   }
