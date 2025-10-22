@@ -3,7 +3,7 @@ using './main.bicep'
 // Resource Group Parameters
 param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${parLocations[0]}'
 param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
-param parPrivateDnsResolverResourceGroupName = 'rg-dnsresolver-alz-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
 
 // Hub Networking Parameters
 param hubNetworks = [
@@ -16,7 +16,7 @@ param hubNetworks = [
     ]
     privateDnsSettings: {
       enablePrivateDnsZones: false
-      enablePrivateDnsResolver: true
+      enableDnsPrivateResolver: true
       privateDnsZones: []
     }
     azureFirewallSettings: {
@@ -60,12 +60,12 @@ param hubNetworks = [
         addressPrefix: '10.0.253.0/24'
       }
       {
-        name: 'PrivateDNSResolverInboundSubnet'
+        name: 'DNSPrivateResolverInboundSubnet'
         addressPrefix: '10.0.4.0/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
-        name: 'PrivateDNSResolverOutboundSubnet'
+        name: 'DNSPrivateResolverOutboundSubnet'
         addressPrefix: '10.0.4.16/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
@@ -82,7 +82,7 @@ param hubNetworks = [
     enableBastion: false
     enablePeering: false
     privateDnsSettings: {
-      enablePrivateDnsResolver: false
+      enableDnsPrivateResolver: false
       enablePrivateDnsZones: false
     }
     dnsServers: []
@@ -110,12 +110,12 @@ param hubNetworks = [
         addressPrefix: '20.0.253.0/24'
       }
       {
-        name: 'PrivateDNSResolverInboundSubnet'
+        name: 'DNSPrivateResolverInboundSubnet'
         addressPrefix: '20.0.4.0/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
-        name: 'PrivateDNSResolverOutboundSubnet'
+        name: 'DNSPrivateResolverOutboundSubnet'
         addressPrefix: '20.0.4.16/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
@@ -131,7 +131,7 @@ param parLocations = [
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+  notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 param parTags = {}
 param parEnableTelemetry = true
