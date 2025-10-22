@@ -10,24 +10,24 @@ param hubNetworks = [
   {
     name: 'vnet-alz-${parLocations[0]}'
     location: parLocations[0]
-    vpnGatewayEnabled: false
+    vpnGatewayEnabled: true
     addressPrefixes: [
       '10.0.0.0/16'
     ]
     privateDnsSettings: {
-      enablePrivateDnsZones: false
+      enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
       privateDnsZones: []
     }
     azureFirewallSettings: {
       azureSkuTier: 'Standard'
     }
-    enableAzureFirewall: false
-    enableBastion: false
+    enableAzureFirewall: true
+    enableBastion: true
     bastionHost: {
       skuName: 'Standard'
     }
-    enablePeering: false
+    enablePeering: true
     dnsServers: []
     routes: []
     virtualNetworkGatewayConfig: {
