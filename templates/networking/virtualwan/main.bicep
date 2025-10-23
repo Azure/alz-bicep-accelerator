@@ -174,6 +174,9 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0
   for (vwanHub, i) in vwanHubs!: if (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true) {
     name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupName, vwanHub.hubName, vwanHub.location)}'
     scope: resVwanResourceGroupPointer
+    dependsOn: [
+      resVirtualWanHub[i]
+    ]
     params: {
       name: vwanHub.sideCarVirtualNetwork.?name ?? 'vnet-sidecar-alz-${vwanHub.location}'
       location: vwanHub.?sideCarVirtualNetwork.?location ?? vwanHub.location

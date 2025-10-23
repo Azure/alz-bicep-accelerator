@@ -26,10 +26,24 @@ param vwanHubs = [
     location: parLocations[0]
     addressPrefix: '10.100.0.0/23'
     allowBranchToBranchTraffic: true
+    preferredRoutingGateway: 'ExpressRoute'
+
     ddosProtectionPlanSettings:{
       enableDDosProtection: true
       name: 'ddos-alz-${parLocations[0]}'
       tags: {}
+    }
+    virtualNetworkGatewayConfig: {
+      enableVirtualNetworkGateway: true
+      gatewayType: 'ExpressRoute'
+      publicIpZones: [
+        1
+        2
+        3
+      ]
+      skuName: 'ErGw1AZ'
+      vpnMode: 'activeActiveBgp'
+      vpnType: 'RouteBased'
     }
     azureFirewallSettings: {
       enableAzureFirewall: true
