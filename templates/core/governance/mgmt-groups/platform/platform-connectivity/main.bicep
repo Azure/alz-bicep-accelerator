@@ -119,7 +119,7 @@ module platformConnectivity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: platformConnectivityConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: platformConnectivityConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: platformConnectivityConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformConnectivityConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions

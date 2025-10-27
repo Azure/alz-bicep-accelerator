@@ -118,7 +118,7 @@ module platformSecurity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: platformSecurityConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: platformSecurityConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: platformSecurityConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformSecurityConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
