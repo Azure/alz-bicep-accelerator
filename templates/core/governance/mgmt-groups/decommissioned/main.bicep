@@ -119,7 +119,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: decommmissionedConfig.?location
+   location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: decommmissionedConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions

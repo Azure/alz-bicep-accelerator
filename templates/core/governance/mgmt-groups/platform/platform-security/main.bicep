@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Platform-Security Module'
-metadata description = 'ALZ Bicep Module used to deploy the Platform-Security Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
+metadata description = 'ALZ Bicep Module used to deploy the Platform-Security Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 

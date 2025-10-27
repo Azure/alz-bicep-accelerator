@@ -10,6 +10,11 @@ targetScope = 'managementGroup'
 @description('Required. The management group configuration for Sandbox.')
 param sandboxConfig alzCoreType
 
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
+
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
@@ -114,7 +119,7 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: sandboxConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: sandboxConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: sandboxConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: sandboxConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions

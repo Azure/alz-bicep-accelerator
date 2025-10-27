@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Platform-Identity Module'
-metadata description = 'ALZ Bicep Module used to deploy the Platform-Identity Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
+metadata description = 'ALZ Bicep Module used to deploy the Platform-Identity Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -122,7 +122,7 @@ module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: platformIdentityConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: platformIdentityConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: platformIdentityConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformIdentityConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions

@@ -1,10 +1,10 @@
 using './main.bicep'
 
-param intRootConfig = {
+param decommmissionedConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'int-root'
-  managementGroupParentId: '/'
-  managementGroupDisplayName: 'Azure Landing Zones'
+  managementGroupName: 'decommissioned'
+  managementGroupParentId: 'int-root'
+  managementGroupDisplayName: 'Decommissioned'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []

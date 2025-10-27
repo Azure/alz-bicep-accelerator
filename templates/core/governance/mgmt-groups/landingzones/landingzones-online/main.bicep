@@ -8,7 +8,12 @@ targetScope = 'managementGroup'
 //================================
 
 @description('Required. The management group configuration for Landing Zones-Online.')
-param landingZonesCorpConfig alzCoreType
+param landingZonesOnlineConfig alzCoreType
+
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
@@ -25,13 +30,13 @@ var alzPolicySetDefsJson = [
 var alzPolicyAssignmentsDefs = [
 ]
 
-var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesCorpConfig.?customerRbacRoleDefs ?? [])
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesOnlineConfig.?customerRbacRoleDefs ?? [])
 
-var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesCorpConfig.?customerPolicyDefs ?? [])
+var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesOnlineConfig.?customerPolicyDefs ?? [])
 
-var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesCorpConfig.?customerPolicySetDefs ?? [])
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesOnlineConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, landingZonesCorpConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, landingZonesOnlineConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
@@ -102,25 +107,25 @@ var allPolicyAssignments = [
 
 module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
-    createOrUpdateManagementGroup: landingZonesCorpConfig.?createOrUpdateManagementGroup
-    managementGroupName: landingZonesCorpConfig.?managementGroupName ?? 'alz-landingzones-corp'
-    managementGroupDisplayName: landingZonesCorpConfig.?managementGroupDisplayName ?? 'Corp'
+    createOrUpdateManagementGroup: landingZonesOnlineConfig.?createOrUpdateManagementGroup
+    managementGroupName: landingZonesOnlineConfig.?managementGroupName ?? 'alz-landingzones-corp'
+    managementGroupDisplayName: landingZonesOnlineConfig.?managementGroupDisplayName ?? 'Corp'
     managementGroupDoNotEnforcePolicyAssignments: []
     managementGroupExcludedPolicyAssignments: []
-    managementGroupParentId: landingZonesCorpConfig.?managementGroupParentId ?? 'alz-landingzones'
+    managementGroupParentId: landingZonesOnlineConfig.?managementGroupParentId ?? 'alz-landingzones'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
-    managementGroupRoleAssignments: landingZonesCorpConfig.?customerRbacRoleAssignments
+    managementGroupRoleAssignments: landingZonesOnlineConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
     location: parLocations[0]
-    subscriptionsToPlaceInManagementGroup: landingZonesCorpConfig.?subscriptionsToPlaceInManagementGroup
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-    waitForConsistencyCounterBeforeCustomRoleDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
-    waitForConsistencyCounterBeforePolicyAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforeRoleAssignment
-    waitForConsistencyCounterBeforeSubPlacement: landingZonesCorpConfig.?waitForConsistencyCounterBeforeSubPlacement
+    subscriptionsToPlaceInManagementGroup: landingZonesOnlineConfig.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: landingZonesOnlineConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: landingZonesOnlineConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: landingZonesOnlineConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: landingZonesOnlineConfig.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: landingZonesOnlineConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: landingZonesOnlineConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }
 }

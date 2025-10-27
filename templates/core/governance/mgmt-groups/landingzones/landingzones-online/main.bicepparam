@@ -1,10 +1,10 @@
 using './main.bicep'
 
-param intRootConfig = {
+param landingZonesOnlineConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'int-root'
-  managementGroupParentId: '/'
-  managementGroupDisplayName: 'Azure Landing Zones'
+  managementGroupName: 'landingzones-online'
+  managementGroupParentId: 'landingzones'
+  managementGroupDisplayName: 'Online'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
@@ -25,4 +25,3 @@ param parLocations = [
   'westus'
 ]
 param parEnableTelemetry = true
-
