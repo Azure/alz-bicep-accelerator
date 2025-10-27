@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Int-Root Module'
-metadata description = 'ALZ Bicep Module used to deploy the Int-Root Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata description = 'ALZ Bicep Module used to deploy the Int-Root Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -533,6 +533,8 @@ type alzCoreType = {
   @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
 }
+
+
 
 
 

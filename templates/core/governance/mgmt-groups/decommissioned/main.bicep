@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Decommissioned Module'
-metadata description = 'ALZ Bicep Module used to deploy the Decommissioned Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata description = 'ALZ Bicep Module used to deploy the Decommissioned Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -130,6 +130,8 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import {alzCoreType as alzCoreType} from '../int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../int-root/main.bicep'
+
+
 
 

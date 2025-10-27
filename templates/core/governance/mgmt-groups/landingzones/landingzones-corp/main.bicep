@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Landing Zones-Corp Module'
-metadata description = 'ALZ Bicep Module used to deploy the Landing Zones-Corp Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata description = 'ALZ Bicep Module used to deploy the Landing Zones-Corp Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -13,14 +13,21 @@ param landingZonesCorpConfig alzCoreType
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
 
-var alzRbacRoleDefsJson = []
+var alzRbacRoleDefsJson = [
+]
 
-var alzPolicyDefsJson = []
+var alzPolicyDefsJson = [
+]
 
-var alzPolicySetDefsJson = []
+var alzPolicySetDefsJson = [
+]
 
 var alzPolicyAssignmentsDefs = [
-  loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/landingzones/corp/Audit-PeDnsZones.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/landingzones/corp/Deny-HybridNetworking.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/landingzones/corp/Deny-Public-Endpoints.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/landingzones/corp/Deny-Public-IP-On-NIC.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/landingzones/corp/Deploy-Private-DNS-Zones.alz_policy_assignment.json')
 ]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesCorpConfig.?customerRbacRoleDefs ?? [])
@@ -127,4 +134,6 @@ module landingZonesCorp 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import {alzCoreType as alzCoreType} from '../int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../../int-root/main.bicep'
+
+

@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Platform-Identity Module'
-metadata description = 'ALZ Bicep Module used to deploy the Platform-Identity Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata description = 'ALZ Bicep Module used to deploy the Platform-Identity Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -13,14 +13,20 @@ param platformIdentityConfig alzCoreType
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
 
-var alzRbacRoleDefsJson = []
+var alzRbacRoleDefsJson = [
+]
 
-var alzPolicyDefsJson = []
+var alzPolicyDefsJson = [
+]
 
-var alzPolicySetDefsJson = []
+var alzPolicySetDefsJson = [
+]
 
 var alzPolicyAssignmentsDefs = [
-  loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/platform/identity/Deny-MgmtPorts-Internet.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/platform/identity/Deny-Public-IP.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/platform/identity/Deny-Subnet-Without-Nsg.alz_policy_assignment.json')
+  loadJsonContent('../../../lib/alz/platform/identity/Deploy-VM-Backup.alz_policy_assignment.json')
 ]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformIdentityConfig.?customerRbacRoleDefs ?? [])
@@ -127,4 +133,6 @@ module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import {alzCoreType as alzCoreType} from '../int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../../int-root/main.bicep'
+
+

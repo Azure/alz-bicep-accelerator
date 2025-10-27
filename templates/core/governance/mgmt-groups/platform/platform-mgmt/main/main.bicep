@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep - Platform-Management Module'
-metadata description = 'ALZ Bicep Module used to deploy the Platform-Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata description = 'ALZ Bicep Module used to deploy the Platform-Management Group and associated resources such as policy definitions, policy set definitions (initiatives), custom RBAC roles, policy assignments, and policy exemptions.'
 
 targetScope = 'managementGroup'
 
@@ -19,9 +19,7 @@ var alzPolicyDefsJson = []
 
 var alzPolicySetDefsJson = []
 
-var alzPolicyAssignmentsDefs = [
-  loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
-]
+var alzPolicyAssignmentsDefs = []
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformManagementConfig.?customerRbacRoleDefs ?? [])
 
@@ -29,7 +27,10 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, platformManagementConfig.?custo
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformManagementConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, platformManagementConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(
+  alzPolicyAssignmentsDefs,
+  platformManagementConfig.?customerPolicyAssignments ?? []
+)
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
@@ -127,4 +128,4 @@ module platformManagement 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import {alzCoreType as alzCoreType} from '../int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../../../int-root/main.bicep'

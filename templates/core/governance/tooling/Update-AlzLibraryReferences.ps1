@@ -67,78 +67,164 @@ function Set-ArrayBlock {
     )
 }
 
+$libraryAliasMap = @{
+    platform = @{
+        mgmt = 'management'
+    }
+}
+
+function Resolve-LibraryPath {
+    param(
+        [string]$BaseLibraryRoot,
+        [string]$PrimarySegment,
+        [string[]]$SubSegments,
+        [hashtable]$AliasMap
+    )
+
+    if ($PrimarySegment -eq 'int-root') {
+        $currentPath = $BaseLibraryRoot
+    } else {
+        $currentPath = Join-Path $BaseLibraryRoot $PrimarySegment
+    }
+
+    $currentPrefixBase = $PrimarySegment
+
+    foreach ($segment in $SubSegments) {
+        $normalized = [string]$segment
+        $prefix = "$currentPrefixBase-"
+        if ($normalized.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $normalized = $normalized.Substring($prefix.Length)
+        }
+
+        $normalizedLower = $normalized.ToLowerInvariant()
+        if ($AliasMap.ContainsKey($PrimarySegment) -and $AliasMap[$PrimarySegment].ContainsKey($normalizedLower)) {
+            $normalized = $AliasMap[$PrimarySegment][$normalizedLower]
+            $normalizedLower = $normalized.ToLowerInvariant()
+        }
+
+        $currentPath = Join-Path $currentPath $normalized
+        $currentPrefixBase = $normalized
+    }
+
+    return $currentPath
+}
+
+function New-ModuleTarget {
+    param(
+        [string]$ModuleMainPath,
+        [string]$MgmtGroupsRoot,
+        [string]$BaseLibraryRoot,
+        [hashtable]$AliasMap
+    )
+
+    $resolvedModulePath = (Resolve-Path -Path $ModuleMainPath).Path
+    $moduleDirectory = Split-Path -Parent $resolvedModulePath
+
+    $relativeDirectory = Get-RelativePath -From $MgmtGroupsRoot -To $moduleDirectory
+    if ($relativeDirectory.StartsWith('..')) {
+        throw "Module path '$resolvedModulePath' is not within the management groups directory."
+    }
+
+    $segments = @()
+    foreach ($part in ($relativeDirectory -split '[\\/]')) {
+        if ([string]::IsNullOrWhiteSpace($part)) {
+            continue
+        }
+
+        $segments += [string]$part
+    }
+
+    if (($segments.Count -gt 0) -and (([string]$segments[-1]).ToLowerInvariant() -eq 'main')) {
+        if ($segments.Count -eq 1) {
+            throw "Unable to derive module name from '$resolvedModulePath'."
+        }
+
+        $segments = $segments[0..($segments.Count - 2)]
+    }
+
+    if (-not $segments -or $segments.Count -eq 0) {
+        throw "Unable to determine module hierarchy for '$resolvedModulePath'."
+    }
+
+    $primarySegment = [string]$segments[0]
+    $subSegments = @()
+    if ($segments.Count -gt 1) {
+        $subSegments = $segments[1..($segments.Count - 1)]
+    }
+
+    $libraryRootCandidate = Resolve-LibraryPath -BaseLibraryRoot $BaseLibraryRoot -PrimarySegment $primarySegment -SubSegments $subSegments -AliasMap $AliasMap
+
+    [PSCustomObject]@{
+        Name          = [string]$segments[-1]
+        RelativePath  = ([string]::Join('/', $segments))
+        ModulePath    = $resolvedModulePath
+        ModuleDirectory = $moduleDirectory
+        LibraryRoot   = $libraryRootCandidate
+    }
+}
+
 $baseLibraryRoot = (Resolve-Path -Path $LibraryRoot).Path
+$mgmtGroupsRoot = (Resolve-Path -Path (Join-Path $PSScriptRoot '../mgmt-groups')).Path
 
 $targets = @()
 
 if ($ModulePath) {
-    $resolvedModulePath = (Resolve-Path -Path $ModulePath).Path
-    $moduleName = Split-Path -Leaf (Split-Path -Parent $resolvedModulePath)
-    $targets += [PSCustomObject]@{
-        Name        = $moduleName
-        ModulePath  = $resolvedModulePath
-    LibraryRoot = $baseLibraryRoot
-    }
+    $targets += New-ModuleTarget -ModuleMainPath $ModulePath -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoot $baseLibraryRoot -AliasMap $libraryAliasMap
 } else {
-    $mgmtGroupsRoot = (Resolve-Path -Path (Join-Path $PSScriptRoot '../mgmt-groups')).Path
-
-    $availableModuleNames = (Get-ChildItem -Path $mgmtGroupsRoot -Directory | Select-Object -ExpandProperty Name)
-
-    $resolvedModuleNames = @()
-
-    if ($ModuleNames) {
-        foreach ($requestedName in $ModuleNames) {
-            $match = $availableModuleNames | Where-Object { $_.ToLowerInvariant() -eq $requestedName.ToLowerInvariant() }
-            if (-not $match) {
-                Write-Warning "Skipping '$requestedName' because no management group module folder was found."
-                continue
-            }
-
-            $resolvedModuleNames += $match | Sort-Object -Unique
-        }
-    } elseif ($All) {
-        $resolvedModuleNames = $availableModuleNames
-    } else {
-        $resolvedModuleNames = $availableModuleNames
-    }
-
-    if (-not $resolvedModuleNames) {
-        Write-Warning 'No management group modules were selected. Nothing to do.'
+    $moduleFiles = Get-ChildItem -Path $mgmtGroupsRoot -Recurse -Filter 'main.bicep' -File
+    if (-not $moduleFiles) {
+        Write-Warning 'No management group modules were found beneath the mgmt-groups directory.'
         return
     }
 
-    foreach ($moduleName in ($resolvedModuleNames | Sort-Object -Unique)) {
-        $moduleMainPath = Join-Path $mgmtGroupsRoot "$moduleName/main.bicep"
-        if (-not (Test-Path -Path $moduleMainPath)) {
-            Write-Warning "Skipping '$moduleName' because '$moduleMainPath' was not found."
-            continue
+    $moduleEntries = @()
+    foreach ($file in $moduleFiles) {
+        try {
+            $moduleEntries += New-ModuleTarget -ModuleMainPath $file.FullName -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoot $baseLibraryRoot -AliasMap $libraryAliasMap
+        } catch {
+            Write-Warning $_.Exception.Message
         }
+    }
 
-        if ($moduleName -eq 'int-root') {
-            $moduleLibraryPath = $baseLibraryRoot
-        } else {
-            $candidateLibraryPath = Join-Path $baseLibraryRoot $moduleName
-            if (-not (Test-Path -Path $candidateLibraryPath)) {
-                Write-Warning "Skipping '$moduleName' because no library folder was found at '$candidateLibraryPath'."
+    if (-not $moduleEntries) {
+        Write-Warning 'No management group modules were selected after processing.'
+        return
+    }
+
+    if ($ModuleNames -and -not $All) {
+        $selectedEntries = @()
+
+        foreach ($requestedName in $ModuleNames) {
+            $normalizedRequest = ([string]($requestedName -replace '\\', '/')).ToLowerInvariant()
+            $moduleMatches = $moduleEntries | Where-Object {
+                ([string]$_.Name).ToLowerInvariant() -eq $normalizedRequest -or
+                ([string]$_.RelativePath).ToLowerInvariant() -eq $normalizedRequest
+            }
+
+            if (-not $moduleMatches) {
+                Write-Warning "Skipping '$requestedName' because no matching management group module was found."
                 continue
             }
 
-            $moduleLibraryPath = (Resolve-Path -Path $candidateLibraryPath).Path
+            $selectedEntries += $moduleMatches
         }
 
-        $targets += [PSCustomObject]@{
-            Name        = $moduleName
-            ModulePath  = (Resolve-Path -Path $moduleMainPath).Path
-            LibraryRoot = $moduleLibraryPath
-        }
+        $targets = $selectedEntries | Sort-Object RelativePath -Unique
+    } else {
+        $targets = $moduleEntries | Sort-Object RelativePath -Unique
     }
+}
+
+if (-not $targets -or $targets.Count -eq 0) {
+    Write-Warning 'No management group modules were selected. Nothing to do.'
+    return
 }
 
 foreach ($target in $targets) {
     $modulePath = $target.ModulePath
     $moduleName = $target.Name
     $libraryDirectory = $target.LibraryRoot
-    $moduleDirectory = Split-Path -Parent $modulePath
+    $moduleDirectory = $target.ModuleDirectory
 
     if (-not (Test-Path -Path $moduleDirectory)) {
         Write-Warning "Skipping '$moduleName' because module directory '$moduleDirectory' was not found."
@@ -150,7 +236,9 @@ foreach ($target in $targets) {
         continue
     }
 
-    $files = Get-LibraryFiles -LibraryRoot $libraryDirectory -ModuleDirectory $moduleDirectory
+    $libraryDirectoryResolved = (Resolve-Path -Path $libraryDirectory).Path
+
+    $files = Get-LibraryFiles -LibraryRoot $libraryDirectoryResolved -ModuleDirectory $moduleDirectory
 
     $roleDefinitionFiles = $files | Where-Object { $_.Name -like '*.alz_role_definition.json' }
     $policyDefinitionFiles = $files | Where-Object { $_.Name -like '*.alz_policy_definition.json' }
@@ -180,6 +268,6 @@ foreach ($target in $targets) {
         }
     } else {
         Set-Content -Path $modulePath -Value $newContent
-        Write-Host "Updated module '$moduleName' using library '$libraryDirectory'."
+        Write-Host "Updated module '$moduleName' using library '$libraryDirectoryResolved'."
     }
 }
