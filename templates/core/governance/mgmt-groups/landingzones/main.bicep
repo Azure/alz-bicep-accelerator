@@ -10,8 +10,13 @@ targetScope = 'managementGroup'
 @description('Required. The management group configuration for Landing Zones.')
 param landingZonesConfig alzCoreType
 
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
+
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = true
 
 var alzRbacRoleDefsJson = [
 ]
@@ -178,7 +183,7 @@ module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: landingZonesConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: landingZonesConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: landingZonesConfig.?waitForConsistencyCounterBeforeSubPlacement
-    enableTelemetry: parTelemetryOptOut ? false : true
+    enableTelemetry: parEnableTelemetry
   }
 }
 

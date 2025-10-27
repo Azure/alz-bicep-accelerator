@@ -11,7 +11,7 @@ targetScope = 'managementGroup'
 param sandboxConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = true
 
 var alzRbacRoleDefsJson = [
 ]
@@ -122,7 +122,7 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: sandboxConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: sandboxConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: sandboxConfig.?waitForConsistencyCounterBeforeSubPlacement
-    enableTelemetry: parTelemetryOptOut ? false : true
+    enableTelemetry: parEnableTelemetry
   }
 }
 

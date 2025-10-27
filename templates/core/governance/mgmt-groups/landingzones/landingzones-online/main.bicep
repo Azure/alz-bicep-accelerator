@@ -11,7 +11,7 @@ targetScope = 'managementGroup'
 param landingZonesCorpConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = true
 
 var alzRbacRoleDefsJson = [
 ]
@@ -113,7 +113,7 @@ module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: landingZonesCorpConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: landingZonesCorpConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
@@ -121,7 +121,7 @@ module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: landingZonesCorpConfig.?waitForConsistencyCounterBeforeSubPlacement
-    enableTelemetry: parTelemetryOptOut ? false : true
+    enableTelemetry: parEnableTelemetry
   }
 }
 

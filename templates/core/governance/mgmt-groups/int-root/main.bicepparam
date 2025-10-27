@@ -1,0 +1,25 @@
+using './main.bicep'
+
+param intRootConfig = {
+  createOrUpdateManagementGroup: true
+  managementGroupName: 'int-root'
+  managementGroupParentId: '/'
+  managementGroupDisplayName: 'Internal Root Management Group'
+  managementGroupDoNotEnforcePolicyAssignments: []
+  managementGroupExcludedPolicyAssignments: []
+  customerRbacRoleDefs: []
+  customerRbacRoleAssignments: []
+  customerPolicyDefs: []
+  customerPolicySetDefs: []
+  customerPolicyAssignments: []
+  subscriptionsToPlaceInManagementGroup: []
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
+  waitForConsistencyCounterBeforePolicyAssignments: 10
+  waitForConsistencyCounterBeforeRoleAssignment: 10
+  waitForConsistencyCounterBeforeSubPlacement: 10
+}
+
+param parEnableTelemetry = true
+

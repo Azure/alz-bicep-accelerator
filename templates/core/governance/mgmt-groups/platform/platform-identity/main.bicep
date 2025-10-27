@@ -10,8 +10,13 @@ targetScope = 'managementGroup'
 @description('Required. The management group configuration for Platform-Identity.')
 param platformIdentityConfig alzCoreType
 
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
+
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = true
 
 var alzRbacRoleDefsJson = [
 ]
@@ -125,7 +130,7 @@ module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: platformIdentityConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: platformIdentityConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: platformIdentityConfig.?waitForConsistencyCounterBeforeSubPlacement
-    enableTelemetry: parTelemetryOptOut ? false : true
+    enableTelemetry: parEnableTelemetry
   }
 }
 

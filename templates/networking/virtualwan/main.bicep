@@ -122,7 +122,7 @@ resource resDnsPrivateResolverResourceGroup 'Microsoft.Resources/resourceGroups@
 // VWAN Resources
 //================================
 
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
   name: 'vwan-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
   scope: resVwanResourceGroupPointer
   params: {
@@ -137,7 +137,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   for (vwanHub, i) in vwanHubs!: if (!empty(vwanHubs)) {
     name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
     scope: resVwanResourceGroupPointer

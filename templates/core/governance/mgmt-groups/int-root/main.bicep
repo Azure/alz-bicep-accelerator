@@ -10,8 +10,13 @@ targetScope = 'managementGroup'
 @description('Required. The management group configuration for Int-Root.')
 param intRootConfig alzCoreType
 
+@description('The locations to deploy resources to.')
+param parLocations array = [
+  deployment().location
+]
+
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
-param parTelemetryOptOut bool = false
+param parEnableTelemetry bool = true
 
 var alzRbacRoleDefsJson = [
   loadJsonContent('../../lib/alz/0d95a564-76a6-5489-9bb7-ee099c979392.alz_role_definition.json')
@@ -458,7 +463,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: intRootConfig.?location
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: intRootConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: intRootConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: intRootConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
@@ -466,7 +471,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: intRootConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: intRootConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: intRootConfig.?waitForConsistencyCounterBeforeSubPlacement
-    enableTelemetry: parTelemetryOptOut ? false : true
+    enableTelemetry: parEnableTelemetry
   }
 }
 
@@ -509,9 +514,6 @@ type alzCoreType = {
   @description('Optional. Set to true to enable telemetry for the deployment. Set to false to opt-out of telemetry.')
   customerPolicyAssignments: array?
 
-  @description('The location to use for the management group. This is used for the deployment and not the management group itself.')
-  location: string?
-
   @description('Optional. An array of subscription IDs to place in the management group. If not specified, no subscriptions will be placed in the management group.')
   subscriptionsToPlaceInManagementGroup: array?
 
@@ -533,9 +535,3 @@ type alzCoreType = {
   @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
 }
-
-
-
-
-
-
