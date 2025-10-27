@@ -104,7 +104,7 @@ resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' exi
   ]
 }
 
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
   name: 'virtualWan-${uniqueString(parVirtualWanResourceGroupName, virtualWan.name)}'
   scope: resVwanResourceGroupPointer
   params: {
@@ -119,7 +119,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   for (virtualWanHub, i) in virtualWanHubs!: if (!empty(virtualWanHubs)) {
     name: 'virtualWanHub-${i}-${uniqueString(parVirtualWanResourceGroupName, virtualWan.name)}'
     scope: resVwanResourceGroupPointer
