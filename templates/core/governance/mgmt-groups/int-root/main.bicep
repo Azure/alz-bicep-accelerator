@@ -327,6 +327,8 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
     managementGroupName: intRootConfig.?managementGroupName ?? 'ALZ'
     managementGroupDisplayName: intRootConfig.?managementGroupDisplayName ?? 'Azure Landing Zones'
+    managementGroupDoNotEnforcePolicyAssignments: []
+    managementGroupExcludedPolicyAssignments: []
     managementGroupParentId: tenantRootMgExisting.id
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
@@ -341,8 +343,6 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforePolicyAssignments: intRootConfig.?waitForConsistencyCounterBeforePolicyAssignments
     waitForConsistencyCounterBeforeRoleAssignments: intRootConfig.?waitForConsistencyCounterBeforeRoleAssignment
     waitForConsistencyCounterBeforeSubPlacement: intRootConfig.?waitForConsistencyCounterBeforeSubPlacement
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
     enableTelemetry: parTelemetryOptOut ? false : true
   }
 }

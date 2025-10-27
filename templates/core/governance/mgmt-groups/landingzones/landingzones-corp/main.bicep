@@ -1,5 +1,5 @@
-metadata name = 'ALZ Bicep - Landing Zones-Online Module'
-metadata description = 'ALZ Bicep Module used to deploy the Landing Zones-Online Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata name = 'ALZ Bicep - Landing Zones-Corp Module'
+metadata description = 'ALZ Bicep Module used to deploy the Landing Zones-Corp Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
 
 targetScope = 'managementGroup'
 
@@ -7,7 +7,7 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-@description('Required. The management group configuration for Landing Zones-Online.')
+@description('Required. The management group configuration for Landing Zones-Corp.')
 param landingZonesCorpConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
@@ -98,11 +98,13 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module landingZonesCorp 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
     createOrUpdateManagementGroup: landingZonesCorpConfig.?createOrUpdateManagementGroup
     managementGroupName: landingZonesCorpConfig.?managementGroupName ?? 'alz-landingzones-corp'
     managementGroupDisplayName: landingZonesCorpConfig.?managementGroupDisplayName ?? 'Corp'
+    managementGroupDoNotEnforcePolicyAssignments: []
+    managementGroupExcludedPolicyAssignments: []
     managementGroupParentId: landingZonesCorpConfig.?managementGroupParentId ?? 'alz-landingzones'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: landingZonesCorpConfig.?customerRbacRoleAssignments

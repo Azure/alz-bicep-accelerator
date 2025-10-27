@@ -76,6 +76,8 @@ var allPolicyAssignments = [
     name: policyAssignment.name
     description: policyAssignment.properties.description
     displayName: policyAssignment.properties.displayName
+    managementGroupDoNotEnforcePolicyAssignments: []
+    managementGroupExcludedPolicyAssignments: []
     policyDefinitionId: policyAssignment.properties.policyDefinitionId
     enforcementMode: policyAssignment.properties.enforcementMode
     identity: policyAssignment.properties.identity

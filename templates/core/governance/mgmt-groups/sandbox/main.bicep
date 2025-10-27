@@ -98,11 +98,13 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module sandbox 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
     managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-sandbox'
     managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Sandbox'
+    managementGroupDoNotEnforcePolicyAssignments: []
+    managementGroupExcludedPolicyAssignments: []
     managementGroupParentId: sandboxConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: sandboxConfig.?customerRbacRoleAssignments

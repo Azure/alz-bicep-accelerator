@@ -1,5 +1,5 @@
-metadata name = 'ALZ Bicep - Decommissioned Module'
-metadata description = 'ALZ Bicep Module used to deploy the Decommissioned Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata name = 'ALZ Bicep - Landing Zones-Online Module'
+metadata description = 'ALZ Bicep Module used to deploy the Landing Zones-Online Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
 
 targetScope = 'managementGroup'
 
@@ -7,8 +7,8 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-@description('Required. The management group configuration for Decommissioned.')
-param decommmissionedConfig alzCoreType
+@description('Required. The management group configuration for Landing Zones-Online.')
+param landingZonesCorpConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
@@ -23,13 +23,13 @@ var alzPolicyAssignmentsDefs = [
   loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
 ]
 
-var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, decommmissionedConfig.?customerRbacRoleDefs ?? [])
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesCorpConfig.?customerRbacRoleDefs ?? [])
 
-var unionedPolicyDefs = union(alzPolicyDefsJson, decommmissionedConfig.?customerPolicyDefs ?? [])
+var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesCorpConfig.?customerPolicyDefs ?? [])
 
-var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommmissionedConfig.?customerPolicySetDefs ?? [])
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesCorpConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, decommmissionedConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, landingZonesCorpConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
@@ -98,25 +98,27 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.2.0' = {
   params: {
-    createOrUpdateManagementGroup: decommmissionedConfig.?createOrUpdateManagementGroup
-    managementGroupName: decommmissionedConfig.?managementGroupName ?? 'alz-decommmissioned'
-    managementGroupDisplayName: decommmissionedConfig.?managementGroupDisplayName ?? 'Decommmissioned'
-    managementGroupParentId: decommmissionedConfig.?managementGroupParentId ?? 'alz'
+    createOrUpdateManagementGroup: landingZonesCorpConfig.?createOrUpdateManagementGroup
+    managementGroupName: landingZonesCorpConfig.?managementGroupName ?? 'alz-landingzones-corp'
+    managementGroupDisplayName: landingZonesCorpConfig.?managementGroupDisplayName ?? 'Corp'
+    managementGroupDoNotEnforcePolicyAssignments: []
+    managementGroupExcludedPolicyAssignments: []
+    managementGroupParentId: landingZonesCorpConfig.?managementGroupParentId ?? 'alz-landingzones'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
-    managementGroupRoleAssignments: decommmissionedConfig.?customerRbacRoleAssignments
+    managementGroupRoleAssignments: landingZonesCorpConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: decommmissionedConfig.?location
-    subscriptionsToPlaceInManagementGroup: decommmissionedConfig.?subscriptionsToPlaceInManagementGroup
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-    waitForConsistencyCounterBeforeCustomRoleDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
-    waitForConsistencyCounterBeforePolicyAssignments: decommmissionedConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: decommmissionedConfig.?waitForConsistencyCounterBeforeRoleAssignment
-    waitForConsistencyCounterBeforeSubPlacement: decommmissionedConfig.?waitForConsistencyCounterBeforeSubPlacement
+    location: landingZonesCorpConfig.?location
+    subscriptionsToPlaceInManagementGroup: landingZonesCorpConfig.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: landingZonesCorpConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: landingZonesCorpConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: landingZonesCorpConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parTelemetryOptOut ? false : true
   }
 }
