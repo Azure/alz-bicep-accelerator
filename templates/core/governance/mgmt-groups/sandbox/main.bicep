@@ -13,14 +13,17 @@ param sandboxConfig alzCoreType
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
 
-var alzRbacRoleDefsJson = []
+var alzRbacRoleDefsJson = [
+]
 
-var alzPolicyDefsJson = []
+var alzPolicyDefsJson = [
+]
 
-var alzPolicySetDefsJson = []
+var alzPolicySetDefsJson = [
+]
 
 var alzPolicyAssignmentsDefs = [
-  loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
+  loadJsonContent('../../lib/alz/sandbox/Enforce-ALZ-Sandbox.alz_policy_assignment.json')
 ]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, sandboxConfig.?customerRbacRoleDefs ?? [])
@@ -128,3 +131,5 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // ================ //
 
 import {alzCoreType as alzCoreType} from '../int-root/main.bicep'
+
+
