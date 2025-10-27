@@ -98,7 +98,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformConnectivity 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platformConnectivity 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: platformConnectivityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformConnectivityConfig.?managementGroupName ?? 'alz-platform-connectivity'

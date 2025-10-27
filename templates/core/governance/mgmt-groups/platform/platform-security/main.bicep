@@ -1,5 +1,5 @@
-metadata name = 'ALZ Bicep - Platform-Management Module'
-metadata description = 'ALZ Bicep Module used to deploy the Platform-Management Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
+metadata name = 'ALZ Bicep - Platform-Security Module'
+metadata description = 'ALZ Bicep Module used to deploy the Platform-Security Group and associated resources such as policy/policy set definitions, custom RBAC roles, and policy assignments.'
 
 targetScope = 'managementGroup'
 
@@ -7,8 +7,8 @@ targetScope = 'managementGroup'
 // Parameters
 //================================
 
-@description('Required. The management group configuration for Platform-Management.')
-param platformManagementConfig alzCoreType
+@description('Required. The management group configuration for Platform-Security.')
+param platformSecurityConfig alzCoreType
 
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parTelemetryOptOut bool = false
@@ -23,13 +23,13 @@ var alzPolicyAssignmentsDefs = [
   loadJsonContent('../lib/policy_assignments/Audit-TrustedLaunch.alz_policy_assignment.json')
 ]
 
-var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformManagementConfig.?customerRbacRoleDefs ?? [])
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformSecurityConfig.?customerRbacRoleDefs ?? [])
 
-var unionedPolicyDefs = union(alzPolicyDefsJson, platformManagementConfig.?customerPolicyDefs ?? [])
+var unionedPolicyDefs = union(alzPolicyDefsJson, platformSecurityConfig.?customerPolicyDefs ?? [])
 
-var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformManagementConfig.?customerPolicySetDefs ?? [])
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformSecurityConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, platformManagementConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, platformSecurityConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
@@ -98,27 +98,27 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformManagement 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platformSecurity 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
-    createOrUpdateManagementGroup: platformManagementConfig.?createOrUpdateManagementGroup
-    managementGroupName: platformManagementConfig.?managementGroupName ?? 'alz-platform-management'
-    managementGroupDisplayName: platformManagementConfig.?managementGroupDisplayName ?? 'Management'
+    createOrUpdateManagementGroup: platformSecurityConfig.?createOrUpdateManagementGroup
+    managementGroupName: platformSecurityConfig.?managementGroupName ?? 'alz-Platform-Security'
+    managementGroupDisplayName: platformSecurityConfig.?managementGroupDisplayName ?? 'Management'
     managementGroupDoNotEnforcePolicyAssignments: []
     managementGroupExcludedPolicyAssignments: []
-    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz-platform'
+    managementGroupParentId: platformSecurityConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
-    managementGroupRoleAssignments: platformManagementConfig.?customerRbacRoleAssignments
+    managementGroupRoleAssignments: platformSecurityConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-    location: platformManagementConfig.?location
-    subscriptionsToPlaceInManagementGroup: platformManagementConfig.?subscriptionsToPlaceInManagementGroup
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions: platformManagementConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformManagementConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-    waitForConsistencyCounterBeforeCustomRoleDefinitions: platformManagementConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
-    waitForConsistencyCounterBeforePolicyAssignments: platformManagementConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: platformManagementConfig.?waitForConsistencyCounterBeforeRoleAssignment
-    waitForConsistencyCounterBeforeSubPlacement: platformManagementConfig.?waitForConsistencyCounterBeforeSubPlacement
+    location: platformSecurityConfig.?location
+    subscriptionsToPlaceInManagementGroup: platformSecurityConfig.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: platformSecurityConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformSecurityConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: platformSecurityConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: platformSecurityConfig.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: platformSecurityConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: platformSecurityConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parTelemetryOptOut ? false : true
   }
 }

@@ -100,7 +100,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformIdentity 'br/public:avm/ptn/alz/empty:0.2.0' = {
+module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: platformIdentityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'
