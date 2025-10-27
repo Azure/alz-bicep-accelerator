@@ -2,14 +2,14 @@ using './main.bicep'
 
 
 //Resource Group Parameters
-param parVirtualWanResourceGroupName = 'rg-virtualwan-alz-${virtualWan.location}'
-param parDnsResourceGroupName = 'rg-dns-alz-${virtualWan.location}'
-
+param parVirtualWanResourceGroupName = 'rg-vwan-alz-${parLocations[0]}'
+param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
 
 // Virtual WAN Parameters
-param virtualWan = {
-  name: 'vwan-alz-eastus'
-  location: 'eastus'
+param vwan = {
+  name: 'vwan-alz-${parLocations[0]}'
+  location: parLocations[0]
   allowBranchToBranchTraffic: true
   type: 'Standard'
   lock: {
@@ -20,40 +20,79 @@ param virtualWan = {
 }
 
 // Virtual WAN Hub Parameters
-param virtualWanHubs = [
+param vwanHubs = [
   {
-    hubName: 'hub1'
-    location: 'eastus'
+    hubName: 'vhub-alz-${parLocations[0]}'
+    location: parLocations[0]
     addressPrefix: '10.100.0.0/23'
     allowBranchToBranchTraffic: true
+    preferredRoutingGateway: 'ExpressRoute'
+
     ddosProtectionPlanSettings:{
       enableDDosProtection: true
-      name: 'ddos-eastus'
+      name: 'ddos-alz-${parLocations[0]}'
       tags: {}
+    }
+    virtualNetworkGatewayConfig: {
+      enableVirtualNetworkGateway: true
+      gatewayType: 'ExpressRoute'
+      publicIpZones: [
+        1
+        2
+        3
+      ]
+      skuName: 'ErGw1AZ'
+      vpnMode: 'activeActiveBgp'
+      vpnType: 'RouteBased'
     }
     azureFirewallSettings: {
       enableAzureFirewall: true
     }
-    enablePrivateDnsZones: true
+    dnsSettings: {
+      enablePrivateDnsZones: true
+      enableDnsPrivateResolver: true
+    }
+    sideCarVirtualNetwork: {
+      name: 'vnet-sidecar-alz-${parLocations[0]}'
+      sidecarVirtualNetworkEnabled: true
+      addressPrefixes: [
+        '10.100.1.0/24'
+      ]
+    }
     enableTelemetry: parEnableTelemetry
   }
   {
-    hubName: 'hub2'
-    location: 'westus2'
+    hubName: 'vhub-alz-${parLocations[1]}'
+    location: parLocations[1]
     addressPrefix: '10.200.0.0/23'
     allowBranchToBranchTraffic: true
     azureFirewallSettings: {
       enableAzureFirewall: true
+    }
+    dnsSettings: {
+      enablePrivateDnsZones: false
+      enableDnsPrivateResolver: false
+    }
+    sideCarVirtualNetwork: {
+      name: 'vnet-sidecar-alz-${parLocations[1]}'
+      sidecarVirtualNetworkEnabled: true
+      addressPrefixes: [
+        '20.100.1.0/24'
+      ]
     }
     enableTelemetry: parEnableTelemetry
   }
 ]
 
 // General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+  notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 param parTags = {}
 param parEnableTelemetry = true

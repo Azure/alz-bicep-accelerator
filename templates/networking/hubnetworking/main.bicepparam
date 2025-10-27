@@ -1,22 +1,25 @@
 using './main.bicep'
 
 // Resource Group Parameters
-param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${hubNetworks[0].location}'
-param parDnsResourceGroupName = 'rg-dns-alz-${hubNetworks[0].location}'
+param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${parLocations[0]}'
+param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
 
 // Hub Networking Parameters
 param hubNetworks = [
   {
-    hubName: 'vnet-alz-eastus'
-    location: 'eastus'
-    vpnGatewayEnabled: false
+    name: 'vnet-alz-${parLocations[0]}'
+    location: parLocations[0]
+    vpnGatewayEnabled: true
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-
-    enablePrivateDnsZones: true
-    privateDnsZones: []
-    azureFirewallSettings:{
+    privateDnsSettings: {
+      enablePrivateDnsZones: true
+      enableDnsPrivateResolver: true
+      privateDnsZones: []
+    }
+    azureFirewallSettings: {
       azureSkuTier: 'Standard'
     }
     enableAzureFirewall: true
@@ -24,7 +27,7 @@ param hubNetworks = [
     bastionHost: {
       skuName: 'Standard'
     }
-    enablePeering: false
+    enablePeering: true
     dnsServers: []
     routes: []
     virtualNetworkGatewayConfig: {
@@ -43,80 +46,92 @@ param hubNetworks = [
       {
         name: 'AzureBastionSubnet'
         addressPrefix: '10.0.15.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'GatewaySubnet'
         addressPrefix: '10.0.20.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallSubnet'
         addressPrefix: '10.0.254.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '10.0.253.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
+      }
+      {
+        name: 'DNSPrivateResolverInboundSubnet'
+        addressPrefix: '10.0.4.0/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
+      }
+      {
+        name: 'DNSPrivateResolverOutboundSubnet'
+        addressPrefix: '10.0.4.16/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
   }
   {
-    hubName: 'vnet-alz-westus'
-    location: 'westus'
+    name: 'vnet-alz-${parLocations[1]}'
+    location: parLocations[1]
     vpnGatewayEnabled: false
     addressPrefixes: [
       '20.0.0.0/16'
     ]
-    enableAzureFirewall: true
+    enableAzureFirewall: false
     enableBastion: false
     enablePeering: false
+    privateDnsSettings: {
+      enableDnsPrivateResolver: false
+      enablePrivateDnsZones: false
+    }
     dnsServers: []
     routes: []
     azureFirewallSettings: {
       azureSkuTier: 'Basic'
-      location: 'westus'
+      location: parLocations[1]
       zones: []
     }
     subnets: [
       {
         name: 'AzureBastionSubnet'
         addressPrefix: '20.0.15.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'GatewaySubnet'
-        addressPrefix: '20.0.252.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
+        addressPrefix: '20.0.20.0/24'
       }
       {
         name: 'AzureFirewallSubnet'
         addressPrefix: '20.0.254.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
       }
       {
         name: 'AzureFirewallManagementSubnet'
         addressPrefix: '20.0.253.0/24'
-        networkSecurityGroupId: ''
-        routeTable: ''
+      }
+      {
+        name: 'DNSPrivateResolverInboundSubnet'
+        addressPrefix: '20.0.4.0/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
+      }
+      {
+        name: 'DNSPrivateResolverOutboundSubnet'
+        addressPrefix: '20.0.4.16/28'
+        delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
   }
 ]
 
 // General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Accelerator Management and Logging Module.'
+  notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 param parTags = {}
 param parEnableTelemetry = true
