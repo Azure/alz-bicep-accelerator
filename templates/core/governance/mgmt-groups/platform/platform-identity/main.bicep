@@ -87,8 +87,6 @@ var allPolicyAssignments = [
     name: policyAssignment.name
     description: policyAssignment.properties.description
     displayName: policyAssignment.properties.displayName
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
     policyDefinitionId: policyAssignment.properties.policyDefinitionId
     enforcementMode: policyAssignment.properties.enforcementMode
     identity: policyAssignment.properties.identity
@@ -107,6 +105,7 @@ var allPolicyAssignments = [
   }
 ]
 
+
 // ============ //
 //   Resources  //
 // ============ //
@@ -116,6 +115,8 @@ module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: platformIdentityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'
     managementGroupDisplayName: platformIdentityConfig.?managementGroupDisplayName ?? 'identity'
+    managementGroupDoNotEnforcePolicyAssignments: platformIdentityConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: platformIdentityConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: platformIdentityConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformIdentityConfig.?customerRbacRoleAssignments
