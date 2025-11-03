@@ -167,8 +167,8 @@ module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
     managementGroupName: landingZonesConfig.?managementGroupName ?? 'alz-landingzones'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: landingZonesConfig.?managementGroupDoNotEnforcePolicyAssignments ?? []
+    managementGroupExcludedPolicyAssignments: landingZonesConfig.?managementGroupExcludedPolicyAssignments ?? []
     managementGroupParentId: landingZonesConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: landingZonesConfig.?customerRbacRoleAssignments

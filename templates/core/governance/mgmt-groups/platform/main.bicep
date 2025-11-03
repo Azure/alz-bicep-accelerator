@@ -155,8 +155,8 @@ module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: platformConfig.?createOrUpdateManagementGroup
     managementGroupName: platformConfig.?managementGroupName ?? 'alz-platform'
     managementGroupDisplayName: platformConfig.?managementGroupDisplayName ?? 'Platform'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: platformConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: platformConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: platformConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformConfig.?customerRbacRoleAssignments

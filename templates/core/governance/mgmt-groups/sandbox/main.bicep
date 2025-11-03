@@ -111,8 +111,8 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
     managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-sandbox'
     managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Sandbox'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: sandboxConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: sandboxConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: sandboxConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: sandboxConfig.?customerRbacRoleAssignments

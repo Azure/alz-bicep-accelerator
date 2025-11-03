@@ -111,15 +111,15 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: decommmissionedConfig.?createOrUpdateManagementGroup
     managementGroupName: decommmissionedConfig.?managementGroupName ?? 'alz-decommmissioned'
     managementGroupDisplayName: decommmissionedConfig.?managementGroupDisplayName ?? 'Decommmissioned'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: decommmissionedConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: decommmissionedConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: decommmissionedConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: decommmissionedConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
-   location: parLocations[0]
+    location: parLocations[0]
     subscriptionsToPlaceInManagementGroup: decommmissionedConfig.?subscriptionsToPlaceInManagementGroup
     waitForConsistencyCounterBeforeCustomPolicyDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions

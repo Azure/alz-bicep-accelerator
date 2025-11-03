@@ -111,8 +111,8 @@ module platformConnectivity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: platformConnectivityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformConnectivityConfig.?managementGroupName ?? 'alz-platform-connectivity'
     managementGroupDisplayName: platformConnectivityConfig.?managementGroupDisplayName ?? 'Connectivity'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: platformConnectivityConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: platformConnectivityConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: platformConnectivityConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformConnectivityConfig.?customerRbacRoleAssignments

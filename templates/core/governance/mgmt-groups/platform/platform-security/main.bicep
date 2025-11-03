@@ -110,8 +110,8 @@ module platformSecurity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: platformSecurityConfig.?createOrUpdateManagementGroup
     managementGroupName: platformSecurityConfig.?managementGroupName ?? 'alz-Platform-Security'
     managementGroupDisplayName: platformSecurityConfig.?managementGroupDisplayName ?? 'Management'
-    managementGroupDoNotEnforcePolicyAssignments: []
-    managementGroupExcludedPolicyAssignments: []
+    managementGroupDoNotEnforcePolicyAssignments: platformSecurityConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: platformSecurityConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: platformSecurityConfig.?managementGroupParentId ?? 'alz-platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformSecurityConfig.?customerRbacRoleAssignments
