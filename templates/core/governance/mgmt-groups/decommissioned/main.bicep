@@ -27,7 +27,7 @@ var alzPolicyDefsJson = [
 var alzPolicySetDefsJson = [
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/decommissioned/Enforce-ALZ-Decomm.alz_policy_assignment.json')
 ]
 
@@ -37,7 +37,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, decommmissionedConfig.?customer
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommmissionedConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, decommmissionedConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, decommmissionedConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {

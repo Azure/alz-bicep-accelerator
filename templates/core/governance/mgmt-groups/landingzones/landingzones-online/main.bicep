@@ -27,7 +27,7 @@ var alzPolicyDefsJson = [
 var alzPolicySetDefsJson = [
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
 ]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesOnlineConfig.?customerRbacRoleDefs ?? [])
@@ -36,7 +36,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesOnlineConfig.?custo
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesOnlineConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, landingZonesOnlineConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, landingZonesOnlineConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {

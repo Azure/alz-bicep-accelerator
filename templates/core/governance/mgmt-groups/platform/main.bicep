@@ -27,7 +27,7 @@ var alzPolicyDefsJson = [
 var alzPolicySetDefsJson = [
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/platform/connectivity/Enable-DDoS-VNET.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/DenyAction-DeleteUAMIAMA.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Deploy-GuestAttest.alz_policy_assignment.json')
@@ -81,7 +81,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, platformConfig.?customerPolicyD
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, platformConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, platformConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {

@@ -242,7 +242,7 @@ var alzPolicySetDefsJson = [
   loadJsonContent('../../lib/alz/Enforce-Guardrails-VirtualDesktop.alz_policy_set_definition.json')
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/Audit-ResourceRGLocation.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/Audit-TrustedLaunch.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/Audit-UnusedResources.alz_policy_assignment.json')
@@ -372,7 +372,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, intRootConfig.?customerPolicyDe
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, intRootConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, intRootConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, intRootConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {

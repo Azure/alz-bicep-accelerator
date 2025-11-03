@@ -27,7 +27,7 @@ var alzPolicyDefsJson = [
 var alzPolicySetDefsJson = [
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/landingzones/Audit-AppGW-WAF.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/landingzones/corp/Audit-PeDnsZones.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/landingzones/corp/Deny-HybridNetworking.alz_policy_assignment.json')
@@ -94,7 +94,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesConfig.?customerPol
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, landingZonesConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, landingZonesConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {

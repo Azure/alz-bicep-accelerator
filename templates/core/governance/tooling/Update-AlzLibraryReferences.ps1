@@ -256,7 +256,7 @@ foreach ($target in $targets) {
     $newContent = Set-ArrayBlock -Content $newContent -VariableName 'alzRbacRoleDefsJson' -Lines $roleLines
     $newContent = Set-ArrayBlock -Content $newContent -VariableName 'alzPolicyDefsJson' -Lines $policyLines
     $newContent = Set-ArrayBlock -Content $newContent -VariableName 'alzPolicySetDefsJson' -Lines $policySetLines
-    $newContent = Set-ArrayBlock -Content $newContent -VariableName 'alzPolicyAssignmentsDefs' -Lines $policyAssignmentLines
+    $newContent = Set-ArrayBlock -Content $newContent -VariableName 'alzPolicyAssignmentsJson' -Lines $policyAssignmentLines
 
     if ($WhatIf) {
         Write-Host "--- Module: $moduleName (WhatIf) ---"

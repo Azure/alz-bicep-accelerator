@@ -27,7 +27,7 @@ var alzPolicyDefsJson = [
 var alzPolicySetDefsJson = [
 ]
 
-var alzPolicyAssignmentsDefs = [
+var alzPolicyAssignmentsJson = [
   loadJsonContent('../../../lib/alz/platform/identity/Deny-MgmtPorts-Internet.alz_policy_assignment.json')
   loadJsonContent('../../../lib/alz/platform/identity/Deny-Public-IP.alz_policy_assignment.json')
   loadJsonContent('../../../lib/alz/platform/identity/Deny-Subnet-Without-Nsg.alz_policy_assignment.json')
@@ -40,7 +40,7 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, platformIdentityConfig.?custome
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformIdentityConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsDefs, platformIdentityConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, platformIdentityConfig.?customerPolicyAssignments ?? [])
 
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
