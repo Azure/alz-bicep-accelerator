@@ -157,3 +157,4 @@ module landingZonesCorp 'br/public:avm/ptn/alz/empty:0.3.1' = {
 import { alzCoreType as alzCoreType } from '../../int-root/main.bicep'
 
 
+

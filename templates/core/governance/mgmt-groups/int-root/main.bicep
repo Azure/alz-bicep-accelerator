@@ -200,6 +200,7 @@ var alzPolicySetDefsJson = [
   loadJsonContent('../../lib/alz/Deploy-Diagnostics-LogAnalytics.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-MDFC-Config_20240319.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-MDFC-Config.alz_policy_set_definition.json')
+  loadJsonContent('../../lib/alz/Deploy-MDFC-DefenderSQL-AMA.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Private-DNS-Zones.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Sql-Security_20240529.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Sql-Security.alz_policy_set_definition.json')
@@ -549,3 +550,4 @@ type alzCoreType = {
   @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
 }
+
