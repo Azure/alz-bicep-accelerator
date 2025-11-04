@@ -2,8 +2,8 @@ using './main.bicep'
 
 param landingZonesConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'landingzones'
-  managementGroupParentId: 'int-root'
+  managementGroupName: 'landingzones-online'
+  managementGroupParentId: 'landingzones'
   managementGroupDisplayName: 'Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []

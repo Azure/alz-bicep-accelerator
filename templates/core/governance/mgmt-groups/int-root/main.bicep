@@ -200,7 +200,6 @@ var alzPolicySetDefsJson = [
   loadJsonContent('../../lib/alz/Deploy-Diagnostics-LogAnalytics.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-MDFC-Config_20240319.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-MDFC-Config.alz_policy_set_definition.json')
-  loadJsonContent('../../lib/alz/Deploy-MDFC-DefenderSQL-AMA.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Private-DNS-Zones.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Sql-Security_20240529.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Deploy-Sql-Security.alz_policy_set_definition.json')
@@ -374,6 +373,15 @@ var unionedPolicySetDefs = union(alzPolicySetDefsJson, intRootConfig.?customerPo
 
 var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, intRootConfig.?customerPolicyAssignments ?? [])
 
+var unionedPolicyAssignmentNames = [
+  for policyAssignment in unionedPolicyAssignments: policyAssignment.name
+]
+
+var deduplicatedPolicyAssignments = filter(
+  unionedPolicyAssignments,
+  (policyAssignment, index) => index == indexOf(unionedPolicyAssignmentNames, policyAssignment.name)
+)
+
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
@@ -390,11 +398,14 @@ var allPolicyDefs = [
   for policy in unionedPolicyDefs: {
     name: policy.name
     properties: {
-      description: policy.properties.description
-      displayName: policy.properties.displayName
-      metadata: policy.properties.metadata
-      parameters: policy.properties.parameters
-      policyType: policy.properties.policyType
+      description: policy.properties.?description
+      displayName: policy.properties.?displayName
+      metadata: policy.properties.?metadata
+      mode: policy.properties.?mode
+      parameters: policy.properties.?parameters
+      policyType: policy.properties.?policyType
+      policyRule: policy.properties.policyRule
+      version: policy.properties.?version
     }
   }
 ]
@@ -403,37 +414,40 @@ var allPolicySetDefinitions = [
   for policySet in unionedPolicySetDefs: {
     name: policySet.name
     properties: {
-      description: policySet.properties.description
-      displayName: policySet.properties.displayName
-      metadata: policySet.properties.metadata
-      parameters: policySet.properties.parameters
-      policyType: policySet.properties.policyType
-      version: policySet.properties.version
+      description: policySet.properties.?description
+      displayName: policySet.properties.?displayName
+      metadata: policySet.properties.?metadata
+      parameters: policySet.properties.?parameters
+      policyType: policySet.properties.?policyType
+      version: policySet.properties.?version
       policyDefinitions: policySet.properties.policyDefinitions
+      policyDefinitionGroups: policySet.properties.?policyDefinitionGroups
     }
   }
 ]
 
 var allPolicyAssignments = [
-  for policyAssignment in unionedPolicyAssignments: {
+  for policyAssignment in deduplicatedPolicyAssignments: {
     name: policyAssignment.name
-    description: policyAssignment.properties.description
-    displayName: policyAssignment.properties.displayName
+    displayName: policyAssignment.properties.?displayName
+    description: policyAssignment.properties.?description
     policyDefinitionId: policyAssignment.properties.policyDefinitionId
-    enforcementMode: policyAssignment.properties.enforcementMode
-    identity: policyAssignment.properties.identity
-    userAssignedIdentityId: policyAssignment.properties.userAssignedIdentity
-    roleDefinitionIds: policyAssignment.properties.roleDefinitionIds
-    parameters: policyAssignment.properties.parameters
-    nonComplianceMessages: policyAssignment.properties.nonComplianceMessages
-    metadata: policyAssignment.properties.metadata
-    overrides: policyAssignment.properties.overrides
-    resourceSelectors: policyAssignment.properties.resourceSelectors
+    parameters: policyAssignment.properties.?parameters
+    parameterOverrides: policyAssignment.properties.?parameterOverrides
+    identity: policyAssignment.identity.?type ?? 'None'
+    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
+    roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
+    nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
+    metadata: policyAssignment.properties.?metadata
+    enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
+    notScopes: policyAssignment.properties.?notScopes
+    location: policyAssignment.?location
+    overrides: policyAssignment.properties.?overrides
+    resourceSelectors: policyAssignment.properties.?resourceSelectors
     definitionVersion: policyAssignment.properties.?definitionVersion
-    notScopes: policyAssignment.properties.notScopes
-    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo
-    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo
-    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo
+    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo
+    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo
+    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
   }
 ]
 
@@ -457,7 +471,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupDisplayName: intRootConfig.?managementGroupDisplayName ?? 'Azure Landing Zones'
     managementGroupDoNotEnforcePolicyAssignments: intRootConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: intRootConfig.?managementGroupExcludedPolicyAssignments
-    managementGroupParentId: tenantRootMgExisting.id
+    managementGroupParentId: tenantRootMgExisting.name
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs

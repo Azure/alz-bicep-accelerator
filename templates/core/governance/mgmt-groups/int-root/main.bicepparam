@@ -3,7 +3,7 @@ using './main.bicep'
 param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'int-root'
-  managementGroupParentId: '/'
+  managementGroupParentId: ''
   managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
