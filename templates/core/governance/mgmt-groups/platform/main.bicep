@@ -39,36 +39,6 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/platform/Deploy-VMSS-ChangeTrack.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Deploy-VMSS-Monitoring.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Enable-AUM-CheckUpdates.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-ASR.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-Encrypt-CMK0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-APIM0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-AppServices0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Automation0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-BotService0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-CogServ0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Compute0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-ContApps0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-ContInst0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-ContReg0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-CosmosDb0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-DataExpl0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-DataFactory0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-EventGrid0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-EventHub0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-KeyVault.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-KeyVaultSup0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Kubernetes0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-MachLearn0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-MySQL0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Network0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-OpenAI0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-PostgreSQL0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-ServiceBus0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-SQL0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Storage0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-Synapse0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-GR-VirtualDesk0.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/Enforce-Subnet-Private.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/identity/Deny-MgmtPorts-Internet.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/identity/Deny-Public-IP.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/identity/Deny-Subnet-Without-Nsg.alz_policy_assignment.json')
@@ -195,6 +165,7 @@ module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../int-root/main.bicep'
+
 
 
 
