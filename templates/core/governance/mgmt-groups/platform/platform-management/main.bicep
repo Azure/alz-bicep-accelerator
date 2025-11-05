@@ -99,8 +99,8 @@ var allPolicyAssignments = [
     policyDefinitionId: policyAssignment.properties.policyDefinitionId
     parameters: policyAssignment.properties.?parameters
     parameterOverrides: policyAssignment.properties.?parameterOverrides
-    management: policyAssignment.management.?type ?? 'None'
-    userAssignedManagementId: policyAssignment.properties.?userAssignedManagementId
+    identity: policyAssignment.identity.?type ?? 'None'
+    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
     roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
     nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
     metadata: policyAssignment.properties.?metadata
@@ -115,6 +115,7 @@ var allPolicyAssignments = [
     additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
   }
 ]
+
 
 // ============ //
 //   Resources  //

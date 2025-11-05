@@ -2,7 +2,7 @@ using './main.bicep'
 
 param platformManagementConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'platform-identity'
+  managementGroupName: 'platform-management'
   managementGroupParentId: 'platform'
   managementGroupDisplayName: 'Management'
   managementGroupDoNotEnforcePolicyAssignments: []
