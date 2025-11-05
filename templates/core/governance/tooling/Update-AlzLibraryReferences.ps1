@@ -1,5 +1,7 @@
 param(
-    [string]$LibraryRoot = (Join-Path $PSScriptRoot '../lib/alz'),
+    [Alias('LibraryRoot')]
+    [string]$AlzLibraryRoot = (Join-Path $PSScriptRoot '../lib/alz'),
+    [string]$CustomerLibraryRoot = (Join-Path $PSScriptRoot '../lib/customer'),
     [string]$ModulePath,
     [string[]]$ModuleNames,
     [switch]$All,
@@ -29,6 +31,35 @@ function Get-LibraryFiles {
             RelativePath = Get-RelativePath -From $ModuleDirectory -To $_.FullName
         }
     }
+}
+
+function Get-LibraryRootCandidates {
+    param(
+        [string[]]$BaseLibraryRoots
+    )
+
+    $candidates = @()
+
+    foreach ($root in $BaseLibraryRoots) {
+        if ([string]::IsNullOrWhiteSpace($root)) {
+            continue
+        }
+
+        $resolved = Resolve-Path -Path $root -ErrorAction SilentlyContinue
+        if ($resolved) {
+            if ($candidates -notcontains $resolved.Path) {
+                $candidates += $resolved.Path
+            }
+
+            continue
+        }
+
+        if ($candidates -notcontains $root) {
+            $candidates += $root
+        }
+    }
+
+    return $candidates
 }
 
 function Format-ArrayLines {
@@ -62,7 +93,7 @@ function Set-ArrayBlock {
     return [Regex]::Replace(
         $Content,
         $pattern,
-        [Text.RegularExpressions.MatchEvaluator]{ param($m) $replacement },
+        [Text.RegularExpressions.MatchEvaluator] { param($m) $replacement },
         [Text.RegularExpressions.RegexOptions]::Singleline
     )
 }
@@ -113,7 +144,7 @@ function New-ModuleTarget {
     param(
         [string]$ModuleMainPath,
         [string]$MgmtGroupsRoot,
-        [string]$BaseLibraryRoot,
+        [string[]]$BaseLibraryRoots,
         [hashtable]$AliasMap
     )
 
@@ -152,24 +183,72 @@ function New-ModuleTarget {
         $subSegments = $segments[1..($segments.Count - 1)]
     }
 
-    $libraryRootCandidate = Resolve-LibraryPath -BaseLibraryRoot $BaseLibraryRoot -PrimarySegment $primarySegment -SubSegments $subSegments -AliasMap $AliasMap
+    $libraryRootCandidates = @()
+    $baseRootCandidates = Get-LibraryRootCandidates -BaseLibraryRoots $BaseLibraryRoots
+    if (-not $baseRootCandidates -or $baseRootCandidates.Count -eq 0) {
+        $baseRootCandidates = $BaseLibraryRoots
+    }
+
+    foreach ($candidateBaseRoot in $baseRootCandidates) {
+        if ([string]::IsNullOrWhiteSpace($candidateBaseRoot)) {
+            continue
+        }
+
+        $resolvedCandidate = Resolve-LibraryPath -BaseLibraryRoot $candidateBaseRoot -PrimarySegment $primarySegment -SubSegments $subSegments -AliasMap $AliasMap
+        if ($resolvedCandidate -and (Test-Path -Path $resolvedCandidate) -and ($libraryRootCandidates -notcontains $resolvedCandidate)) {
+            $libraryRootCandidates += $resolvedCandidate
+        }
+    }
+
+    if (-not $libraryRootCandidates) {
+        foreach ($candidateBaseRoot in $BaseLibraryRoots) {
+            if ([string]::IsNullOrWhiteSpace($candidateBaseRoot)) {
+                continue
+            }
+
+            $fallbackCandidate = Resolve-LibraryPath -BaseLibraryRoot $candidateBaseRoot -PrimarySegment $primarySegment -SubSegments $subSegments -AliasMap $AliasMap
+            if ($fallbackCandidate -and ($libraryRootCandidates -notcontains $fallbackCandidate)) {
+                $libraryRootCandidates += $fallbackCandidate
+                break
+            }
+        }
+    }
+
+    if (-not $libraryRootCandidates) {
+        throw "Unable to resolve library root for module path '$resolvedModulePath'."
+    }
 
     [PSCustomObject]@{
-        Name          = [string]$segments[-1]
-        RelativePath  = ([string]::Join('/', $segments))
-        ModulePath    = $resolvedModulePath
+        Name            = [string]$segments[-1]
+        RelativePath    = ([string]::Join('/', $segments))
+        ModulePath      = $resolvedModulePath
         ModuleDirectory = $moduleDirectory
-        LibraryRoot   = $libraryRootCandidate
+        LibraryRoot     = $libraryRootCandidates | Select-Object -First 1
+        LibraryRoots    = $libraryRootCandidates
     }
 }
 
-$baseLibraryRoot = (Resolve-Path -Path $LibraryRoot).Path
+$baseLibraryRoots = @()
+foreach ($root in @($AlzLibraryRoot, $CustomerLibraryRoot)) {
+    if ([string]::IsNullOrWhiteSpace($root)) {
+        continue
+    }
+
+    if ($baseLibraryRoots -notcontains $root) {
+        $baseLibraryRoots += $root
+    }
+}
+
+if (-not $baseLibraryRoots) {
+    Write-Warning 'No library roots were provided. Nothing to do.'
+    return
+}
 $mgmtGroupsRoot = (Resolve-Path -Path (Join-Path $PSScriptRoot '../mgmt-groups')).Path
 
 $targets = @()
 
 if ($ModulePath) {
-    $targets += New-ModuleTarget -ModuleMainPath $ModulePath -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoot $baseLibraryRoot -AliasMap $libraryAliasMap
+    $targets += New-ModuleTarget -ModuleMainPath $ModulePath -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoots $baseLibraryRoots -AliasMap $libraryAliasMap
 } else {
     $moduleFiles = Get-ChildItem -Path $mgmtGroupsRoot -Recurse -Filter 'main.bicep' -File
     if (-not $moduleFiles) {
@@ -180,7 +259,7 @@ if ($ModulePath) {
     $moduleEntries = @()
     foreach ($file in $moduleFiles) {
         try {
-            $moduleEntries += New-ModuleTarget -ModuleMainPath $file.FullName -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoot $baseLibraryRoot -AliasMap $libraryAliasMap
+            $moduleEntries += New-ModuleTarget -ModuleMainPath $file.FullName -MgmtGroupsRoot $mgmtGroupsRoot -BaseLibraryRoots $baseLibraryRoots -AliasMap $libraryAliasMap
         } catch {
             Write-Warning $_.Exception.Message
         }
@@ -223,7 +302,6 @@ if (-not $targets -or $targets.Count -eq 0) {
 foreach ($target in $targets) {
     $modulePath = $target.ModulePath
     $moduleName = $target.Name
-    $libraryDirectory = $target.LibraryRoot
     $moduleDirectory = $target.ModuleDirectory
 
     if (-not (Test-Path -Path $moduleDirectory)) {
@@ -231,19 +309,30 @@ foreach ($target in $targets) {
         continue
     }
 
-    if (-not (Test-Path -Path $libraryDirectory)) {
-        Write-Warning "Skipping '$moduleName' because library root '$libraryDirectory' was not found."
+    $libraryDirectories = if ($target.PSObject.Properties['LibraryRoots']) { $target.LibraryRoots } else { @($target.LibraryRoot) }
+    $resolvedLibraryDirectories = @()
+
+    $files = @()
+    foreach ($libraryDirectory in $libraryDirectories) {
+        if (-not (Test-Path -Path $libraryDirectory)) {
+            Write-Warning "Skipping library root '$libraryDirectory' for module '$moduleName' because it was not found."
+            continue
+        }
+
+        $libraryDirectoryResolved = (Resolve-Path -Path $libraryDirectory).Path
+        $resolvedLibraryDirectories += $libraryDirectoryResolved
+        $files += Get-LibraryFiles -LibraryRoot $libraryDirectoryResolved -ModuleDirectory $moduleDirectory
+    }
+
+    if (-not $resolvedLibraryDirectories) {
+        Write-Warning "Skipping '$moduleName' because no library roots were available."
         continue
     }
 
-    $libraryDirectoryResolved = (Resolve-Path -Path $libraryDirectory).Path
-
-    $files = Get-LibraryFiles -LibraryRoot $libraryDirectoryResolved -ModuleDirectory $moduleDirectory
-
-    $roleDefinitionFiles = $files | Where-Object { $_.Name -like '*.alz_role_definition.json' }
-    $policyDefinitionFiles = $files | Where-Object { $_.Name -like '*.alz_policy_definition.json' }
-    $policySetDefinitionFiles = $files | Where-Object { $_.Name -like '*.alz_policy_set_definition.json' }
-    $policyAssignmentFiles = $files | Where-Object { $_.Name -like '*.alz_policy_assignment.json' }
+    $roleDefinitionFiles = $files | Where-Object { $_.Name -match 'role_definition\.json$' }
+    $policyDefinitionFiles = $files | Where-Object { $_.Name -match 'policy_definition\.json$' }
+    $policySetDefinitionFiles = $files | Where-Object { $_.Name -match 'policy_set_definition\.json$' }
+    $policyAssignmentFiles = $files | Where-Object { $_.Name -match 'policy_assignment\.json$' }
 
     $roleLines = Format-ArrayLines -Files $roleDefinitionFiles
     $policyLines = Format-ArrayLines -Files $policyDefinitionFiles
@@ -268,6 +357,6 @@ foreach ($target in $targets) {
         }
     } else {
         Set-Content -Path $modulePath -Value $newContent
-        Write-Host "Updated module '$moduleName' using library '$libraryDirectoryResolved'."
+        Write-Host "Updated module '$moduleName' using library roots: $([string]::Join(', ', $resolvedLibraryDirectories))."
     }
 }
