@@ -28,7 +28,6 @@ var alzPolicySetDefsJson = [
 ]
 
 var alzPolicyAssignmentsJson = [
-  loadJsonContent('../../lib/alz/platform/connectivity/Enable-DDoS-VNET.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/DenyAction-DeleteUAMIAMA.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Deploy-GuestAttest.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Deploy-MDFC-DefSQL-AMA.alz_policy_assignment.json')
@@ -69,10 +68,6 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/platform/Enforce-GR-Synapse0.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Enforce-GR-VirtualDesk0.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/platform/Enforce-Subnet-Private.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/identity/Deny-MgmtPorts-Internet.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/identity/Deny-Public-IP.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/identity/Deny-Subnet-Without-Nsg.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/platform/identity/Deploy-VM-Backup.alz_policy_assignment.json')
 ]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformConfig.?customerRbacRoleDefs ?? [])
@@ -195,3 +190,4 @@ module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../int-root/main.bicep'
+

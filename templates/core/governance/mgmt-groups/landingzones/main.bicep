@@ -30,11 +30,6 @@ var alzPolicySetDefsJson = [
 
 var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/landingzones/Audit-AppGW-WAF.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/landingzones/corp/Audit-PeDnsZones.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/landingzones/corp/Deny-HybridNetworking.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/landingzones/corp/Deny-Public-Endpoints.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/landingzones/corp/Deny-Public-IP-On-NIC.alz_policy_assignment.json')
-  loadJsonContent('../../lib/alz/landingzones/corp/Deploy-Private-DNS-Zones.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/landingzones/Deny-IP-forwarding.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/landingzones/Deny-MgmtPorts-Internet.alz_policy_assignment.json')
   loadJsonContent('../../lib/alz/landingzones/Deny-Priv-Esc-AKS.alz_policy_assignment.json')
@@ -208,3 +203,4 @@ module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../int-root/main.bicep'
+
