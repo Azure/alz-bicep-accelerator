@@ -1,5 +1,7 @@
 using './main.bicep'
 
+extends '../../../../../root.bicepparam'
+
 param platformConnectivityConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'platform-connectivity'
@@ -20,8 +22,3 @@ param platformConnectivityConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parEnableTelemetry = true

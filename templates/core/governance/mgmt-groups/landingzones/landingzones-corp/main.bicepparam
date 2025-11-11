@@ -1,5 +1,7 @@
 using './main.bicep'
 
+extends '../../../../../root.bicepparam'
+
 param landingZonesCorpConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'landingzones-corp'
@@ -20,8 +22,3 @@ param landingZonesCorpConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parEnableTelemetry = true

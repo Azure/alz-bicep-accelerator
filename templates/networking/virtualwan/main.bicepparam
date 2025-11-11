@@ -1,5 +1,6 @@
 using './main.bicep'
 
+extends '../../root.bicepparam'
 
 //Resource Group Parameters
 param parVirtualWanResourceGroupName = 'rg-vwan-alz-${parLocations[0]}'
@@ -85,14 +86,9 @@ param vwanHubs = [
 ]
 
 // General Parameters
-param parLocations = [
-  'eastus'
-  'westus'
-]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 param parTags = {}
-param parEnableTelemetry = true

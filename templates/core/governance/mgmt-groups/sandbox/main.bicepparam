@@ -1,5 +1,7 @@
 using './main.bicep'
 
+extends '../../../../root.bicepparam'
+
 param sandboxConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'sandbox'
@@ -20,8 +22,3 @@ param sandboxConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parEnableTelemetry = true
