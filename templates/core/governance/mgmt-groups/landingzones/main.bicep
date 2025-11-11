@@ -18,6 +18,23 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, backup exclusions, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
+var builtInRoleDefinitionIds = {
+  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  managedIdentityOperator: 'f1a07417-d97a-45cb-824c-7a7467783830'
+  managedIdentityContributor: 'e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
+  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  sqlDbContributor: '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
+}
 
 var alzRbacRoleDefsJson = [
 ]
@@ -84,13 +101,49 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/landingzones/Enforce-TLS-SSL-Q225.alz_policy_assignment.json')
 ]
 
+var alzPolicyAssignmentRoleDefinitions = {
+  'Deploy-GuestAttest': [builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.managedIdentityContributor]
+  'Deploy-VM-Backup': [builtInRoleDefinitionIds.owner]
+  'Enable-DDoS-VNET': [builtInRoleDefinitionIds.networkContributor]
+  'Enforce-TLS-SSL-Q225': [builtInRoleDefinitionIds.owner]
+  'Deploy-AzSqlDb-Auditing': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.sqlSecurityManager]
+  'Deploy-SQL-Threat': [builtInRoleDefinitionIds.owner]
+  'Deploy-SQL-TDE': [builtInRoleDefinitionIds.sqlDbContributor]
+  'Deploy-vmArc-ChangeTrack': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader]
+  'Deploy-VM-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-VMSS-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-vmHybr-Monitoring': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.connectedMachineResourceAdministrator]
+  'Deploy-VM-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-VMSS-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-MDFC-DefSQL-AMA': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Enforce-ASR': [builtInRoleDefinitionIds.contributor]
+  'Enable-AUM-CheckUpdates': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.connectedMachineResourceAdministrator, builtInRoleDefinitionIds.managedIdentityOperator]
+}
+
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    {
+      properties: union(
+        policyAssignment.properties,
+        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    }
+  )
+]
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, landingZonesConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, landingZonesConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, landingZonesConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name

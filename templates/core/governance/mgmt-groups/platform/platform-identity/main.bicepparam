@@ -27,10 +27,10 @@ param platformIdentityConfig = {
 param parPolicyAssignmentParameterOverrides = {
   'Deploy-VM-Backup': {
     exclusionTagName: {
-      value: ''
+      value: 'BackupExclusion'
     }
     exclusionTagValue: {
-      value: []
+      value: 'true'
     }
     vaultLocation: {
       value: parLocations[0]

@@ -21,10 +21,17 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
-var builtInRoleDefinitionIds = {
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-}
+// Built-in Azure RBAC role definition IDs (ready for future use)
+// var builtInRoleDefinitionIds = {
+//   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+//   networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+//   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+// }
+
+// var builtInRoleDefinitionIds = {
+//   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+//   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+// }
 
 var alzRbacRoleDefsJson = [
 ]
@@ -38,8 +45,31 @@ var alzPolicySetDefsJson = [
 var alzPolicyAssignmentsJson = [
 ]
 
-var alzPolicyAssignmentRoleDefinitions = {
-}
+// Policy assignment to role definition mappings (ready for future use)
+// When adding policy assignments, use this pattern:
+// var alzPolicyAssignmentRoleDefinitions = {
+//   'Deploy-Security-Policy': [builtInRoleDefinitionIds.contributor]
+// }
+// var alzPolicyAssignmentRoleDefinitions = {
+// }
+
+// When alzPolicyAssignmentsJson is populated, replace the line below with:
+// var alzPolicyAssignmentsWithOverrides = [
+//   for policyAssignment in alzPolicyAssignmentsJson: union(
+//     policyAssignment,
+//     {
+//       properties: union(
+//         policyAssignment.properties,
+//         contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+//           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+//         } : {},
+//         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+//           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+//         } : {}
+//       )
+//     }
+//   )
+// ]
 
 var alzPolicyAssignmentsWithOverrides = alzPolicyAssignmentsJson
 
@@ -136,8 +166,8 @@ var allPolicyAssignments = [
 module platformSecurity 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: platformSecurityConfig.?createOrUpdateManagementGroup
-    managementGroupName: platformSecurityConfig.?managementGroupName ?? 'alz-Platform-Security'
-    managementGroupDisplayName: platformSecurityConfig.?managementGroupDisplayName ?? 'Management'
+    managementGroupName: platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'
+    managementGroupDisplayName: platformSecurityConfig.?managementGroupDisplayName ?? 'Security'
     managementGroupDoNotEnforcePolicyAssignments: platformSecurityConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: platformSecurityConfig.?managementGroupExcludedPolicyAssignments
     managementGroupParentId: platformSecurityConfig.?managementGroupParentId ?? 'alz-platform'

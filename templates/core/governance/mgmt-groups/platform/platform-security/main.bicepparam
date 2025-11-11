@@ -25,8 +25,3 @@ param platformSecurityConfig = {
 param parPolicyAssignmentParameterOverrides = {
   // No policy assignments in platform-security currently
 }
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parEnableTelemetry = true

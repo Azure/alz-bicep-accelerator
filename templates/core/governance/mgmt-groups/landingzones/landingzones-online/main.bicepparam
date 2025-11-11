@@ -22,3 +22,9 @@ param landingZonesOnlineConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
+
+// Currently no policy assignments for online landing zones
+// When policies are added, specify parameter overrides here
+param parPolicyAssignmentParameterOverrides = {
+  // No policy assignments in platform-security currently
+}
