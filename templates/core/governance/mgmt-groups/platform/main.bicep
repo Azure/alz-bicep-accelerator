@@ -251,7 +251,7 @@ module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
 }
 
 // ================ //
-// Type Definitions
+// Definitions
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../int-root/main.bicep'

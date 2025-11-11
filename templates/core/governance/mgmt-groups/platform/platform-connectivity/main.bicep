@@ -18,6 +18,15 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
+var builtInRoleDefinitionIds = {
+  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+}
+
 var alzRbacRoleDefsJson = [
 ]
 
@@ -31,13 +40,34 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../../lib/alz/platform/connectivity/Enable-DDoS-VNET.alz_policy_assignment.json')
 ]
 
+var alzPolicyAssignmentRoleDefinitions = {
+  'Enable-DDoS-VNET': [builtInRoleDefinitionIds.networkContributor]
+}
+
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    {
+      properties: union(
+        policyAssignment.properties,
+        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    }
+  )
+]
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformConnectivityConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, platformConnectivityConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformConnectivityConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, platformConnectivityConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, platformConnectivityConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name

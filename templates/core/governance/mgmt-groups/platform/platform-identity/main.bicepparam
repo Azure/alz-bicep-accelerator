@@ -22,3 +22,18 @@ param platformIdentityConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
+
+// Only specify the parameters you want to override - others will use defaults from JSON files
+param parPolicyAssignmentParameterOverrides = {
+  'Deploy-VM-Backup': {
+    exclusionTagName: {
+      value: ''
+    }
+    exclusionTagValue: {
+      value: []
+    }
+    vaultLocation: {
+      value: parLocations[0]
+    }
+  }
+}

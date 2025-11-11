@@ -20,6 +20,11 @@ param platformSecurityConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
+
+// Only specify the parameters you want to override - others will use defaults from JSON files
+param parPolicyAssignmentParameterOverrides = {
+  // No policy assignments in platform-security currently
+}
 param parLocations = [
   'eastus'
   'westus'

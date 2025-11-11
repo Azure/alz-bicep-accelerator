@@ -18,6 +18,9 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
 var alzRbacRoleDefsJson = [
 ]
 
@@ -30,13 +33,15 @@ var alzPolicySetDefsJson = [
 var alzPolicyAssignmentsJson = [
 ]
 
+var alzPolicyAssignmentsWithOverrides = alzPolicyAssignmentsJson
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformManagementConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, platformManagementConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformManagementConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, platformManagementConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, platformManagementConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name

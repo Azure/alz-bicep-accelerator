@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parVirtualWanResourceGroupName string = 'rg-alz-hubnetworking-001'
+param parVirtualWanResourceGroupName string = 'rg-alz-conn-001'
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.

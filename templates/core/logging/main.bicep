@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parMgmtLoggingResourceGroup string = 'rg-alz-logging-001'
+param parMgmtLoggingResourceGroup string = 'rg-alz-mgmt-001'
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.

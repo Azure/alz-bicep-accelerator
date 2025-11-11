@@ -3,9 +3,9 @@ using './main.bicep'
 extends '../../root.bicepparam'
 
 // Resource Group Parameters
-param parHubNetworkingResourceGroupName = 'rg-hubnetworking-alz-${parLocations[0]}'
-param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
-param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
+param parHubNetworkingResourceGroupName = 'rg-alz-conn-${parLocations[0]}'
+param parDnsResourceGroupName = 'rg-alz-dns-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName = 'rg-alz-dnspr-${parLocations[0]}'
 
 // Hub Networking Parameters
 param hubNetworks = [

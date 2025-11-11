@@ -27,7 +27,7 @@ param intRootConfig = {
 param parPolicyAssignmentParameterOverrides = {
   'Deploy-MDFC-Config-H224': {
     logAnalytics: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
     }
     emailSecurityContact: {
       value: 'security@yourcompany.com'
@@ -38,7 +38,7 @@ param parPolicyAssignmentParameterOverrides = {
   }
   'Deploy-AzActivity-Log': {
     logAnalytics: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
     }
     logsEnabled: {
       value: 'True'
@@ -46,7 +46,7 @@ param parPolicyAssignmentParameterOverrides = {
   }
   'Deploy-Diag-LogsCat': {
     logAnalytics: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+      value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
     }
   }
   'Deploy-SvcHealth-BuiltIn': {

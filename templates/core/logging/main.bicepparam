@@ -3,7 +3,7 @@ using 'main.bicep'
 extends '../../root.bicepparam'
 
 // Resource Group Parameters
-param parMgmtLoggingResourceGroup = 'rg-alz-${parLocations[0]}'
+param parMgmtLoggingResourceGroup = 'rg-alz-mgmt-${parLocations[0]}'
 
 // Automation Account Parameters
 param parAutomationAccountName = 'aa-alz-${parLocations[0]}'

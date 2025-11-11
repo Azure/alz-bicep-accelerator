@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parHubNetworkingResourceGroupName string = 'rg-hubnetworking-alz-${parLocations[0]}'
+param parHubNetworkingResourceGroupName string = 'rg-alz-conn-${parLocations[0]}'
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -19,10 +19,10 @@ param parHubNetworkingResourceGroupName string = 'rg-hubnetworking-alz-${parLoca
 param parResourceGroupLock lockType?
 
 @description('The name of the DNS Resource Group.')
-param parDnsResourceGroupName string = 'rg-dns-alz-${parLocations[0]}'
+param parDnsResourceGroupName string = 'rg-alz-dns-${parLocations[0]}'
 
 @description('The name of the Private DNS Resolver Resource Group.')
-param parDnsPrivateResolverResourceGroupName string = 'rg-dnspr-alz-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName string = 'rg-alz-dnspr-${parLocations[0]}'
 
 // Hub Networking Parameters
 @description('The hub virtual networks to create.')

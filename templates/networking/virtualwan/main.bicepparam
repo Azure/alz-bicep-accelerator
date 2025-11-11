@@ -3,7 +3,7 @@ using './main.bicep'
 extends '../../root.bicepparam'
 
 //Resource Group Parameters
-param parVirtualWanResourceGroupName = 'rg-vwan-alz-${parLocations[0]}'
+param parVirtualWanResourceGroupName = 'rg-conn-alz-${parLocations[0]}'
 param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
 param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
 
