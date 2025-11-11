@@ -22,3 +22,9 @@ param sandboxConfig = {
   waitForConsistencyCounterBeforeRoleAssignment: 10
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
+
+// Only specify the parameters you want to override - others will use defaults from JSON files
+param parPolicyAssignmentParameterOverrides = {
+  // Currently no common parameter overrides needed, but can be added here
+
+}

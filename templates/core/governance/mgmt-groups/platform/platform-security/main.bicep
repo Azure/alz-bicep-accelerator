@@ -28,11 +28,6 @@ param parPolicyAssignmentParameterOverrides object = {}
 //   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 // }
 
-// var builtInRoleDefinitionIds = {
-//   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-//   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-// }
-
 var alzRbacRoleDefsJson = [
 ]
 

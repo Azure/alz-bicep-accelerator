@@ -18,6 +18,14 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to override. Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
+// Built-in Azure RBAC role definition IDs
+var builtInRoleDefinitionIds = {
+  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+}
+
 var alzRbacRoleDefsJson = [
 ]
 
@@ -31,13 +39,34 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/decommissioned/Enforce-ALZ-Decomm.alz_policy_assignment.json')
 ]
 
+var alzPolicyAssignmentRoleDefinitions = {
+  'Enforce-ALZ-Decomm': [builtInRoleDefinitionIds.vmContributor]
+}
+
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    {
+      properties: union(
+        policyAssignment.properties,
+        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    }
+  )
+]
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, decommmissionedConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, decommmissionedConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommmissionedConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, decommmissionedConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, decommmissionedConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name
