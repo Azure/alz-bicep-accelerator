@@ -18,6 +18,25 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
+var builtInRoleDefinitionIds = {
+  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  aksContributor: 'ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
+  aksPolicyAddon: '18ed5180-3e48-46fd-8541-4ea054d57064'
+  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  sqlDbContributor: '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+  backupContributor: '5e467623-bb1f-42f4-a55d-6e525e11384b'
+  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
+  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  managedIdentityOperator: 'f1a07417-d97a-45cb-824c-7a7467783830'
+  managedIdentityContributor: 'e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
+  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+}
+
 var alzRbacRoleDefsJson = [
 ]
 
@@ -70,13 +89,59 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/platform/Enforce-Subnet-Private.alz_policy_assignment.json')
 ]
 
+var alzPolicyAssignmentRoleDefinitions = {
+  'Deploy-AKS-Policy': [builtInRoleDefinitionIds.aksContributor, builtInRoleDefinitionIds.aksPolicyAddon]
+  'Deploy-AzActivity-Log': [builtInRoleDefinitionIds.logAnalyticsContributor]
+  'Deploy-Diag-LogsCat': [builtInRoleDefinitionIds.logAnalyticsContributor]
+  'Deploy-Log-Analytics': [builtInRoleDefinitionIds.logAnalyticsContributor]
+  'Deploy-LogicApp-TLS': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDFC-Config': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDFC-Config-H224': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDFC-DefSQL-AMA': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-MySQL-sslEnforcement': [builtInRoleDefinitionIds.contributor]
+  'Deploy-PostgreSQL-sslEnforcement': [builtInRoleDefinitionIds.contributor]
+  'Deploy-Sql-AuditingSettings': [builtInRoleDefinitionIds.sqlSecurityManager, builtInRoleDefinitionIds.logAnalyticsContributor]
+  'Deploy-Sql-SecurityAlertPolicies': [builtInRoleDefinitionIds.sqlSecurityManager]
+  'Deploy-Sql-Tde': [builtInRoleDefinitionIds.sqlDbContributor]
+  'Deploy-SqlMi-minTLS': [builtInRoleDefinitionIds.sqlSecurityManager]
+  'Deploy-Storage-sslEnforcement': [builtInRoleDefinitionIds.contributor]
+  'Deploy-VM-Backup': [builtInRoleDefinitionIds.backupContributor, builtInRoleDefinitionIds.vmContributor]
+  'Deploy-GuestAttest': [builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.managedIdentityContributor]
+  'Deploy-VM-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-VM-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-vmArc-ChangeTrack': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader]
+  'Deploy-VMSS-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-vmHybr-Monitoring': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.connectedMachineResourceAdministrator]
+  'Deploy-VMSS-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Enable-ArcAutoProvisioning': [builtInRoleDefinitionIds.connectedMachineResourceAdministrator]
+  'Enable-AUM-CheckUpdates': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.connectedMachineResourceAdministrator, builtInRoleDefinitionIds.managedIdentityOperator]
+  'Enforce-ASR': [builtInRoleDefinitionIds.contributor]
+}
+
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    {
+      properties: union(
+        policyAssignment.properties,
+        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    }
+  )
+]
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, platformConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, platformConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, platformConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, platformConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name
