@@ -18,6 +18,29 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, emailSecurityContact, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+param parPolicyAssignmentParameterOverrides object = {}
+
+var builtInRoleDefinitionIds = {
+  owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  aksContributor: 'ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
+  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  aksPolicyAddon: '18ed5180-3e48-46fd-8541-4ea054d57064'
+  sqlDbContributor: '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+  backupContributor: '5e467623-bb1f-42f4-a55d-6e525e11384b'
+  rbacSecurityAdmin: 'fb1c8493-542b-48eb-b624-b4c8fea62acd'
+  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  managedIdentityOperator: 'f1a07417-d97a-45cb-824c-7a7467783830'
+  managedIdentityContributor: 'e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
+  connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
+  monitoringPolicyContributor: '47be4a87-7950-4631-9daf-b664a405f074'
+}
+
 var alzRbacRoleDefsJson = [
   loadJsonContent('../../lib/alz/0d95a564-76a6-5489-9bb7-ee099c979392.alz_role_definition.json')
   loadJsonContent('../../lib/alz/1a71cbe6-6cb7-57f5-9cf1-f3971f40fcfa.alz_role_definition.json')
@@ -261,13 +284,42 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/Enforce-ACSB.alz_policy_assignment.json')
 ]
 
+var alzPolicyAssignmentRoleDefinitions = {
+  'Deploy-MDFC-Config-H224': [builtInRoleDefinitionIds.owner]
+  'Deploy-MDEndpoints': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDEndpointsAMA': [builtInRoleDefinitionIds.rbacSecurityAdmin]
+  'Deploy-AzActivity-Log': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor]
+  'Deploy-Diag-LogsCat': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor]
+  'Enforce-ACSB': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDFC-OssDb': [builtInRoleDefinitionIds.contributor]
+  'Deploy-MDFC-SqlAtp': [builtInRoleDefinitionIds.sqlSecurityManager]
+  'Deploy-SvcHealth-BuiltIn': [builtInRoleDefinitionIds.monitoringPolicyContributor]
+}
+
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    {
+      properties: union(
+        policyAssignment.properties,
+        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    }
+  )
+]
+
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, intRootConfig.?customerRbacRoleDefs ?? [])
 
 var unionedPolicyDefs = union(alzPolicyDefsJson, intRootConfig.?customerPolicyDefs ?? [])
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, intRootConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsJson, intRootConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, intRootConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name
@@ -412,7 +464,7 @@ type alzCoreType = {
   @description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
   customerRbacRoleDefs: array?
 
-  @description('Optional. Customer provided RBAC role assignments.')
+  @description('Optional. Customer provided RBAC role assignments for the management group. These are general role assignments separate from policy assignment role definitions, which are automatically handled.')
   customerRbacRoleAssignments: array?
 
   @description('Optional. Additional customer provided policy definitions to be used in tandem with the ALZ policy definitions.')
@@ -445,4 +497,3 @@ type alzCoreType = {
   @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
 }
-
