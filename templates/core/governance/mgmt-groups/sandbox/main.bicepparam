@@ -1,6 +1,11 @@
 using './main.bicep'
 
-extends '../../../../root.bicepparam'
+// General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
+param parEnableTelemetry = true
 
 param sandboxConfig = {
   createOrUpdateManagementGroup: true
@@ -26,5 +31,4 @@ param sandboxConfig = {
 // Only specify the parameters you want to override - others will use defaults from JSON files
 param parPolicyAssignmentParameterOverrides = {
   // Currently no common parameter overrides needed, but can be added here
-
 }

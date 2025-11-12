@@ -1,11 +1,16 @@
 using './main.bicep'
 
-extends '../../../../root.bicepparam'
+// General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
+param parEnableTelemetry = true
 
 param platformConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'platform'
-  managementGroupParentId: 'int-root'
+  managementGroupParentId: 'alz'
   managementGroupDisplayName: 'Platform'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []

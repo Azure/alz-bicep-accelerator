@@ -8,7 +8,7 @@ targetScope = 'managementGroup'
 //================================
 
 @description('Required. The management group configuration for Decommissioned.')
-param decommmissionedConfig alzCoreType
+param decommissionedConfig alzCoreType
 
 @description('The locations to deploy resources to.')
 param parLocations array = [
@@ -60,13 +60,13 @@ var alzPolicyAssignmentsWithOverrides = [
   )
 ]
 
-var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, decommmissionedConfig.?customerRbacRoleDefs ?? [])
+var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, decommissionedConfig.?customerRbacRoleDefs ?? [])
 
-var unionedPolicyDefs = union(alzPolicyDefsJson, decommmissionedConfig.?customerPolicyDefs ?? [])
+var unionedPolicyDefs = union(alzPolicyDefsJson, decommissionedConfig.?customerPolicyDefs ?? [])
 
-var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommmissionedConfig.?customerPolicySetDefs ?? [])
+var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommissionedConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, decommmissionedConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, decommissionedConfig.?customerPolicyAssignments ?? [])
 
 var unionedPolicyAssignmentNames = [
   for policyAssignment in unionedPolicyAssignments: policyAssignment.name
@@ -150,27 +150,27 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module decommissioned 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
-    createOrUpdateManagementGroup: decommmissionedConfig.?createOrUpdateManagementGroup
-    managementGroupName: decommmissionedConfig.?managementGroupName ?? 'alz-decommmissioned'
-    managementGroupDisplayName: decommmissionedConfig.?managementGroupDisplayName ?? 'Decommmissioned'
-    managementGroupDoNotEnforcePolicyAssignments: decommmissionedConfig.?managementGroupDoNotEnforcePolicyAssignments
-    managementGroupExcludedPolicyAssignments: decommmissionedConfig.?managementGroupExcludedPolicyAssignments
-    managementGroupParentId: decommmissionedConfig.?managementGroupParentId ?? 'alz'
+    createOrUpdateManagementGroup: decommissionedConfig.?createOrUpdateManagementGroup
+    managementGroupName: decommissionedConfig.?managementGroupName ?? 'alz-decommmissioned'
+    managementGroupDisplayName: decommissionedConfig.?managementGroupDisplayName ?? 'Decommmissioned'
+    managementGroupDoNotEnforcePolicyAssignments: decommissionedConfig.?managementGroupDoNotEnforcePolicyAssignments
+    managementGroupExcludedPolicyAssignments: decommissionedConfig.?managementGroupExcludedPolicyAssignments
+    managementGroupParentId: decommissionedConfig.?managementGroupParentId ?? 'alz'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
-    managementGroupRoleAssignments: decommmissionedConfig.?customerRbacRoleAssignments
+    managementGroupRoleAssignments: decommissionedConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
     managementGroupCustomPolicySetDefinitions: allPolicySetDefinitions
     managementGroupPolicyAssignments: allPolicyAssignments
     location: parLocations[0]
-    subscriptionsToPlaceInManagementGroup: decommmissionedConfig.?subscriptionsToPlaceInManagementGroup
-    waitForConsistencyCounterBeforeCustomPolicyDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
-    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
-    waitForConsistencyCounterBeforeCustomRoleDefinitions: decommmissionedConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
-    waitForConsistencyCounterBeforePolicyAssignments: decommmissionedConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: decommmissionedConfig.?waitForConsistencyCounterBeforeRoleAssignment
-    waitForConsistencyCounterBeforeSubPlacement: decommmissionedConfig.?waitForConsistencyCounterBeforeSubPlacement
+    subscriptionsToPlaceInManagementGroup: decommissionedConfig.?subscriptionsToPlaceInManagementGroup
+    waitForConsistencyCounterBeforeCustomPolicyDefinitions: decommissionedConfig.?waitForConsistencyCounterBeforeCustomPolicyDefinitions
+    waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
+    waitForConsistencyCounterBeforeCustomRoleDefinitions: decommissionedConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
+    waitForConsistencyCounterBeforePolicyAssignments: decommissionedConfig.?waitForConsistencyCounterBeforePolicyAssignments
+    waitForConsistencyCounterBeforeRoleAssignments: decommissionedConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeSubPlacement: decommissionedConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }
 }

@@ -18,7 +18,7 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
-@description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, emailSecurityContact, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+@description('Optional. Policy assignment overrides. Specify the policy parameter values, location, or scope you want to change (logAnalytics, emailSecurityContact, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
@@ -289,12 +289,29 @@ var alzPolicyAssignmentRoleDefinitions = {
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    {
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
       properties: union(
         policyAssignment.properties,
-        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
+          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+        } : {
+          scope: '/providers/Microsoft.Management/managementGroups/${intRootConfig.?managementGroupName ?? 'alz'}'
+        },
+        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
         } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    } : {
+      location: parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        {
+          scope: '/providers/Microsoft.Management/managementGroups/${intRootConfig.?managementGroupName ?? 'alz'}'
+        },
         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
         } : {}

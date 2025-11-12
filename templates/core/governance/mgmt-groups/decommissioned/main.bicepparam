@@ -1,6 +1,13 @@
 using './main.bicep'
 
-param decommmissionedConfig = {
+// General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
+param parEnableTelemetry = true
+
+param decommissionedConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'decommissioned'
   managementGroupParentId: 'int-root'
@@ -25,10 +32,3 @@ param decommmissionedConfig = {
 param parPolicyAssignmentParameterOverrides = {
   // Add parameter overrides here if needed for customization
 }
-
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parEnableTelemetry = true
-

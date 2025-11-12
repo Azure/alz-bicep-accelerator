@@ -1,7 +1,5 @@
 using './main.bicep'
 
-extends '../../root.bicepparam'
-
 // Resource Group Parameters
 param parHubNetworkingResourceGroupName = 'rg-alz-conn-${parLocations[0]}'
 param parDnsResourceGroupName = 'rg-alz-dns-${parLocations[0]}'
@@ -126,9 +124,14 @@ param hubNetworks = [
 ]
 
 // General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 param parTags = {}
+param parEnableTelemetry = true
