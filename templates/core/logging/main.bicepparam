@@ -1,5 +1,18 @@
 using 'main.bicep'
 
+// General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
+param parGlobalResourceLock = {
+  name: 'GlobalResourceLock'
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Accelerator.'
+}
+param parTags = {}
+param parEnableTelemetry = true
+
 // Resource Group Parameters
 param parMgmtLoggingResourceGroup = 'rg-alz-${parLocations[0]}'
 
@@ -24,16 +37,3 @@ param parUserAssignedIdentityName = 'mi-alz-${parLocations[0]}'
 param parDataCollectionRuleVMInsightsName = 'dcr-vmi-alz-${parLocations[0]}'
 param parDataCollectionRuleChangeTrackingName = 'dcr-ct-alz-${parLocations[0]}'
 param parDataCollectionRuleMDFCSQLName = 'dcr-mdfcsql-alz-${parLocations[0]}'
-
-// General Parameters
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parGlobalResourceLock = {
-  name: 'GlobalResourceLock'
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Accelerator.'
-}
-param parTags = {}
-param parEnableTelemetry = true

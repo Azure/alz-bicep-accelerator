@@ -1,8 +1,20 @@
 using './main.bicep'
 
+// General Parameters
+param parLocations = [
+  'eastus'
+  'westus'
+]
+param parGlobalResourceLock = {
+  name: 'GlobalResourceLock'
+  kind: 'None'
+  notes: 'This lock was created by the ALZ Bicep Accelerator.'
+}
+param parTags = {}
+param parEnableTelemetry = true
 
 //Resource Group Parameters
-param parVirtualWanResourceGroupName = 'rg-vwan-alz-${parLocations[0]}'
+param parVirtualWanResourceGroupName = 'rg-conn-alz-${parLocations[0]}'
 param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
 param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
 
@@ -83,16 +95,3 @@ param vwanHubs = [
     enableTelemetry: parEnableTelemetry
   }
 ]
-
-// General Parameters
-param parLocations = [
-  'eastus'
-  'westus'
-]
-param parGlobalResourceLock = {
-  name: 'GlobalResourceLock'
-  kind: 'None'
-  notes: 'This lock was created by the ALZ Bicep Accelerator.'
-}
-param parTags = {}
-param parEnableTelemetry = true

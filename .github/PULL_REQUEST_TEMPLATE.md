@@ -17,7 +17,6 @@ Replace this with a brief description of what this Pull Request fixes, changes, 
 <!--
 1. *Replace me*
 2. *Replace me*
-3. *Replace me*
 -->
 
 ### Breaking Changes
@@ -33,18 +32,11 @@ Replace this with any testing evidence to show that your Pull Request works/fixe
 
 ## As part of this Pull Request I have
 
-- [ ] Read the [Contribution Guide](https://github.com/Azure/ALZ-Bicep/wiki/Contributing) and ensured this PR is compliant with the guide
+- [ ] Read the [Contribution Guide](https://github.com/Azure/alz-bicep-accelerator/wiki/Contributing) and ensured this PR is compliant with the guide
 - [ ] Ensured the resource API versions in `.bicep` file/s I am adding/editing are using the latest API version possible
-- [ ] Checked for duplicate [Pull Requests](https://github.com/Azure/ALZ-Bicep/pulls)
-- [ ] Associated it with relevant [GitHub Issues](https://github.com/Azure/ALZ-Bicep/issues)
-- [ ] *(ALZ Bicep Core Team Only)* Associated it with relevant [ADO Items](https://aka.ms/alz/bicep/backlog)
-- [ ] Ensured my code/branch is up-to-date with the latest changes in the `main` [branch](https://github.com/Azure/ALZ-Bicep/tree/main)
+- [ ] Checked for duplicate [Pull Requests](https://github.com/Azure/alz-bicep-accelerator/pulls)
+- [ ] Associated it with relevant [GitHub Issues](https://github.com/Azure/alz-bicep-accelerator/issues)
+- [ ] *(ALZ Bicep Core Team Only)* Associated it with relevant with `AB#` identifier [ADO Items](https://aka.ms/alz/bicep/backlog)
+- [ ] Ensured my code/branch is up-to-date with the latest changes in the `main` [branch](https://github.com/Azure/alz-bicep-accelerator/tree/main)
 - [ ] Performed testing and provided evidence.
-- [ ] Updated one or more of the following tests *(if required)*
-  - [Unit](https://github.com/Azure/ALZ-Bicep/blob/main/.github/workflows/bicep-build-to-validate.yml)
-  - [Linting](https://github.com/Azure/ALZ-Bicep/tree/main/.github/workflows)
-  - [E2E (End-To-End)](https://github.com/Azure/ALZ-Bicep/blob/main/tests/pipelines/bicep-build-to-validate.yml)
-  - [ValidateAzCloud (Base validation in Azure Cloud)](https://github.com/Azure/ALZ-Bicep/blob/main/tests/pipelines/base-unit-validate.yml)
-  - [ValidateMcCloud (Base validation in Azure China Cloud)](https://github.com/Azure/ALZ-Bicep/blob/main/tests/pipelines/mc-base-unit-validate.yml)
 - [ ] Updated relevant and associated documentation (e.g. Contribution Guide, Module READMEs, Wiki Docs etc.)
-- [ ] If relevant, created or updated Code Tours [here](https://github.com/Azure/ALZ-Bicep/blob/main/.vscode/tours)

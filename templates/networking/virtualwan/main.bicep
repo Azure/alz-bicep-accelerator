@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parVirtualWanResourceGroupName string = 'rg-alz-hubnetworking-001'
+param parVirtualWanResourceGroupName string = 'rg-alz-conn-001'
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -122,7 +122,7 @@ resource resDnsPrivateResolverResourceGroup 'Microsoft.Resources/resourceGroups@
 // VWAN Resources
 //================================
 
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
   name: 'vwan-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
   scope: resVwanResourceGroupPointer
   params: {
@@ -137,7 +137,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.1' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.1' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   for (vwanHub, i) in vwanHubs!: if (!empty(vwanHubs)) {
     name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
     scope: resVwanResourceGroupPointer

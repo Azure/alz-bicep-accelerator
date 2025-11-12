@@ -1,4 +1,4 @@
-# Azure Landing Zones Bicep Accelerator
+# Bicep Azure Verified Modules for Platform Landing Zone (ALZ)
 
 [![license](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Azure/alz-bicep-accelerator/badge)](https://scorecard.dev/viewer/?uri=github.com/Azure/alz-bicep-accelerator)
