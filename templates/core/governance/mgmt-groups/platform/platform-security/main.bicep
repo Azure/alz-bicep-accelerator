@@ -40,33 +40,33 @@ var alzPolicySetDefsJson = [
 var alzPolicyAssignmentsJson = [
 ]
 
-// Policy assignment to role definition mappings (ready for future use)
-// When adding policy assignments, use this pattern:
-// var alzPolicyAssignmentRoleDefinitions = {
-//   'Deploy-Security-Policy': [builtInRoleDefinitionIds.contributor]
-// }
-// var alzPolicyAssignmentRoleDefinitions = {
-// }
-
-// When alzPolicyAssignmentsJson is populated, replace the line below with:
-// var alzPolicyAssignmentsWithOverrides = [
-//   for policyAssignment in alzPolicyAssignmentsJson: union(
-//     policyAssignment,
-//     {
-//       properties: union(
-//         policyAssignment.properties,
-//         contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-//           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
-//         } : {},
-//         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-//           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-//         } : {}
-//       )
-//     }
-//   )
-// ]
-
-var alzPolicyAssignmentsWithOverrides = alzPolicyAssignmentsJson
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
+          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+        } : {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}'
+        },
+        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
+        } : {}
+      )
+    } : {
+      location: parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}'
+        }
+      )
+    }
+  )
+]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformSecurityConfig.?customerRbacRoleDefs ?? [])
 

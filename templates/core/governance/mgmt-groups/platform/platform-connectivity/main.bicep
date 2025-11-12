@@ -47,12 +47,29 @@ var alzPolicyAssignmentRoleDefinitions = {
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    {
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
       properties: union(
         policyAssignment.properties,
-        contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
+        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
+          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+        } : {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformConnectivityConfig.?managementGroupName ?? 'alz-platform-connectivity'}'
+        },
+        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
         } : {},
+        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
+          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+        } : {}
+      )
+    } : {
+      location: parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformConnectivityConfig.?managementGroupName ?? 'alz-platform-connectivity'}'
+        },
         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
         } : {}

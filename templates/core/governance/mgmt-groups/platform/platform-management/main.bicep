@@ -47,25 +47,33 @@ var alzPolicyAssignmentsJson = [
 // }
 // var alzPolicyAssignmentRoleDefinitions = {}
 
-// When alzPolicyAssignmentsJson is populated, replace the line below with:
-// var alzPolicyAssignmentsWithOverrides = [
-//   for policyAssignment in alzPolicyAssignmentsJson: union(
-//     policyAssignment,
-//     {
-//       properties: union(
-//         policyAssignment.properties,
-//         contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-//           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name])
-//         } : {},
-//         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-//           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-//         } : {}
-//       )
-//     }
-//   )
-// ]
-
-var alzPolicyAssignmentsWithOverrides = alzPolicyAssignmentsJson
+var alzPolicyAssignmentsWithOverrides = [
+  for policyAssignment in alzPolicyAssignmentsJson: union(
+    policyAssignment,
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
+      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
+          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+        } : {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}'
+        },
+        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
+          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
+        } : {}
+      )
+    } : {
+      location: parLocations[0]
+      properties: union(
+        policyAssignment.properties,
+        {
+          scope: '/providers/Microsoft.Management/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}'
+        }
+      )
+    }
+  )
+]
 
 var unionedRbacRoleDefs = union(alzRbacRoleDefsJson, platformManagementConfig.?customerRbacRoleDefs ?? [])
 
