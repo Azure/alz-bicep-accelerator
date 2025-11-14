@@ -28,7 +28,7 @@ jobs:
     - name: Zip and Tar
       run: |
         mkdir staging
-        cp -r templatees staging
+        cp -r templates staging
         cd staging
         tar -cvzf ../accelerator.tar.gz .
         zip -r ../accelerator.zip .
