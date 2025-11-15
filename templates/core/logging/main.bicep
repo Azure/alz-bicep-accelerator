@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('The name of the Resource Group.')
-param parMgmtLoggingResourceGroup string = 'rg-alz-mgmt-001'
+param parMgmtLoggingResourceGroup string
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -20,7 +20,7 @@ param parResourceGroupLock lockType?
 
 // Automation Account Parameters
 @description('The name of the Automation Account.')
-param parAutomationAccountName string = 'alz-automation-account'
+param parAutomationAccountName string
 
 @description('The flag to enable or disable the Automation Account.')
 param parDisableAutomationAccount bool = true
@@ -50,10 +50,10 @@ param parAutomationAccountLock lockType?
 
 // Log Analytics Workspace Parameters
 @description('The name of the Log Analytics Workspace.')
-param parLogAnalyticsWorkspaceName string = 'alz-log-analytics'
+param parLogAnalyticsWorkspaceName string
 
 @description('The location of the Log Analytics Workspace.')
-param parLogAnalyticsWorkspaceLocation string = 'eastus'
+param parLogAnalyticsWorkspaceLocation string
 
 @description('The SKU of the Log Analytics Workspace.')
 param parLogAnalyticsWorkspaceSku string = 'PerGB2018'
@@ -78,17 +78,17 @@ param parLogAnalyticsWorkspaceLock lockType?
 
 // User Assigned Identity Parameters
 @description('The name of the User Assigned Identity utilized for Azure Monitoring Agent.')
-param parUserAssignedIdentityName string = 'alz-logging-mi'
+param parUserAssignedIdentityName string
 
 // Data Collection Rule Parameters
 @description('The name of the data collection rule for VM Insights.')
-param parDataCollectionRuleVMInsightsName string = 'alz-ama-vmi-dcr'
+param parDataCollectionRuleVMInsightsName string
 
 @description('The name of the data collection rule for Change Tracking.')
-param parDataCollectionRuleChangeTrackingName string = 'alz-ama-ct-dcr'
+param parDataCollectionRuleChangeTrackingName string
 
 @description('The name of the data collection rule for Microsoft Defender for SQL.')
-param parDataCollectionRuleMDFCSQLName string = 'alz-ama-mdfcsql-dcr'
+param parDataCollectionRuleMDFCSQLName string
 
 @description('The experience for the VM Insights data collection rule.')
 param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'

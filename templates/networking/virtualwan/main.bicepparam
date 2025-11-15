@@ -14,9 +14,9 @@ param parTags = {}
 param parEnableTelemetry = true
 
 //Resource Group Parameters
-param parVirtualWanResourceGroupName = 'rg-conn-alz-${parLocations[0]}'
-param parDnsResourceGroupName = 'rg-dns-alz-${parLocations[0]}'
-param parDnsPrivateResolverResourceGroupName = 'rg-dnspr-alz-${parLocations[0]}'
+param parVirtualWanResourceGroupName = 'rg-alz-conn-${parLocations[0]}'
+param parDnsResourceGroupName = 'rg-alz-dns-${parLocations[0]}'
+param parDnsPrivateResolverResourceGroupName = 'rg-alz-dnspr-${parLocations[0]}'
 
 // Virtual WAN Parameters
 param vwan = {

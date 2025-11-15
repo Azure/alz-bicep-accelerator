@@ -43,7 +43,7 @@ param parPolicyAssignmentParameterOverrides = {
   }
   'Enable-DDoS-VNET': {
     ddosPlan: {
-      value: '/subscriptions/{{your-connectivity-subscription-id}}/resourceGroups/rg-alz-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
+      value: '/subscriptions/{{your-connectivity-subscription-id}}/resourceGroups/rg-alz-conn-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
     }
   }
   'Deploy-AzSqlDb-Auditing': {
