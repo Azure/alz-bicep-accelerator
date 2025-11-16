@@ -8,8 +8,11 @@ targetScope = 'subscription'
 //========================================
 
 // Resource Group Parameters
-@description('The name of the Resource Group.')
-param parHubNetworkingResourceGroupName string = 'rg-alz-conn-${parLocations[0]}'
+@description('The prefix for the Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parHubNetworkingResourceGroupNameOverrides.')
+param parHubNetworkingResourceGroupNamePrefix string = 'rg-alz-conn'
+
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parHubNetworkingResourceGroupNameOverrides array = []
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -18,11 +21,17 @@ param parHubNetworkingResourceGroupName string = 'rg-alz-conn-${parLocations[0]}
 ''')
 param parResourceGroupLock lockType?
 
-@description('The name of the DNS Resource Group.')
-param parDnsResourceGroupName string = 'rg-alz-dns-${parLocations[0]}'
+@description('The prefix for the DNS Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsResourceGroupNameOverrides.')
+param parDnsResourceGroupNamePrefix string = 'rg-alz-dns'
 
-@description('The name of the Private DNS Resolver Resource Group.')
-param parDnsPrivateResolverResourceGroupName string = 'rg-alz-dnspr-${parLocations[0]}'
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parDnsResourceGroupNameOverrides array = []
+
+@description('The prefix for the Private DNS Resolver Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
+param parDnsPrivateResolverResourceGroupNamePrefix string = 'rg-alz-dnspr'
+
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parDnsPrivateResolverResourceGroupNameOverrides array = []
 
 // Hub Networking Parameters
 @description('The hub virtual networks to create.')
@@ -53,78 +62,70 @@ param parTags object = {}
 param parEnableTelemetry bool = true
 
 //========================================
+// Variables
+//========================================
+
+// Compute actual resource group names (either from override arrays or generated from prefix + location)
+var hubResourceGroupNames = [for (location, i) in parLocations: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}-${location}' : parHubNetworkingResourceGroupNameOverrides[i]]
+var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${location}' : parDnsResourceGroupNameOverrides[i]]
+var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
+
+//========================================
 // Resources Groups
 //========================================
 
-module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modResourceGroup-${uniqueString(parHubNetworkingResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parHubNetworkingResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modHubResourceGroup-${i}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: hubResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
+]
 
-resource resHubNetworkingResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parHubNetworkingResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modHubNetworkingResourceGroup
-  ]
-}
-
-module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parDnsResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modDnsResourceGroup-${i}-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: dnsResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
+]
 
-resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parDnsResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modDnsResourceGroup
-  ]
-}
-
-module modPrivateDnsResolverResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parDnsPrivateResolverResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modPrivateDnsResolverResourceGroup-${i}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: dnsPrivateResolverResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
-
-resource resDnsPrivateResolverResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parDnsPrivateResolverResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modPrivateDnsResolverResourceGroup
-  ]
-}
+]
 
 //=====================
 // Hub Networking
 //=====================
 module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
   for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
-    name: 'hubNetwork-${hub.name}-${uniqueString(parHubNetworkingResourceGroupName,hub.location)}'
-    scope: resHubNetworkingResourceGroupPointer
+    name: 'hubNetwork-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.location)}'
+    scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
       resBastionNsg[i]
+      modHubNetworkingResourceGroups
     ]
     params: {
       hubVirtualNetworks: {
@@ -166,7 +167,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
               ? {
                   name: subnet.name
                   addressPrefix: subnet.addressPrefix
-                  delegations: empty(subnet.?delegation ?? null)
+                  delegations: (empty(subnet.?delegation ?? null) || subnet.?delegation == 'Microsoft.Network/dnsResolvers')
                     ? null
                     : [
                         {
@@ -197,8 +198,11 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
   for (hub, i) in hubNetworks!: if (!empty(hub.?ddosProtectionPlanSettings) && ((hub.?ddosProtectionPlanSettings.?lock.?kind ?? 'None') != 'None' || parGlobalResourceLock.kind != 'None')) {
-    name: 'ddosPlan-${uniqueString(parHubNetworkingResourceGroupName,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
-    scope: resHubNetworkingResourceGroupPointer
+    name: 'ddosPlan-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
+    scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
+    dependsOn: [
+      modHubNetworkingResourceGroups
+    ]
     params: {
       name: hub.?ddosProtectionPlanSettings.?name ?? 'ddos-alz-${hub.location}'
       location: hub.?ddosProtectionPlanSettings.?location ?? hub.location
@@ -209,10 +213,13 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
+module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
   for (hub, i) in hubNetworks!: if ((hub.enableAzureFirewall) && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
-    name: 'firewallPolicy-${uniqueString(parHubNetworkingResourceGroupName,hub.name,hub.location)}'
-    scope: resHubNetworkingResourceGroupPointer
+    name: 'firewallPolicy-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
+    scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
+    dependsOn: [
+      modHubNetworkingResourceGroups
+    ]
     params: {
       name: 'afwp-alz-${hub.location}'
       location: hub.location
@@ -234,10 +241,13 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
   }
 ]
 
-module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = [
+module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = [
   for (hub, i) in hubNetworks!: if (hub.enableBastion) {
-    name: '${hub.name}-bastionNsg-${uniqueString(parHubNetworkingResourceGroupName,hub.location)}'
-    scope: resHubNetworkingResourceGroupPointer
+    name: '${hub.name}-bastionNsg-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.location)}'
+    scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
+    dependsOn: [
+      modHubNetworkingResourceGroups
+    ]
     params: {
       name: hub.?bastionNsg.?name ?? 'nsg-bas-alz-${hub.location}'
       location: hub.location
@@ -395,10 +405,11 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.0' = 
 //=====================
 module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
   for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && !empty(hub.?virtualNetworkGatewayConfig)) {
-    name: 'virtualNetworkGateway-${uniqueString(parHubNetworkingResourceGroupName,hub.name,hub.location)}'
-    scope: resHubNetworkingResourceGroupPointer
+    name: 'virtualNetworkGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
+    scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
       resHubNetwork[i]
+      modHubNetworkingResourceGroups
     ]
     params: {
       name: hub.?virtualNetworkGatewayConfig.?name ?? 'vgw-${hub.?virtualNetworkGatewayConfig.?gatewayType}-${hub.location}'
@@ -433,10 +444,11 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
 // =====================
 module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
   for (hub, i) in hubNetworks!: if (hub.?privateDnsSettings.?enablePrivateDnsZones ?? false) {
-    name: 'privateDnsZone-${hub.name}-${uniqueString(parDnsResourceGroupName,hub.location)}'
-    scope: resDnsResourceGroup
+    name: 'privateDnsZone-${hub.name}-${uniqueString(parDnsResourceGroupNamePrefix,hub.location)}'
+    scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
       resHubNetwork
+      modDnsResourceGroups
     ]
     params: {
       location: hub.location
@@ -446,7 +458,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
           [
             resourceId(
               subscription().subscriptionId,
-              parHubNetworkingResourceGroupName,
+              parHubNetworkingResourceGroupNamePrefix,
               'Microsoft.Network/virtualNetworks',
               hub.name
             )
@@ -466,10 +478,11 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
   for (hub, i) in hubNetworks!: if (hub.?privateDnsSettings.?enableDnsPrivateResolver ?? true) {
-    name: 'dnsResolver-${hub.name}-${uniqueString(parDnsPrivateResolverResourceGroupName,hub.location)}'
-    scope: resDnsPrivateResolverResourceGroup
+    name: 'dnsResolver-${hub.name}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,hub.location)}'
+    scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
       resHubNetwork[i]
+      modPrivateDnsResolverResourceGroups
     ]
     params: {
       name: hub.?privateDnsSettings.?privateDnsResolverName ?? 'dnspr-alz-${hub.location}'

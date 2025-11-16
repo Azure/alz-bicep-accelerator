@@ -8,8 +8,11 @@ targetScope = 'subscription'
 //================================
 
 // Resource Group Parameters
-@description('The name of the Resource Group.')
-param parVirtualWanResourceGroupName string = 'rg-alz-conn-001'
+@description('The name prefix for the Virtual WAN Resource Groups (will append location). Can be overridden by parVirtualWanResourceGroupNameOverrides.')
+param parVirtualWanResourceGroupNamePrefix string
+
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parVirtualWanResourceGroupNameOverrides array = []
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -18,11 +21,17 @@ param parVirtualWanResourceGroupName string = 'rg-alz-conn-001'
 ''')
 param parResourceGroupLock lockType?
 
-@description('The name of the DNS Resource Group.')
-param parDnsResourceGroupName string = 'rg-alz-dns-001'
+@description('The name prefix for the DNS Resource Groups (will append location). Can be overridden by parDnsResourceGroupNameOverrides.')
+param parDnsResourceGroupNamePrefix string
 
-@description('The name of the Private DNS Resolver Resource Group.')
-param parDnsPrivateResolverResourceGroupName string = 'rg-dnspr-alz-${parLocations[0]}'
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parDnsResourceGroupNameOverrides array = []
+
+@description('The name prefix for the Private DNS Resolver Resource Groups (will append location). Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
+param parDnsPrivateResolverResourceGroupNamePrefix string
+
+@description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
+param parDnsPrivateResolverResourceGroupNameOverrides array = []
 
 // VWAN Parameters
 @description('Optional. The virtual WAN settings to create.')
@@ -55,76 +64,71 @@ param parTags object = {}
 param parEnableTelemetry bool = true
 
 //========================================
+// Variables
+//========================================
+
+// Compute actual resource group names (either from override arrays or generated from prefix + location)
+var vwanResourceGroupNames = [for (location, i) in parLocations: empty(parVirtualWanResourceGroupNameOverrides) ? '${parVirtualWanResourceGroupNamePrefix}-${location}' : parVirtualWanResourceGroupNameOverrides[i]]
+var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${location}' : parDnsResourceGroupNameOverrides[i]]
+var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
+
+//========================================
 // Resource Groups
 //========================================
 
-module modHubNetworkingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modResourceGroup-${uniqueString(parVirtualWanResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parVirtualWanResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+// Create resource groups for each location
+module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modVwanResourceGroup-${uniqueString(parVirtualWanResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: vwanResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
+]
 
-resource resVwanResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parVirtualWanResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modHubNetworkingResourceGroup
-  ]
-}
-
-module modDnsResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parDnsResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: dnsResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
+]
 
-resource resDnsResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parDnsResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modDnsResourceGroup
-  ]
-}
-
-module modPrivateDnsResolverResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
-  name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupName,parLocations[0])}'
-  scope: subscription()
-  params: {
-    name: parDnsPrivateResolverResourceGroupName
-    location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
-    tags: parTags
-    enableTelemetry: parEnableTelemetry
+module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+  for (location, i) in parLocations: {
+    name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
+    scope: subscription()
+    params: {
+      name: dnsPrivateResolverResourceGroupNames[i]
+      location: location
+      lock: parGlobalResourceLock ?? parResourceGroupLock
+      tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
   }
-}
-
-resource resDnsPrivateResolverResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
-  name: parDnsPrivateResolverResourceGroupName
-  scope: subscription()
-  dependsOn: [
-    modPrivateDnsResolverResourceGroup
-  ]
-}
+]
 
 //================================
 // VWAN Resources
 //================================
 
 module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
-  name: 'vwan-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
-  scope: resVwanResourceGroupPointer
+  name: 'vwan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
+  scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwan.location)])
+  dependsOn: [
+    modVwanResourceGroups
+  ]
   params: {
     name: vwan.?name ?? 'vwan-alz-${parLocations[0]}'
     allowBranchToBranchTraffic: vwan.?allowBranchToBranchTraffic ?? true
@@ -139,8 +143,11 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
 
 module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   for (vwanHub, i) in vwanHubs!: if (!empty(vwanHubs)) {
-    name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupName, vwan.name)}'
-    scope: resVwanResourceGroupPointer
+    name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+    ]
     params: {
       name: vwanHub.?hubName ?? 'vwanhub-alz-${vwanHub.location}'
       location: vwanHub.location
@@ -170,12 +177,13 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   }
 ]
 
-module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = [
+module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true) {
-    name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupName, vwanHub.hubName, vwanHub.location)}'
-    scope: resVwanResourceGroupPointer
+    name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
       resVirtualWanHub[i]
+      modVwanResourceGroups
     ]
     params: {
       name: vwanHub.sideCarVirtualNetwork.?name ?? 'vnet-sidecar-alz-${vwanHub.location}'
@@ -206,14 +214,12 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0
         {
           name: 'DNSPrivateResolverInboundSubnet'
           addressPrefix: vwanHub.sideCarVirtualNetwork.addressPrefixes[i]
-          delegation: 'Microsoft.Network/dnsResolvers'
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
         }
         {
           name: 'DNSPrivateResolverOutboundSubnet'
           addressPrefix: vwanHub.sideCarVirtualNetwork.addressPrefixes[i]
-          delegation: 'Microsoft.Network/dnsResolvers'
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
         }
@@ -238,8 +244,11 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0
 //=====================
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.?dnsSettings.?enablePrivateDnsZones ?? true) {
-    name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupName,vwanHub.location)}'
-    scope: resDnsResourceGroup
+    name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
+    scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modDnsResourceGroups
+    ]
     params: {
       location: vwanHub.location
       privateLinkPrivateDnsZones: empty(vwanHub.?dnsSettings.?privateDnsZones) ? null : vwanHub.?dnsSettings.?privateDnsZones
@@ -252,10 +261,11 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.?dnsSettings.?enableDnsPrivateResolver ?? true) {
-    name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupName,vwanHub.location)}'
-    scope: resDnsPrivateResolverResourceGroup
+    name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,vwanHub.location)}'
+    scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
       resSidecarVirtualNetwork[i]
+      modPrivateDnsResolverResourceGroups
     ]
     params: {
       name: vwanHub.?dnsSettings.?privateDnsResolverName ?? 'dnspr-alz-${vwanHub.location}'
@@ -285,8 +295,11 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
   for (vwanHub, i) in vwanHubs!: if ((vwanHub.?ddosProtectionPlanSettings.?enableDDosProtection ?? false) && (vwanHub.?ddosProtectionPlanSettings.?lock != 'None' || parGlobalResourceLock.?kind != 'None')) {
-    name: 'ddosPlan-${uniqueString(parVirtualWanResourceGroupName, vwanHub.?ddosProtectionPlanSettings.?name ?? '', vwanHub.location)}'
-    scope: resVwanResourceGroupPointer
+    name: 'ddosPlan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.?ddosProtectionPlanSettings.?name ?? '', vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+    ]
     params: {
       name: vwanHub.?ddosProtectionPlanSettings.?name ?? 'ddos-alz-${vwanHub.location}'
       location: vwanHub.location
@@ -297,10 +310,13 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
   for (vwanHub, i) in vwanHubs!: if (((vwanHub.?azureFirewallSettings.?enableAzureFirewall ?? false)) && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
-    name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupName, vwanHub.hubName, vwanHub.location)}'
-    scope: resVwanResourceGroupPointer
+    name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+    ]
     params: {
       name: vwanHub.?azureFirewallSettings.?name ?? 'azfwpolicy-alz-${vwanHub.location}'
       threatIntelMode: vwanHub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
@@ -324,8 +340,11 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.2' = [
 //=====================
 module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
   for (vwanHub, i) in vwanHubs!: if ((vwanHub.?virtualNetworkGatewayConfig.?enableVirtualNetworkGateway ?? false) && !empty(vwanHub.?virtualNetworkGatewayConfig)) {
-    name: 'virtualNetworkGateway-${uniqueString(parVirtualWanResourceGroupName, vwanHub.hubName, vwanHub.location)}'
-    scope: resVwanResourceGroupPointer
+    name: 'virtualNetworkGateway-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+    ]
     params: {
       allowVirtualWanTraffic: true
       name: vwanHub.?virtualNetworkGatewayConfig.?name ?? 'vgw-${vwanHub.hubName}-${vwanHub.location}'
