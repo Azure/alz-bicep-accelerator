@@ -2,6 +2,89 @@
     "starter_modules": {
         "alz": {
             "description": "Azure Landing Zones Deployment with AVM",
+            "inputs": {
+                "subscription_ids": {
+                    "source": "input",
+                    "description": "The subscription IDs object",
+                    "sourceInput": "subscription_ids"
+                },
+                "management_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the management subscription",
+                    "sourceInput": "$inputs.subscription_ids.management",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "connectivity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the connectivity subscription",
+                    "sourceInput": "$inputs.subscription_ids.connectivity",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "CONNECTIVITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "identity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the identity subscription",
+                    "sourceInput": "$inputs.subscription_ids.identity",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "IDENTITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "security_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the security subscription",
+                    "sourceInput": "$inputs.subscription_ids.security",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SECURITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[0]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": []
+                },
+                "management_group_id": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "sourceInput": "root_parent_management_group_id",
+                    "default": "alz",
+                    "targets": []
+                }
+            },
+            "folders_or_files_to_retain": [
+                "templates",
+                "bicepconfig.json"
+            ],
+            "subfolders_or_files_to_remove": [
+                ".github",
+                ".gitignore",
+                "CODE_OF_CONDUCT.md",
+                "DEVELOPER.md",
+                "examples",
+                "LICENSE",
+                "README.md",
+                "SECURITY.md",
+                "SUPPORT.md"
+            ],
             "deployment_files": [
                 {
                     "order": 1,
@@ -12,6 +95,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-int-root"
                 },
                 {
@@ -23,6 +107,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-platform"
                 },
                 {
@@ -34,6 +119,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-platform-children"
                 },
                 {
@@ -45,6 +131,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-platform-children"
                 },
                 {
@@ -56,6 +143,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-platform-children"
                 },
                 {
@@ -67,6 +155,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-platform-children"
                 },
                 {
@@ -78,6 +167,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-landingzones"
                 },
                 {
@@ -89,6 +179,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-landingzones-children"
                 },
                 {
@@ -100,6 +191,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-landingzones-children"
                 },
                 {
@@ -122,6 +214,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
                     "group": "governance-landingzones-children"
                 },
                 {
@@ -132,6 +225,7 @@
                     "templateParametersFilePath": "templates/core/logging/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
                     "group": "core"
                 },
                 {
@@ -142,6 +236,7 @@
                     "templateParametersFilePath": "templates/networking/hubnetworking/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
                     "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
                     "group": "networking",
                     "networkType": "hubNetworking"
                 },
@@ -153,6 +248,7 @@
                     "templateParametersFilePath": "templates/networking/virtualwan/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
                     "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
                     "group": "networking",
                     "networkType": "vwanConnectivity"
                 }
@@ -198,4 +294,3 @@
         }
     }
 }
-
