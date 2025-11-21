@@ -8,7 +8,7 @@ targetScope = 'subscription'
 //========================================
 
 // Resource Group Parameters
-@description('The prefix for the Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parHubNetworkingResourceGroupNameOverrides.')
+@description('Required. The prefix for the Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parHubNetworkingResourceGroupNameOverrides.')
 param parHubNetworkingResourceGroupNamePrefix string = 'rg-alz-conn'
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
@@ -21,21 +21,21 @@ param parHubNetworkingResourceGroupNameOverrides array = []
 ''')
 param parResourceGroupLock lockType?
 
-@description('The prefix for the DNS Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsResourceGroupNameOverrides.')
+@description('Required. The prefix for the DNS Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsResourceGroupNameOverrides.')
 param parDnsResourceGroupNamePrefix string = 'rg-alz-dns'
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
 param parDnsResourceGroupNameOverrides array = []
 
-@description('The prefix for the Private DNS Resolver Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
+@description('Required. The prefix for the Private DNS Resolver Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
 param parDnsPrivateResolverResourceGroupNamePrefix string = 'rg-alz-dnspr'
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
 param parDnsPrivateResolverResourceGroupNameOverrides array = []
 
 // Hub Networking Parameters
-@description('The hub virtual networks to create.')
-param hubNetworks hubVirtualNetworkType?
+@description('Required. The hub virtual networks to create.')
+param hubNetworks hubVirtualNetworkType
 
 // Resource Lock Parameters
 @sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
@@ -49,16 +49,16 @@ param parGlobalResourceLock lockType = {
 }
 
 // General Parameters
-@description('The primary location to deploy resources to.')
+@description('Required. The locations to deploy resources to.')
 param parLocations array = [
   'eastus'
   'westus'
 ]
 
-@description('Tags to be applied to all resources.')
+@description('Optional. Tags to be applied to all resources.')
 param parTags object = {}
 
-@description('Enable or disable telemetry.')
+@description('Optional. Enable or disable telemetry.')
 param parEnableTelemetry bool = true
 
 //========================================
@@ -89,7 +89,7 @@ module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-grou
 ]
 
 module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
-  for (location, i) in parLocations: {
+  for (location, i) in parLocations: if (length(filter(hubNetworks, hub => hub.location == location && hub.privateDnsSettings.enablePrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${i}-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -103,7 +103,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' =
 ]
 
 module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
-  for (location, i) in parLocations: {
+  for (location, i) in parLocations: if (length(filter(hubNetworks, hub => hub.location == location && hub.privateDnsSettings.enableDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${i}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -120,7 +120,7 @@ module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource
 // Hub Networking
 //=====================
 module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
-  for (hub, i) in hubNetworks!: if (!empty(hubNetworks)) {
+  for (hub, i) in hubNetworks: {
     name: 'hubNetwork-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -132,23 +132,23 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
         '${hub.name}': {
           addressPrefixes: hub.addressPrefixes
           dnsServers: hub.?dnsServers ?? null
-          enablePeering: hub.?enablePeering ?? false
-          peeringSettings: (hub.?enablePeering ?? false) ? hub.?peeringSettings : null
+          enablePeering: hub.enablePeering
+          peeringSettings: hub.enablePeering ? hub.?peeringSettings : null
           ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? null
-          enableBastion: hub.enableBastion
+          enableBastion: hub.bastionHost.enableBastion
           vnetEncryption: hub.?vnetEncryption ?? false
           location: hub.location
           routes: hub.?routes ?? null
           routeTableName: hub.?routeTableName ?? null
-          bastionHost: hub.enableBastion
+          bastionHost: hub.bastionHost.enableBastion
             ? {
                 bastionHostName: hub.?bastionHost.?bastionHostName ?? 'bas-alz-${hub.location}'
                 skuName: hub.?bastionHost.?skuName ?? 'Standard'
               }
             : null
           vnetEncryptionEnforcement: hub.?vnetEncryptionEnforcement ?? 'AllowUnencrypted'
-          enableAzureFirewall: hub.enableAzureFirewall
-          azureFirewallSettings: hub.enableAzureFirewall
+          enableAzureFirewall: hub.azureFirewallSettings.enableAzureFirewall
+          azureFirewallSettings: hub.azureFirewallSettings.enableAzureFirewall
             ? {
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
                 location: hub.?azureFirewallSettings.?location
@@ -177,7 +177,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
                           }
                         }
                       ]
-                  networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.enableBastion)
+                  networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.bastionHost.enableBastion)
                     ? resBastionNsg[i].?outputs.resourceId
                     : subnet.?networkSecurityGroupId ?? null
                   routeTable: subnet.?routeTable ?? null
@@ -197,7 +197,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
 // Network Security
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
-  for (hub, i) in hubNetworks!: if (!empty(hub.?ddosProtectionPlanSettings) && ((hub.?ddosProtectionPlanSettings.?lock.?kind ?? 'None') != 'None' || parGlobalResourceLock.kind != 'None')) {
+  for (hub, i) in hubNetworks: if (hub.ddosProtectionPlanSettings.enableDdosProtection) {
     name: 'ddosPlan-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -214,7 +214,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
 ]
 
 module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
-  for (hub, i) in hubNetworks!: if ((hub.enableAzureFirewall) && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
+  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'firewallPolicy-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -242,17 +242,17 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
 ]
 
 module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = [
-  for (hub, i) in hubNetworks!: if (hub.enableBastion) {
+  for (hub, i) in hubNetworks: if (hub.bastionHost.enableBastion) {
     name: '${hub.name}-bastionNsg-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
       modHubNetworkingResourceGroups
     ]
     params: {
-      name: hub.?bastionNsg.?name ?? 'nsg-bas-alz-${hub.location}'
+      name: hub.?bastionHost.?bastionNsgName ?? 'nsg-bas-alz-${hub.location}'
       location: hub.location
-      lock: parGlobalResourceLock ?? hub.?bastionNsg.?lock
-      securityRules: hub.?bastionNsg.?securityRules ?? [
+      lock: parGlobalResourceLock ?? hub.?bastionHost.?bastionNsgLock
+      securityRules: hub.?bastionHost.?bastionNsgSecurityRules ?? [
         // Inbound Rules
         {
           name: 'AllowHttpsInbound'
@@ -404,7 +404,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = 
 // Hybrid Connectivity
 //=====================
 module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
-  for (hub, i) in hubNetworks!: if (hub.vpnGatewayEnabled && !empty(hub.?virtualNetworkGatewayConfig)) {
+  for (hub, i) in hubNetworks: if (hub.virtualNetworkGatewaySettings.enableVirtualNetworkGateway) {
     name: 'virtualNetworkGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -412,27 +412,27 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
       modHubNetworkingResourceGroups
     ]
     params: {
-      name: hub.?virtualNetworkGatewayConfig.?name ?? 'vgw-${hub.?virtualNetworkGatewayConfig.?gatewayType}-${hub.location}'
+      name: hub.?virtualNetworkGatewaySettings.?name ?? 'vgw-${toLower(hub.?virtualNetworkGatewaySettings.?gatewayType ?? 'vpn')}-${hub.location}'
       clusterSettings: {
-        clusterMode: any(hub.?virtualNetworkGatewayConfig.?vpnMode)
-        asn: hub.?virtualNetworkGatewayConfig.?asn ?? 65515
-        customBgpIpAddresses: (hub.?virtualNetworkGatewayConfig.?vpnMode == 'activePassiveBgp' || hub.?virtualNetworkGatewayConfig.?vpnMode == 'activeActiveBgp')
-          ? (hub.?virtualNetworkGatewayConfig.?customBgpIpAddresses)
+        clusterMode: any(hub.?virtualNetworkGatewaySettings.?vpnMode)
+        asn: hub.?virtualNetworkGatewaySettings.?asn ?? 65515
+        customBgpIpAddresses: (hub.?virtualNetworkGatewaySettings.?vpnMode == 'activePassiveBgp' || hub.?virtualNetworkGatewaySettings.?vpnMode == 'activeActiveBgp')
+          ? (hub.?virtualNetworkGatewaySettings.?customBgpIpAddresses)
           : null
       }
       location: hub.location
-      gatewayType: hub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
-      vpnType: hub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
-      skuName: hub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
-      enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
-      enableDnsForwarding: hub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
-      vpnGatewayGeneration: hub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
+      gatewayType: hub.?virtualNetworkGatewaySettings.?gatewayType ?? 'Vpn'
+      vpnType: hub.?virtualNetworkGatewaySettings.?vpnType ?? 'RouteBased'
+      skuName: hub.?virtualNetworkGatewaySettings.?skuName ?? 'VpnGw1AZ'
+      enableBgpRouteTranslationForNat: hub.?virtualNetworkGatewaySettings.?enableBgpRouteTranslationForNat ?? false
+      enableDnsForwarding: hub.?virtualNetworkGatewaySettings.?enableDnsForwarding ?? false
+      vpnGatewayGeneration: hub.?virtualNetworkGatewaySettings.?vpnGatewayGeneration ?? 'None'
       virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
-      domainNameLabel: hub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpAvailabilityZones: hub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
-        ? hub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3]
+      domainNameLabel: hub.?virtualNetworkGatewaySettings.?domainNameLabel ?? []
+      publicIpAvailabilityZones: hub.?virtualNetworkGatewaySettings.?skuName != 'Basic'
+        ? hub.?virtualNetworkGatewaySettings.?publicIpZones ?? [1, 2, 3]
         : []
-      lock: parGlobalResourceLock ?? hub.?virtualNetworkGatewayConfig.?lock
+      lock: parGlobalResourceLock ?? hub.?virtualNetworkGatewaySettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -443,7 +443,7 @@ module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gatew
 // DNS
 // =====================
 module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
-  for (hub, i) in hubNetworks!: if (hub.?privateDnsSettings.?enablePrivateDnsZones ?? false) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enablePrivateDnsZones) {
     name: 'privateDnsZone-${hub.name}-${uniqueString(parDnsResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -458,7 +458,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
           [
             resourceId(
               subscription().subscriptionId,
-              parHubNetworkingResourceGroupNamePrefix,
+              hubResourceGroupNames[indexOf(parLocations, hub.location)],
               'Microsoft.Network/virtualNetworks',
               hub.name
             )
@@ -477,7 +477,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 ]
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
-  for (hub, i) in hubNetworks!: if (hub.?privateDnsSettings.?enableDnsPrivateResolver ?? true) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enableDnsPrivateResolver) {
     name: 'dnsResolver-${hub.name}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, hub.location)])
     dependsOn: [
@@ -527,6 +527,9 @@ type hubNetworkingType = {
 }
 
 type bastionHostType = {
+  @description('Required. Enable/Disable Azure Bastion deployment for the virtual network.')
+  enableBastion: bool
+
   @description('Optional. Enable/Disable copy/paste functionality.')
   disableCopyPaste: bool?
 
@@ -556,24 +559,22 @@ type bastionHostType = {
 
   @description('Optional. Lock settings for Bastion.')
   lock: lockType?
-}?
 
-type bastionNsgType = {
   @description('Optional. The name of the Bastion NSG.')
-  name: string?
+  bastionNsgName: string?
 
   @description('Optional. Custom security rules for the Bastion NSG.')
-  securityRules: array?
+  bastionNsgSecurityRules: array?
 
   @description('Optional. Lock settings for Bastion NSG.')
-  lock: lockType?
+  bastionNsgLock: lockType?
 
   @description('Optional. Tags for Bastion NSG.')
-  tags: object?
+  bastionNsgTags: object?
 
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
-}?
+  @description('Optional. Enable/Disable usage telemetry for Bastion NSG.')
+  bastionNsgEnableTelemetry: bool?
+}
 
 type hubVirtualNetworkType = {
   @description('Required. The name of the hub.')
@@ -582,23 +583,17 @@ type hubVirtualNetworkType = {
   @description('Required. The address prefixes for the virtual network.')
   addressPrefixes: array
 
-  @description('Optional. The Azure Firewall config.')
-  azureFirewallSettings: azureFirewallType?
+  @description('Required. Azure Firewall configuration settings.')
+  azureFirewallSettings: azureFirewallType
 
-  @description('Optional. The Private DNS config.')
-  privateDnsSettings: privateDnsType?
+  @description('Required. Private DNS configuration settings.')
+  privateDnsSettings: privateDnsType
 
-  @description('Optional. The DDoS protection plan config.')
-  ddosProtectionPlanSettings: ddosProtectionPlanType?
+  @description('Required. DDoS protection plan configuration settings.')
+  ddosProtectionPlanSettings: ddosProtectionPlanType
 
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
-
-  @description('Optional. Enable/Disable Azure Bastion for the virtual network.')
-  enableBastion: bool
-
-  @description('Required. Enable/Disable Azure Firewall for the virtual network.')
-  enableAzureFirewall: bool
 
   @description('Optional. The location of the virtual network.')
   location: string
@@ -609,7 +604,7 @@ type hubVirtualNetworkType = {
   @description('Optional. The diagnostic settings of the virtual network.')
   diagnosticSettings: diagnosticSettingType?
 
-  @description('Optional. The DDoS protection plan resource ID.')
+  @description('Optional. Resource ID of an existing DDoS protection plan to associate with the virtual network. If not specified and enableDdosProtection is true, a new DDoS protection plan will be created.')
   ddosProtectionPlanResourceId: string?
 
   @description('Optional. The DNS servers of the virtual network.')
@@ -618,7 +613,7 @@ type hubVirtualNetworkType = {
   @description('Optional. The flow timeout in minutes.')
   flowTimeoutInMinutes: int?
 
-  @description('Optional. Enable/Disable peering for the virtual network.')
+  @description('Required. Enable/Disable peering for the virtual network.')
   enablePeering: bool
 
   @description('Optional. The peerings of the virtual network.')
@@ -645,17 +640,11 @@ type hubVirtualNetworkType = {
   @description('Optional. The VNet encryption enforcement settings of the virtual network.')
   vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
 
-  @description('Optional. The virtual network gateway configuration.')
-  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType?
+  @description('Required. Virtual network gateway configuration settings.')
+  virtualNetworkGatewaySettings: virtualNetworkGatewaySettingsType
 
-  @description('Optional. Switch to enable/disable VPN virtual network gateway deployment.')
-  vpnGatewayEnabled: bool
-
-  @description('Optional. The Azure Bastion config.')
-  bastionHost: bastionHostType?
-
-  @description('Optional. The Bastion NSG config.')
-  bastionNsg: bastionNsgType?
+  @description('Required. Azure Bastion configuration settings.')
+  bastionHost: bastionHostType
 }[]
 
 type peeringSettingsType = {
@@ -676,6 +665,9 @@ type peeringSettingsType = {
 }[]?
 
 type ddosProtectionPlanType = {
+  @description('Required. Enable/Disable DDoS protection plan for the virtual network.')
+  enableDdosProtection: bool
+
   @description('Optional. The name of the DDoS protection plan.')
   name: string?
 
@@ -690,10 +682,13 @@ type ddosProtectionPlanType = {
 
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
-}?
+}
 
 type azureFirewallType = {
-  @description('Optional. The name of the Azure Firewall.')
+  @description('Required. Enable/Disable Azure Firewall deployment for the virtual network.')
+  enableAzureFirewall: bool
+
+  @description('Optional. The name of the Azure Firewall to create.')
   azureFirewallName: string?
 
   @description('Optional. Hub IP addresses.')
@@ -717,10 +712,10 @@ type azureFirewallType = {
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
 
-  @description('Optional. Firewall policy ID.')
+  @description('Optional. Resource ID of an existing Azure Firewall Policy to associate with the firewall. If not specified and enableAzureFirewall is true, a new firewall policy will be created.')
   firewallPolicyId: string?
 
-  @description('Optional. The location of the virtual network. Defaults to the location of the resource group.')
+  @description('Optional. The location of the Azure Firewall. Defaults to the location of the resource group.')
   location: string?
 
   @description('Optional. Lock settings.')
@@ -761,26 +756,26 @@ type azureFirewallType = {
 
   @description('Optional. Array of custom DNS servers used by Azure Firewall.')
   firewallDnsServers: array?
-}?
+}
 
 type privateDnsType = {
-  @description('Optional. Enable/Disable private DNS zones.')
-  enablePrivateDnsZones: bool?
+  @description('Required. Enable/Disable private DNS zones.')
+  enablePrivateDnsZones: bool
 
   @description('Optional. The resource group name for private DNS zones.')
   privateDnsZonesResourceGroup: string?
 
-  @description('Optional. Array of Resource IDs of VNets to link to Private DNS Zones. Hub VNet is automatically included by module.')
+  @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The hub virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
 
   @description('Optional. Array of DNS Zones to provision and link to Hub Virtual Network. Default: All known Azure Private DNS Zones, baked into underlying AVM module see: https://github.com/Azure/bicep-registry-modules/tree/main/avm/ptn/network/private-link-private-dns-zones#parameter-privatelinkprivatednszones')
   privateDnsZones: array?
 
-  @description('Optional. Resource ID of Failover VNet for Private DNS Zone VNet Failover Links')
+  @description('Optional. Resource ID of an existing failover virtual network for Private DNS Zone VNet failover links.')
   virtualNetworkIdToLinkFailover: string?
 
-  @description('Optional. Enable/Disable Private DNS Resolver.')
-  enableDnsPrivateResolver: bool?
+  @description('Required. Enable/Disable Private DNS Resolver deployment.')
+  enableDnsPrivateResolver: bool
 
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
@@ -808,7 +803,7 @@ type privateDnsType = {
 
   @description('Optional. Role assignments for Private DNS resources.')
   roleAssignments: roleAssignmentType?
-}?
+}
 
 type roleAssignmentType = {
   @description('Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated.')
@@ -881,23 +876,26 @@ type diagnosticSettingType = {
 }[]?
 
 type subnetOptionsType = ({
-  @description('Name of subnet.')
+  @description('Required. Name of subnet.')
   name: string
 
-  @description('IP-address range for subnet.')
+  @description('Required. IP-address range for subnet.')
   addressPrefix: string
 
-  @description('Id of Network Security Group to associate with subnet.')
+  @description('Optional. Id of Network Security Group to associate with subnet.')
   networkSecurityGroupId: string?
 
-  @description('Id of Route Table to associate with subnet.')
+  @description('Optional. Id of Route Table to associate with subnet.')
   routeTable: string?
 
-  @description('Name of the delegation to create for the subnet.')
+  @description('Optional. Name of the delegation to create for the subnet.')
   delegation: string?
 })[]
 
-type virtualNetworkGatewayConfigType = {
+type virtualNetworkGatewaySettingsType = {
+  @description('Required. Enable/Disable virtual network gateway deployment.')
+  enableVirtualNetworkGateway: bool
+
   @description('Optional. The name of the virtual network gateway.')
   name: string?
 

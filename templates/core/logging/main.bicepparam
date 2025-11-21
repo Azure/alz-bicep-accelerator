@@ -2,8 +2,8 @@ using 'main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{location-0}}'
+  '{{location-1}}'
 ]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'

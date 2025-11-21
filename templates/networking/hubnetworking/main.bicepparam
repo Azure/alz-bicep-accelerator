@@ -2,8 +2,8 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{location-0}}'
+  '{{location-1}}'
 ]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
@@ -23,38 +23,12 @@ param hubNetworks = [
   {
     name: 'vnet-alz-${parLocations[0]}'
     location: parLocations[0]
-    vpnGatewayEnabled: true
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-    privateDnsSettings: {
-      enablePrivateDnsZones: true
-      enableDnsPrivateResolver: true
-      privateDnsZones: []
-    }
-    azureFirewallSettings: {
-      azureSkuTier: 'Standard'
-    }
-    enableAzureFirewall: true
-    enableBastion: true
-    bastionHost: {
-      skuName: 'Standard'
-    }
     enablePeering: true
     dnsServers: []
     routes: []
-    virtualNetworkGatewayConfig: {
-      gatewayType: 'Vpn'
-      publicIpZones: [
-        1
-        2
-        3
-      ]
-      skuName: 'VpnGw1AZ'
-      vpnMode: 'activeActiveBgp'
-      asn: 65515
-      vpnType: 'RouteBased'
-    }
     subnets: [
       {
         name: 'AzureBastionSubnet'
@@ -83,28 +57,45 @@ param hubNetworks = [
         delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
+    azureFirewallSettings: {
+      enableAzureFirewall: true
+      azureSkuTier: 'Standard'
+    }
+    bastionHost: {
+      enableBastion: true
+      skuName: 'Standard'
+    }
+    virtualNetworkGatewaySettings: {
+      enableVirtualNetworkGateway: true
+      gatewayType: 'Vpn'
+      skuName: 'VpnGw1AZ'
+      vpnMode: 'activeActiveBgp'
+      vpnType: 'RouteBased'
+      asn: 65515
+      publicIpZones: [
+        1
+        2
+        3
+      ]
+    }
+    privateDnsSettings: {
+      enablePrivateDnsZones: true
+      enableDnsPrivateResolver: true
+      privateDnsZones: []
+    }
+    ddosProtectionPlanSettings: {
+      enableDdosProtection: true
+    }
   }
   {
     name: 'vnet-alz-${parLocations[1]}'
     location: parLocations[1]
-    vpnGatewayEnabled: false
     addressPrefixes: [
       '20.0.0.0/16'
     ]
-    enableAzureFirewall: false
-    enableBastion: false
     enablePeering: false
-    privateDnsSettings: {
-      enableDnsPrivateResolver: false
-      enablePrivateDnsZones: false
-    }
     dnsServers: []
     routes: []
-    azureFirewallSettings: {
-      azureSkuTier: 'Basic'
-      location: parLocations[1]
-      zones: []
-    }
     subnets: [
       {
         name: 'AzureBastionSubnet'
@@ -133,5 +124,26 @@ param hubNetworks = [
         delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
+    azureFirewallSettings: {
+      enableAzureFirewall: false
+      azureSkuTier: 'Standard'
+    }
+    bastionHost: {
+      enableBastion: false
+      skuName: 'Basic'
+    }
+    virtualNetworkGatewaySettings: {
+      enableVirtualNetworkGateway: false
+      gatewayType: 'Vpn'
+      skuName: 'VpnGw1AZ'
+      vpnMode: 'activePassiveNoBgp'
+    }
+    privateDnsSettings: {
+      enablePrivateDnsZones: false
+      enableDnsPrivateResolver: false
+    }
+    ddosProtectionPlanSettings: {
+      enableDdosProtection: false
+    }
   }
 ]

@@ -8,7 +8,7 @@ targetScope = 'subscription'
 //================================
 
 // Resource Group Parameters
-@description('The name prefix for the Virtual WAN Resource Groups (will append location). Can be overridden by parVirtualWanResourceGroupNameOverrides.')
+@description('Required. The name prefix for the Virtual WAN Resource Groups (will append location). Can be overridden by parVirtualWanResourceGroupNameOverrides.')
 param parVirtualWanResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
@@ -21,13 +21,13 @@ param parVirtualWanResourceGroupNameOverrides array = []
 ''')
 param parResourceGroupLock lockType?
 
-@description('The name prefix for the DNS Resource Groups (will append location). Can be overridden by parDnsResourceGroupNameOverrides.')
+@description('Required. The name prefix for the DNS Resource Groups (will append location). Can be overridden by parDnsResourceGroupNameOverrides.')
 param parDnsResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
 param parDnsResourceGroupNameOverrides array = []
 
-@description('The name prefix for the Private DNS Resolver Resource Groups (will append location). Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
+@description('Required. The name prefix for the Private DNS Resolver Resource Groups (will append location). Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
 param parDnsPrivateResolverResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of locations in parLocations.')
@@ -52,15 +52,15 @@ param parGlobalResourceLock lockType = {
 }
 
 // General Parameters
-@description('The locations to deploy resources to.')
+@description('Required. The locations to deploy resources to.')
 param parLocations array = [
   deployment().location
 ]
 
-@description('Tags to be applied to all resources.')
+@description('Optional. Tags to be applied to all resources.')
 param parTags object = {}
 
-@description('Enable or disable telemetry.')
+@description('Optional. Enable or disable telemetry.')
 param parEnableTelemetry bool = true
 
 //========================================
@@ -92,7 +92,7 @@ module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' 
 ]
 
 module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
-  for (location, i) in parLocations: {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enablePrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -106,7 +106,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' =
 ]
 
 module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
-  for (location, i) in parLocations: {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enableDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -123,7 +123,7 @@ module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource
 // VWAN Resources
 //================================
 
-module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
+module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.3' = {
   name: 'vwan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
   scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwan.location)])
   dependsOn: [
@@ -142,7 +142,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.2' = {
 }
 
 module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
-  for (vwanHub, i) in vwanHubs!: if (!empty(vwanHubs)) {
+  for (vwanHub, i) in vwanHubs!: {
     name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -156,11 +156,10 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
       virtualRouterAutoScaleConfiguration: vwanHub.?virtualRouterAutoScaleConfiguration
       allowBranchToBranchTraffic: vwanHub.allowBranchToBranchTraffic
       azureFirewallResourceId: vwanHub.?azureFirewallSettings.?azureFirewallResourceID
-      expressRouteGatewayResourceId: vwanHub.?expressRouteGatewayId ?? resVirtualNetworkGateway[i].?outputs.resourceId
+      expressRouteGatewayResourceId: vwanHub.?expressRouteGatewayId
       vpnGatewayResourceId: vwanHub.?vpnGatewayId
       p2SVpnGatewayResourceId: vwanHub.?p2SVpnGatewayId
       hubRouteTables: vwanHub.?routeTableRoutes
-      hubRoutingPreference: vwanHub.?hubRoutingPreference
       hubVirtualNetworkConnections: vwanHub.?hubVirtualNetworkConnections
       preferredRoutingGateway: vwanHub.?preferredRoutingGateway ?? 'None'
       routingIntent: vwanHub.?routingIntent
@@ -182,7 +181,6 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1
     name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
-      resVirtualWanHub[i]
       modVwanResourceGroups
     ]
     params: {
@@ -192,34 +190,16 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1
       flowTimeoutInMinutes: vwanHub.sideCarVirtualNetwork.?flowTimeoutInMinutes
       ipamPoolNumberOfIpAddresses: vwanHub.sideCarVirtualNetwork.?ipamPoolNumberOfIpAddresses
       lock: parGlobalResourceLock ?? vwanHub.sideCarVirtualNetwork.?lock
-      peerings: vwanHub.sideCarVirtualNetwork.?vnetPeerings ?? [
-        {
-          name: 'sidecar-to-hub'
-          remoteVirtualNetworkName: vwanHub.hubName
-          allowForwardedTraffic: true
-          allowVirtualNetworkAccess: true
-          allowGatewayTransit: false
-          useRemoteGateways: true
-        }
-        {
-          name: 'hub-to-sidecar'
-          remoteVirtualNetworkName: vwanHub.?sideCarVirtualNetwork.?name ?? 'vnet-sidecar-alz-${vwanHub.location}'
-          allowForwardedTraffic: true
-          allowVirtualNetworkAccess: true
-          allowGatewayTransit: true
-          useRemoteGateways: false
-        }
-      ]
-      subnets: [
+      subnets: vwanHub.sideCarVirtualNetwork.?subnets ?? [
         {
           name: 'DNSPrivateResolverInboundSubnet'
-          addressPrefix: vwanHub.sideCarVirtualNetwork.addressPrefixes[i]
+          addressPrefix: cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 0)
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
         }
         {
           name: 'DNSPrivateResolverOutboundSubnet'
-          addressPrefix: vwanHub.sideCarVirtualNetwork.addressPrefixes[i]
+          addressPrefix: length(vwanHub.sideCarVirtualNetwork.addressPrefixes) > 1 ? vwanHub.sideCarVirtualNetwork.addressPrefixes[1] : cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 1)
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
         }
@@ -243,7 +223,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1
 // DNS
 //=====================
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.?dnsSettings.?enablePrivateDnsZones ?? true) {
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enablePrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -260,7 +240,7 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 ]
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.?dnsSettings.?enableDnsPrivateResolver ?? true) {
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enableDnsPrivateResolver) {
     name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -294,7 +274,7 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
 // Network security
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
-  for (vwanHub, i) in vwanHubs!: if ((vwanHub.?ddosProtectionPlanSettings.?enableDDosProtection ?? false) && (vwanHub.?ddosProtectionPlanSettings.?lock != 'None' || parGlobalResourceLock.?kind != 'None')) {
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.ddosProtectionPlanSettings.enableDdosProtection) {
     name: 'ddosPlan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.?ddosProtectionPlanSettings.?name ?? '', vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -311,7 +291,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
 ]
 
 module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
-  for (vwanHub, i) in vwanHubs!: if (((vwanHub.?azureFirewallSettings.?enableAzureFirewall ?? false)) && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.azureFirewallSettings.enableAzureFirewall && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -329,45 +309,6 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
         ? null
         : vwanHub.?azureFirewallSettings.?firewallDnsServers
       lock: parGlobalResourceLock ?? vwanHub.?azureFirewallSettings.?lock
-      tags: parTags
-      enableTelemetry: parEnableTelemetry
-    }
-  }
-]
-
-//=====================
-// Hybrid connectivity
-//=====================
-module resVirtualNetworkGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
-  for (vwanHub, i) in vwanHubs!: if ((vwanHub.?virtualNetworkGatewayConfig.?enableVirtualNetworkGateway ?? false) && !empty(vwanHub.?virtualNetworkGatewayConfig)) {
-    name: 'virtualNetworkGateway-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
-    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
-    dependsOn: [
-      modVwanResourceGroups
-    ]
-    params: {
-      allowVirtualWanTraffic: true
-      name: vwanHub.?virtualNetworkGatewayConfig.?name ?? 'vgw-${vwanHub.hubName}-${vwanHub.location}'
-      clusterSettings: {
-        clusterMode: any(vwanHub.?virtualNetworkGatewayConfig.?vpnMode)
-        asn: vwanHub.?virtualNetworkGatewayConfig.?asn ?? 65515
-        customBgpIpAddresses: (vwanHub.?virtualNetworkGatewayConfig.?vpnMode == 'activePassiveBgp' || vwanHub.?virtualNetworkGatewayConfig.?vpnMode == 'activeActiveBgp')
-          ? (vwanHub.?virtualNetworkGatewayConfig.?customBgpIpAddresses)
-          : null
-      }
-      location: vwanHub.location
-      gatewayType: vwanHub.?virtualNetworkGatewayConfig.?gatewayType ?? 'Vpn'
-      vpnType: vwanHub.?virtualNetworkGatewayConfig.?vpnType ?? 'RouteBased'
-      skuName: vwanHub.?virtualNetworkGatewayConfig.?skuName ?? 'VpnGw1AZ'
-      enableBgpRouteTranslationForNat: vwanHub.?virtualNetworkGatewayConfig.?enableBgpRouteTranslationForNat ?? false
-      enableDnsForwarding: vwanHub.?virtualNetworkGatewayConfig.?enableDnsForwarding ?? false
-      vpnGatewayGeneration: vwanHub.?virtualNetworkGatewayConfig.?vpnGatewayGeneration ?? 'None'
-      virtualNetworkResourceId: resourceId('Microsoft.Network/virtualNetworks', vwanHub.hubName)
-      domainNameLabel: vwanHub.?virtualNetworkGatewayConfig.?domainNameLabel ?? []
-      publicIpAvailabilityZones: vwanHub.?virtualNetworkGatewayConfig.?skuName != 'Basic'
-        ? (vwanHub.?virtualNetworkGatewayConfig.?publicIpZones ?? [1, 2, 3])
-        : []
-      lock: parGlobalResourceLock
       tags: parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -412,69 +353,69 @@ type vwanNetworkType = {
 }
 
 type sideCarVirtualNetworkType = {
-  @description('The name of the sidecar virtual network.')
+  @description('Optional. The name of the sidecar virtual network to create.')
   name: string?
 
-  @description('Disable the sidecar virtual network.')
+  @description('Required. Enable/Disable the sidecar virtual network deployment.')
   sidecarVirtualNetworkEnabled: bool
 
-  @description('The address space of the sidecar virtual network.')
+  @description('Required. The address space of the sidecar virtual network.')
   addressPrefixes: string[]
 
-  @description('The location of the sidecar virtual network.')
+  @description('Optional. The location of the sidecar virtual network. Defaults to the Virtual WAN hub location.')
   location: string?
 
-  @description('The resource ID of the virtual hub to associate with the sidecar virtual network.')
+  @description('Optional. Resource ID of an existing Virtual WAN hub to associate with the sidecar virtual network.')
   virtualHubIdOverride: string?
 
-  @description('Flow timeout in minutes for the virtual network.')
+  @description('Optional. Flow timeout in minutes for the sidecar virtual network.')
   flowTimeoutInMinutes: int?
 
-  @description('Number of IP addresses allocated from the pool. To be used only when the addressPrefix param is defined with a resource ID of an IPAM pool.')
+  @description('Optional. Number of IP addresses allocated from the pool. To be used only when the addressPrefix param is defined with a resource ID of an IPAM pool.')
   ipamPoolNumberOfIpAddresses: string?
 
-  @description('Resource lock configuration for the virtual network.')
+  @description('Optional. Resource lock configuration for the sidecar virtual network.')
   lock: lockType?
 
-  @description('Virtual network peerings in addition to the primary VWAN Hub peering connection.')
+  @description('Optional. Virtual network peerings in addition to the primary VWAN Hub peering connection.')
   vnetPeerings: array?
 
-  @description('Subnets for the virtual network.')
+  @description('Optional. Subnets for the sidecar virtual network.')
   subnets: array?
 
-  @description('Enable VNet encryption for the virtual network.')
+  @description('Optional. Enable/Disable VNet encryption for the sidecar virtual network.')
   vnetEncryption: bool?
 
-  @description('If the encrypted VNet allows VM that does not support encryption. Can only be used when vnetEncryption is enabled.')
+  @description('Optional. Whether the encrypted VNet allows VM that does not support encryption. Can only be used when vnetEncryption is enabled.')
   vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
 
-  @description('Role assignments for the virtual network.')
+  @description('Optional. Role assignments for the sidecar virtual network.')
   roleAssignments: array?
 
-  @description('BGP community for the virtual network.')
+  @description('Optional. BGP community for the sidecar virtual network.')
   virtualNetworkBgpCommunity: string?
 
-  @description('Diagnostic settings for the virtual network.')
+  @description('Optional. Diagnostic settings for the sidecar virtual network.')
   diagnosticSettings: array?
 
-  @description('DNS servers for the virtual network.')
+  @description('Optional. DNS servers for the sidecar virtual network.')
   dnsServers: array?
 
-  @description('Enable VM protection for the virtual network.')
+  @description('Optional. Enable VM protection for the virtual network.')
   enableVmProtection: bool?
 
-  @description('DDoS protection plan resource ID.')
+  @description('Optional. DDoS protection plan resource ID.')
   ddosProtectionPlanResourceIdOverride: string?
 }
 
 type vwanHubType = {
-  @description('Required. The name of the vwanHub.')
+  @description('Required. The name of the Virtual WAN hub.')
   hubName: string
 
-  @description('Required. The location of the virtual WAN vwanHub.')
+  @description('Required. The location of the Virtual WAN hub.')
   location: string
 
-  @description('Required. The address prefixes for the virtual network.')
+  @description('Required. The address prefix for the Virtual WAN hub.')
   addressPrefix: string
 
   @description('Optional. The virtual router auto scale configuration.')
@@ -482,28 +423,25 @@ type vwanHubType = {
     minInstances: int
   }?
 
-  @description('Required. The location of the virtual WAN vwanHub.')
+  @description('Required. Enable/Disable branch-to-branch traffic for the Virtual WAN hub.')
   allowBranchToBranchTraffic: bool
 
-  @description('Optional. The Azure Firewall config.')
-  azureFirewallSettings: azureFirewallType?
+  @description('Required. Azure Firewall configuration settings.')
+  azureFirewallSettings: azureFirewallType
 
-  @description('Optional. The Express Route Gateway resource ID.')
+  @description('Optional. Resource ID of an existing Express Route Gateway to associate with the Virtual WAN hub.')
   expressRouteGatewayId: string?
 
-  @description('Optional. The VPN Gateway resource ID.')
+  @description('Optional. Resource ID of an existing VPN Gateway to associate with the Virtual WAN hub.')
   vpnGatewayId: string?
 
-  @description('Optional. The Point-to-Site VPN Gateway resource ID.')
+  @description('Optional. Resource ID of an existing Point-to-Site VPN Gateway to associate with the Virtual WAN hub.')
   p2SVpnGatewayId: string?
 
-  @description('Optional. The preferred routing preference for this virtual vwanHub.')
-  hubRoutingPreference: ('ASPath' | 'VpnGateway' | 'ExpressRoute')?
-
-  @description('Optional. The hub virtual network connections and assocaited properties.')
+  @description('Optional. The hub virtual network connections and associated properties.')
   hubVirtualNetworkConnections: array?
 
-  @description('Optional. The routing intent configuration to create for the virtual vwanHub.')
+  @description('Optional. The routing intent configuration to create for the Virtual WAN hub.')
   routingIntent: {
     privateToFirewall: bool?
     internetToFirewall: bool?
@@ -512,32 +450,32 @@ type vwanHubType = {
   @description('Optional. The preferred routing gateway types.')
   preferredRoutingGateway: ('VpnGateway' | 'ExpressRoute' | 'None')?
 
-  @description('Optional. VirtualHub route tables.')
+  @description('Optional. Virtual WAN hub route tables.')
   routeTableRoutes: array?
 
-  @description('Optional. The Security Partner Provider resource ID.')
+  @description('Optional. Resource ID of an existing Security Partner Provider to associate with the Virtual WAN hub.')
   securityPartnerProviderId: string?
 
   @description('Optional. The Security Provider name.')
   securityProviderName: string?
 
-  @description('Optional. VirtualHub route tables.')
+  @description('Optional. Virtual WAN hub route tables V2 configuration.')
   virtualHubRouteTableV2s: array?
 
-  @description('Optional. The virtual router ASN.')
+  @description('Optional. The virtual router Autonomous System Number (ASN).')
   virtualRouterAsn: int?
 
-  @description('Optional. The virtual router IPs.')
+  @description('Optional. The virtual router IP addresses.')
   virtualRouterIps: array?
 
-  @description('Optional. The virtual network gateway configuration.')
-  virtualNetworkGatewayConfig: virtualNetworkGatewayConfigType?
+  @description('Required. Virtual network gateway configuration settings.')
+  virtualNetworkGatewaySettings: virtualNetworkGatewaySettingsType
 
-  @description('Optional. The DDoS protection plan resource ID.')
-  ddosProtectionPlanSettings: ddosProtectionType?
+  @description('Required. DDoS protection plan configuration settings.')
+  ddosProtectionPlanSettings: ddosProtectionType
 
-  @description('Optional. DNS settings including private DNS zones and resolver configuration.')
-  dnsSettings: dnsSettingsType?
+  @description('Required. DNS configuration settings including private DNS zones and resolver.')
+  dnsSettings: dnsSettingsType
 
   @description('Optional. Sidecar virtual network configuration.')
   sideCarVirtualNetwork: sideCarVirtualNetworkType
@@ -570,16 +508,16 @@ type peeringSettingsType = {
 }[]?
 
 type azureFirewallType = {
-  @description('Optional. Name of Azure Firewall.')
-  name: string?
-
-  @description('Optional. Hub IP addresses.')
-  hubIpAddresses: object?
-
-  @description('Optional. Switch to enable/disable AzureFirewall deployment for the vwanHub.')
+  @description('Required. Enable/Disable Azure Firewall deployment for the Virtual WAN hub.')
   enableAzureFirewall: bool
 
-  @description('Optional. Pass an existing Azure Firewall resource ID to use instead of creating a new one.')
+  @description('Optional. The name of the Azure Firewall to create.')
+  name: string?
+
+  @description('Optional. Hub IP addresses configuration.')
+  hubIpAddresses: object?
+
+  @description('Optional. Resource ID of an existing Azure Firewall to associate with the Virtual WAN hub instead of creating a new one.')
   azureFirewallResourceID: string?
 
   @description('Optional. Additional public IP configurations.')
@@ -597,10 +535,10 @@ type azureFirewallType = {
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
 
-  @description('Optional. Firewall policy ID.')
+  @description('Optional. Resource ID of an existing Azure Firewall Policy to associate with the firewall. If not specified and enableAzureFirewall is true, a new firewall policy will be created.')
   firewallPolicyId: string?
 
-  @description('Optional. Lock settings.')
+  @description('Optional. Lock settings for Azure Firewall.')
   lock: lockType?
 
   @description('Optional. Management IP address configuration.')
@@ -635,14 +573,14 @@ type azureFirewallType = {
 
   @description('Optional. Array of custom DNS servers used by Azure Firewall.')
   firewallDnsServers: array?
-}?
+}
 
 type ddosProtectionType = {
+  @description('Required. Enable/Disable DDoS protection.')
+  enableDdosProtection: bool
+
   @description('Optional. Friendly logical name for this DDoS protection configuration instance.')
   name: string?
-
-  @description('Optonal. Enable/Disable DDoS protection.')
-  enableDDosProtection: bool?
 
   @description('Optional. Lock settings.')
   lock: lockType?
@@ -655,23 +593,23 @@ type ddosProtectionType = {
 }
 
 type dnsSettingsType = {
-  @description('Optional. Enable/Disable private DNS zones.')
-  enablePrivateDnsZones: bool?
+  @description('Required. Enable/Disable Private DNS zones deployment.')
+  enablePrivateDnsZones: bool
 
   @description('Optional. The resource group name for private DNS zones.')
   privateDnsZonesResourceGroup: string?
 
-  @description('Optional. Array of Resource IDs of VNets to link to Private DNS Zones. Hub VNet is automatically included by module.')
+  @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The sidecar virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
 
-  @description('Optional. Array of DNS Zones to provision and link to Hub Virtual Network. Default: All known Azure Private DNS Zones, baked into underlying AVM module see: https://github.com/Azure/bicep-registry-modules/tree/main/avm/ptn/network/private-link-private-dns-zones#parameter-privatelinkprivatednszones')
+  @description('Optional. Array of DNS Zones to provision and link to sidecar Virtual Network. Default: All known Azure Private DNS Zones, baked into underlying AVM module see: https://github.com/Azure/bicep-registry-modules/tree/main/avm/ptn/network/private-link-private-dns-zones#parameter-privatelinkprivatednszones')
   privateDnsZones: array?
 
-  @description('Optional. Resource ID of Failover VNet for Private DNS Zone VNet Failover Links')
+  @description('Optional. Resource ID of an existing failover virtual network for Private DNS Zone VNet failover links.')
   virtualNetworkIdToLinkFailover: string?
 
-  @description('Optional. Enable/Disable Private DNS Resolver.')
-  enableDnsPrivateResolver: bool?
+  @description('Required. Enable/Disable Private DNS Resolver deployment.')
+  enableDnsPrivateResolver: bool
 
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
@@ -699,7 +637,7 @@ type dnsSettingsType = {
 
   @description('Optional. Role assignments for Private DNS resources.')
   roleAssignments: roleAssignmentType?
-}?
+}
 
 type roleAssignmentType = {
   @description('Optional. The name (as GUID) of the role assignment. If not provided, a GUID will be generated.')
@@ -772,28 +710,28 @@ type diagnosticSettingType = {
 }[]?
 
 type subnetOptionsType = ({
-  @description('Name of subnet.')
+  @description('Required. Name of subnet.')
   name: string
 
-  @description('IP-address range for subnet.')
+  @description('Required. IP-address range for subnet.')
   addressPrefix: string
 
-  @description('Id of Network Security Group to associate with subnet.')
+  @description('Optional. Id of Network Security Group to associate with subnet.')
   networkSecurityGroupId: string?
 
-  @description('Id of Route Table to associate with subnet.')
+  @description('Optional. Id of Route Table to associate with subnet.')
   routeTable: string?
 
-  @description('Name of the delegation to create for the subnet.')
+  @description('Optional. Name of the delegation to create for the subnet.')
   delegation: string?
 })[]
 
-type virtualNetworkGatewayConfigType = {
+type virtualNetworkGatewaySettingsType = {
+  @description('Required. Enable/Disable virtual network gateway deployment.')
+  enableVirtualNetworkGateway: bool
+
   @description('Optional. Name of the virtual network gateway.')
   name: string?
-
-  @description('Optional. Enable/disable the virtual network gateway.')
-  enableVirtualNetworkGateway: bool?
 
   @description('Optional. The gateway type. Set to Vpn or ExpressRoute.')
   gatewayType: 'Vpn' | 'ExpressRoute'?

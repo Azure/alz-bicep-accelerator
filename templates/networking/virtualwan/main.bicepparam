@@ -2,18 +2,18 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{location-0}}'
+  '{{location-1}}'
 ]
+param parTags = {}
+param parEnableTelemetry = true
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
   kind: 'None'
   notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
-param parTags = {}
-param parEnableTelemetry = true
 
-//Resource Group Parameters
+// Resource Group Parameters
 param parVirtualWanResourceGroupNamePrefix = 'rg-alz-conn'
 param parDnsResourceGroupNamePrefix = 'rg-alz-dns'
 param parDnsPrivateResolverResourceGroupNamePrefix = 'rg-alz-dnspr'
@@ -22,8 +22,8 @@ param parDnsPrivateResolverResourceGroupNamePrefix = 'rg-alz-dnspr'
 param vwan = {
   name: 'vwan-alz-${parLocations[0]}'
   location: parLocations[0]
-  allowBranchToBranchTraffic: true
   type: 'Standard'
+  allowBranchToBranchTraffic: true
   lock: {
     kind: 'None'
     name: 'vwan-lock'
@@ -39,26 +39,26 @@ param vwanHubs = [
     addressPrefix: '10.100.0.0/23'
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
-
-    ddosProtectionPlanSettings:{
-      enableDDosProtection: true
-      name: 'ddos-alz-${parLocations[0]}'
-      tags: {}
+    enableTelemetry: parEnableTelemetry
+    azureFirewallSettings: {
+      enableAzureFirewall: true
     }
-    virtualNetworkGatewayConfig: {
+    virtualNetworkGatewaySettings: {
       enableVirtualNetworkGateway: true
       gatewayType: 'ExpressRoute'
+      skuName: 'ErGw1AZ'
+      vpnType: 'RouteBased'
+      vpnMode: 'activeActiveBgp'
       publicIpZones: [
         1
         2
         3
       ]
-      skuName: 'ErGw1AZ'
-      vpnMode: 'activeActiveBgp'
-      vpnType: 'RouteBased'
     }
-    azureFirewallSettings: {
-      enableAzureFirewall: true
+    ddosProtectionPlanSettings: {
+      enableDdosProtection: true
+      name: 'ddos-alz-${parLocations[0]}'
+      tags: {}
     }
     dnsSettings: {
       enablePrivateDnsZones: true
@@ -71,15 +71,29 @@ param vwanHubs = [
         '10.100.1.0/24'
       ]
     }
-    enableTelemetry: parEnableTelemetry
   }
   {
     hubName: 'vhub-alz-${parLocations[1]}'
     location: parLocations[1]
     addressPrefix: '10.200.0.0/23'
     allowBranchToBranchTraffic: true
+    preferredRoutingGateway: 'ExpressRoute'
+    enableTelemetry: parEnableTelemetry
     azureFirewallSettings: {
       enableAzureFirewall: true
+    }
+    virtualNetworkGatewaySettings: {
+      enableVirtualNetworkGateway: false
+      gatewayType: 'ExpressRoute'
+      skuName: 'ErGw1AZ'
+      vpnType: 'RouteBased'
+      vpnMode: 'activeActiveBgp'
+      publicIpZones: []
+    }
+    ddosProtectionPlanSettings: {
+      enableDdosProtection: false
+      name: 'ddos-alz-${parLocations[1]}'
+      tags: {}
     }
     dnsSettings: {
       enablePrivateDnsZones: false
@@ -89,9 +103,8 @@ param vwanHubs = [
       name: 'vnet-sidecar-alz-${parLocations[1]}'
       sidecarVirtualNetworkEnabled: true
       addressPrefixes: [
-        '20.100.1.0/24'
+        '10.200.1.0/24'
       ]
     }
-    enableTelemetry: parEnableTelemetry
   }
 ]
