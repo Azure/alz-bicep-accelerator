@@ -247,7 +247,7 @@ var allPolicyAssignments = [
 module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
-    managementGroupName: landingZonesConfig.?managementGroupName ?? 'alz-landingzones'
+    managementGroupName: landingZonesConfig.?managementGroupName ?? 'landingzones'
     managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing Zones'
     managementGroupDoNotEnforcePolicyAssignments: landingZonesConfig.?managementGroupDoNotEnforcePolicyAssignments ?? []
     managementGroupExcludedPolicyAssignments: landingZonesConfig.?managementGroupExcludedPolicyAssignments ?? []
