@@ -203,7 +203,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
-                    "group": "governance-landingzones-children"
+                    "group": "governance-sandbox"
                 },
                 {
                     "order": 11,
@@ -215,7 +215,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-landingzones-children"
+                    "group": "governance-decommissioned"
                 },
                 {
                     "order": 12,
