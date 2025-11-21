@@ -478,7 +478,7 @@ type vwanHubType = {
   dnsSettings: dnsSettingsType
 
   @description('Optional. Sidecar virtual network configuration.')
-  sideCarVirtualNetwork: sideCarVirtualNetworkType
+  sideCarVirtualNetwork: sideCarVirtualNetworkType?
 
   @description('Optional. Lock settings.')
   lock: lockType?
