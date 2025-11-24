@@ -1,7 +1,7 @@
 {
     "starter_modules": {
         "platform_landing_zone": {
-            "location": "platform_landing_zone",
+            "location": ".",
             "short_name": "Azure Verified Modules for Platform Landing Zone (ALZ)",
             "description": "Complete Azure Platform Landing Zones Configurable Deployment with Multi-Region Support using Azure Verified Modules",
             "inputs": {
