@@ -1,7 +1,9 @@
 {
     "starter_modules": {
-        "alz": {
-            "description": "Azure Landing Zones Deployment with AVM",
+        "platform_landing_zone": {
+            "location": "platform_landing_zone",
+            "short_name": "Azure Verified Modules for Platform Landing Zone (ALZ)",
+            "description": "Complete Azure Platform Landing Zones Configurable Deployment with Multi-Region Support using Azure Verified Modules",
             "inputs": {
                 "subscription_ids": {
                     "source": "input",
