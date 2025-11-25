@@ -10,7 +10,7 @@ param parEnableTelemetry = true
 param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'alz'
-  managementGroupParentId: ''
+  managementGroupParentId: '{{your-tenant-root-management-group-id}}'
   managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
