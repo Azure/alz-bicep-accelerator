@@ -57,8 +57,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'}/')
         } : {
           scope: '/providers/Microsoft.Management/managementGroups/${platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -73,6 +75,7 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         {
           scope: '/providers/Microsoft.Management/managementGroups/${platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformIdentityConfig.?managementGroupName ?? 'alz-platform-identity'}/')
         },
         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]

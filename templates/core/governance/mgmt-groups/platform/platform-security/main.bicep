@@ -49,8 +49,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}/')
         } : {
           scope: '/providers/Microsoft.Management/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -62,6 +64,7 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         {
           scope: '/providers/Microsoft.Management/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformSecurityConfig.?managementGroupName ?? 'alz-platform-security'}/')
         }
       )
     }
