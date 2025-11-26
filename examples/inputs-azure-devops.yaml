@@ -3,7 +3,7 @@
 # https://aka.ms/alz/accelerator/docs
 
 # Basic Inputs
-iac_type: "bicep-avm"
+iac_type: "bicep"
 bootstrap_module_name: "alz_azuredevops"
 starter_module_name: "platform_landing_zone"
 
