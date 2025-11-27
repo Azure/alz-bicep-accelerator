@@ -2,15 +2,15 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  '{{location-0}}'
-  '{{location-1}}'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
 param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'alz'
-  managementGroupParentId: '{{your-tenant-root-management-group-id}}'
+  managementGroupParentId: '{{root_parent_management_group_id}}'
   managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -33,7 +33,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-MDFC-Config-H224': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       emailSecurityContact: {
         value: 'security@yourcompany.com'
@@ -46,7 +46,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzActivity-Log': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       logsEnabled: {
         value: 'True'
@@ -56,7 +56,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-Diag-LogsCat': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{your-management-subscription-id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }

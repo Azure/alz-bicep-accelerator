@@ -2,8 +2,8 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  '{{location-0}}'
-  '{{location-1}}'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
@@ -19,7 +19,7 @@ param platformConnectivityConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: [ '{{your-connectivity-subscription-id}}' ]
+  subscriptionsToPlaceInManagementGroup: [ '{{connectivity_subscription_id}}' ]
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
@@ -32,7 +32,7 @@ param platformConnectivityConfig = {
 param parPolicyAssignmentParameterOverrides = {
   'Enable-DDoS-VNET': {
     ddosPlan: {
-      value: '/subscriptions/{{your-connectivity-subscription-id}}/resourceGroups/rg-alz-conn-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
+      value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/rg-alz-conn-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
     }
   }
 }

@@ -4,15 +4,10 @@
             "short_name": "Azure Verified Modules for Platform Landing Zone (ALZ)",
             "description": "Complete Azure Platform Landing Zones Configurable Deployment with Multi-Region Support using Azure Verified Modules",
             "inputs": {
-                "subscription_ids": {
-                    "source": "input",
-                    "description": "The subscription IDs object",
-                    "sourceInput": "subscription_ids"
-                },
                 "management_subscription_id": {
                     "source": "powershell",
                     "description": "The subscription ID for the management subscription",
-                    "sourceInput": "$inputs.subscription_ids.management",
+                    "sourceInput": "subscription_ids[\"management\"]",
                     "default": "",
                     "targets": [
                         {
@@ -24,7 +19,7 @@
                 "connectivity_subscription_id": {
                     "source": "powershell",
                     "description": "The subscription ID for the connectivity subscription",
-                    "sourceInput": "$inputs.subscription_ids.connectivity",
+                    "sourceInput": "subscription_ids[\"connectivity\"]",
                     "default": "",
                     "targets": [
                         {
@@ -36,7 +31,7 @@
                 "identity_subscription_id": {
                     "source": "powershell",
                     "description": "The subscription ID for the identity subscription",
-                    "sourceInput": "$inputs.subscription_ids.identity",
+                    "sourceInput": "subscription_ids[\"identity\"]",
                     "default": "",
                     "targets": [
                         {
@@ -48,7 +43,7 @@
                 "security_subscription_id": {
                     "source": "powershell",
                     "description": "The subscription ID for the security subscription",
-                    "sourceInput": "$inputs.subscription_ids.security",
+                    "sourceInput": "subscription_ids[\"security\"]",
                     "default": "",
                     "targets": [
                         {
@@ -57,18 +52,54 @@
                         }
                     ]
                 },
-                "location": {
+                "primary_location": {
                     "source": "powershell",
                     "sourceInput": "starter_locations[0]",
                     "description": "The primary Azure location for deployments",
-                    "targets": []
+                    "targets": [
+                        {
+                            "Name": "LOCATION",
+                            "Destination": "Environment"
+                        },
+                        {
+                            "Name": "LOCATION_PRIMARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "secondary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[1]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION_SECONDARY",
+                            "Destination": "Environment"
+                        }
+                    ]
                 },
                 "management_group_id": {
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
                     "default": "alz",
-                    "targets": []
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "networkType": {
+                    "source": "input",
+                    "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
+                    "default": "hubNetworking",
+                    "targets": [
+                        {
+                            "Name": "NETWORK_TYPE",
+                            "Destination": "Environment"
+                        }
+                    ]
                 }
             },
             "folders_or_files_to_retain": [

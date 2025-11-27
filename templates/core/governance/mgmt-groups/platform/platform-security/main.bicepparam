@@ -2,8 +2,8 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  '{{location-0}}'
-  '{{location-1}}'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
@@ -19,7 +19,7 @@ param platformSecurityConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: [ '{{your-security-subscription-id}}' ]
+  subscriptionsToPlaceInManagementGroup: [ '{{security_subscription_id}}' ]
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
