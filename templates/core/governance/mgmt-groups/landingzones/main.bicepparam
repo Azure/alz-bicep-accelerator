@@ -2,16 +2,15 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  '{{primary_location}}'
-  '{{secondary_location}}'
+  'eastus2'
 ]
 param parEnableTelemetry = true
 
 param landingZonesConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'landingzones'
-  managementGroupParentId: 'alz'
-  managementGroupIntermediateRootID: 'alz'
+  managementGroupParentId: 'met'
+  managementGroupIntermediateRootID: 'met'
   managementGroupDisplayName: 'Landing zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []

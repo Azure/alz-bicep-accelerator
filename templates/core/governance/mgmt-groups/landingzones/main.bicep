@@ -198,30 +198,17 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
-            !contains(
-                parPolicyAssignmentParameterOverrides[policyAssignment.name].?policyDefinitionId,
-                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
               )
-              ? {
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
-                    '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
-                  )
-                }
-              : {},
-            !contains(
-                parPolicyAssignmentParameterOverrides[policyAssignment.name].?policyDefinitionId,
-                '/providers/Microsoft.Management/managementGroups/alz/'
-              )
-              ? {
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/providers/Microsoft.Management/managementGroups/alz/',
-                    '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
-                  )
-                }
-              : {}
+            }
           )
         }
       : {
@@ -236,30 +223,17 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
-            !contains(
-                parPolicyAssignmentParameterOverrides[policyAssignment.name].?policyDefinitionId,
-                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
               )
-              ? {
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
-                    '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
-                  )
-                }
-              : {},
-            !contains(
-                parPolicyAssignmentParameterOverrides[policyAssignment.name].?policyDefinitionId,
-                '/providers/Microsoft.Management/managementGroups/alz/'
-              )
-              ? {
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/providers/Microsoft.Management/managementGroups/alz/',
-                    '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
-                  )
-                }
-              : {}
+            }
           )
         }
   )
