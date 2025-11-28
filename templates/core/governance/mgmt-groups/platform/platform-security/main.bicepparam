@@ -11,6 +11,7 @@ param platformSecurityConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'security'
   managementGroupParentId: 'platform'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Security'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -19,7 +20,7 @@ param platformSecurityConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: [ '{{security_subscription_id}}' ]
+  subscriptionsToPlaceInManagementGroup: ['{{security_subscription_id}}']
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30

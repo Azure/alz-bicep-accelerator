@@ -11,6 +11,7 @@ param sandboxConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'sandbox'
   managementGroupParentId: 'alz'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Sandbox'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []

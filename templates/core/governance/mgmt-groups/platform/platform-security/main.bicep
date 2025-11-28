@@ -37,6 +37,7 @@ var alzPolicySetDefsJson = []
 var alzPolicyAssignmentsJson = []
 
 var managementGroupFinalName = platformSecurityConfig.?managementGroupName ?? 'security'
+var intRootManagementGroupFinalName = platformSecurityConfig.?managementGroupIntermediateRootName ?? 'alz'
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
@@ -60,14 +61,45 @@ var alzPolicyAssignmentsWithOverrides = [
                     parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
                   )
                 }
-              : {}
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
           )
         }
       : {
           location: parLocations[0]
-          properties: union(policyAssignment.properties, {
-            scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
-          })
+          properties: union(
+            policyAssignment.properties,
+            {
+              scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+            },
+            // Uncomment the following block when role assignments are needed for policy assignments
+            // contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+            //   ? {
+            //       roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+            //     }
+            //   : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
+          )
         }
   )
 ]

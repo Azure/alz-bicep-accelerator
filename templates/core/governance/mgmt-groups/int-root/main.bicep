@@ -304,19 +304,9 @@ var alzPolicyAssignmentsWithOverrides = [
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
               ? {
                   scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/managementGroups/alz/',
-                    '/managementGroups/${managementGroupFinalName}/'
-                  )
                 }
               : {
                   scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
-                  policyDefinitionId: replace(
-                    policyAssignment.properties.policyDefinitionId,
-                    '/managementGroups/alz/',
-                    '/managementGroups/${managementGroupFinalName}/'
-                  )
                 },
             contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters')
               ? {
@@ -330,7 +320,14 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
-              : {}
+              : {},
+            {
+              policyDefinitionId: replace(
+                policyAssignment.properties.policyDefinitionId,
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+              )
+            }
           )
         }
       : {
@@ -339,17 +336,19 @@ var alzPolicyAssignmentsWithOverrides = [
             policyAssignment.properties,
             {
               scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
-              policyDefinitionId: replace(
-                policyAssignment.properties.policyDefinitionId,
-                '/managementGroups/alz/',
-                '/managementGroups/${managementGroupFinalName}/'
-              )
             },
             contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
-              : {}
+              : {},
+            {
+              policyDefinitionId: replace(
+                policyAssignment.properties.policyDefinitionId,
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+              )
+            }
           )
         }
   )
@@ -373,7 +372,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroupFinalName})')
+    roleName: replace(roleDef.properties.roleName, '(alz)', '(${managementGroupFinalName})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
@@ -501,8 +500,8 @@ type alzCoreType = {
   @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
   managementGroupParentId: string?
 
-  @description('The intermediate root management group ID to use for policy assignments and role assignments.')
-  managementGroupIntermediateRootID: string?
+  @description('The intermediate root management group name of your ALZ hierarchy. This is used for replacing Resource IDs in policy assignments and role assignments etc. If not specified, `alz` will be used.')
+  managementGroupIntermediateRootName: string?
 
   @description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
   customerRbacRoleDefs: array?

@@ -11,6 +11,7 @@ param platformManagementConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'management'
   managementGroupParentId: 'platform'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Management'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -19,7 +20,7 @@ param platformManagementConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: [ '{{management_subscription_id}}'  ]
+  subscriptionsToPlaceInManagementGroup: ['{{management_subscription_id}}']
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30

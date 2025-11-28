@@ -169,6 +169,7 @@ var alzPolicyAssignmentRoleDefinitions = {
 }
 
 var managementGroupFinalName = landingZonesConfig.?managementGroupName ?? 'landingzones'
+var intRootManagementGroupFinalName = landingZonesConfig.?managementGroupIntermediateRootName ?? 'alz'
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
@@ -203,10 +204,10 @@ var alzPolicyAssignmentsWithOverrides = [
                 replace(
                   policyAssignment.properties.policyDefinitionId,
                   '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
-                  '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
                 ),
                 '/providers/Microsoft.Management/managementGroups/alz/',
-                '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
               )
             }
           )
@@ -228,10 +229,10 @@ var alzPolicyAssignmentsWithOverrides = [
                 replace(
                   policyAssignment.properties.policyDefinitionId,
                   '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
-                  '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
                 ),
                 '/providers/Microsoft.Management/managementGroups/alz/',
-                '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupIntermediateRootID ?? 'alz'}/'
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
               )
             }
           )

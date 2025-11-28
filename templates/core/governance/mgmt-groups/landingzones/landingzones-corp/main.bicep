@@ -47,6 +47,7 @@ var alzPolicyAssignmentRoleDefinitions = {
 }
 
 var managementGroupFinalName = landingZonesCorpConfig.?managementGroupName ?? 'corp'
+var intRootManagementGroupFinalName = landingZonesCorpConfig.?managementGroupIntermediateRootName ?? 'alz'
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
@@ -75,7 +76,18 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
-              : {}
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
           )
         }
       : {
@@ -89,7 +101,18 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
-              : {}
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
           )
         }
   )
