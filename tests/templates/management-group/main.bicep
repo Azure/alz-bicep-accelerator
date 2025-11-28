@@ -18,6 +18,11 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
+resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01' existing = {
+  scope: tenant()
+  name: tenant().tenantId
+}
+
 // ============ //
 //   Resources  //
 // ============ //
@@ -27,7 +32,7 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
     managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-test'
     managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Testing'
-    managementGroupParentId: sandboxConfig.?managementGroupParentId ?? ''
+    managementGroupParentId: sandboxConfig.?managementGroupParentId ?? tenantRootMgExisting.name
     location: parLocations[0]
     enableTelemetry: parEnableTelemetry
   }
