@@ -9,7 +9,7 @@ param parEnableTelemetry = true
 
 param sandboxConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'alz-{{unique_postfix}}'
+  managementGroupName: '{{intermediate_root_management_group_id}}'
   managementGroupParentId: '{{root_parent_management_group_id}}'
   managementGroupDisplayName: 'Test'
 }
