@@ -458,7 +458,7 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
     managementGroupDisplayName: intRootConfig.?managementGroupDisplayName ?? 'Azure Landing Zones'
     managementGroupDoNotEnforcePolicyAssignments: intRootConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: intRootConfig.?managementGroupExcludedPolicyAssignments
-    managementGroupParentId: tenantRootMgExisting.name
+    managementGroupParentId: intRootConfig.?managementGroupParentId ?? tenantRootMgExisting.name
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
