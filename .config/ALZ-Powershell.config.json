@@ -324,6 +324,147 @@
                 }
             ],
             "destroy_script_path": ""
+        },
+        "test": {
+            "short_name": "Test",
+            "description": "Test config for e2e tests",
+            "inputs": {
+                "management_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the management subscription",
+                    "sourceInput": "subscription_ids[\"management\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "connectivity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the connectivity subscription",
+                    "sourceInput": "subscription_ids[\"connectivity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "CONNECTIVITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "identity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the identity subscription",
+                    "sourceInput": "subscription_ids[\"identity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "IDENTITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "security_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the security subscription",
+                    "sourceInput": "subscription_ids[\"security\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SECURITY_SUBSCRIPTION_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "primary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[0]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION",
+                            "Destination": "Environment"
+                        },
+                        {
+                            "Name": "LOCATION_PRIMARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "secondary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[1]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION_SECONDARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "sourceInput": "root_parent_management_group_id",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "networkType": {
+                    "source": "input",
+                    "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
+                    "default": "hubNetworking",
+                    "targets": [
+                        {
+                            "Name": "NETWORK_TYPE",
+                            "Destination": "Environment"
+                        }
+                    ]
+                }
+            },
+            "folders_or_files_to_retain": [
+                "tests",
+                "templates",
+                "bicepconfig.json"
+            ],
+            "subfolders_or_files_to_remove": [
+                ".github",
+                ".gitignore",
+                "CODE_OF_CONDUCT.md",
+                "DEVELOPER.md",
+                "examples",
+                "LICENSE",
+                "README.md",
+                "SECURITY.md",
+                "SUPPORT.md"
+            ],
+            "deployment_files": [
+                {
+                    "order": 1,
+                    "name": "governance-int-root",
+                    "displayName": "Governance-Intermediate Root",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-int-root"
+                }
+            ],
+            "deployment_file_groups": [
+                {
+                    "order": 1,
+                    "name": "governance-int-root",
+                    "displayName": "Governance - Intermediate Root"
+                }
+            ],
+            "destroy_script_path": ""
         }
     }
 }
