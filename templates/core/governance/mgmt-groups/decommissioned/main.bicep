@@ -26,14 +26,11 @@ var builtInRoleDefinitionIds = {
   vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
 }
 
-var alzRbacRoleDefsJson = [
-]
+var alzRbacRoleDefsJson = []
 
-var alzPolicyDefsJson = [
-]
+var alzPolicyDefsJson = []
 
-var alzPolicySetDefsJson = [
-]
+var alzPolicySetDefsJson = []
 
 var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/decommissioned/Enforce-ALZ-Decomm.alz_policy_assignment.json')
@@ -48,37 +45,47 @@ var managementGroupFinalName = decommissionedConfig.?managementGroupName ?? 'dec
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
-          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
-        } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
-        },
-        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
-        } : {},
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    } : {
-      location: parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        {
-          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
-        },
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    }
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
+      ? {
+          location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
+              ? {
+                  scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+                }
+              : {
+                  scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+                },
+            contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters')
+              ? {
+                  parameters: union(
+                    policyAssignment.properties.?parameters ?? {},
+                    parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
+                  )
+                }
+              : {},
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {}
+          )
+        }
+      : {
+          location: parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            {
+              scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+            },
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {}
+          )
+        }
   )
 ]
 
@@ -88,11 +95,12 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, decommissionedConfig.?customerP
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, decommissionedConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, decommissionedConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(
+  alzPolicyAssignmentsWithOverrides,
+  decommissionedConfig.?customerPolicyAssignments ?? []
+)
 
-var unionedPolicyAssignmentNames = [
-  for policyAssignment in unionedPolicyAssignments: policyAssignment.name
-]
+var unionedPolicyAssignmentNames = [for policyAssignment in unionedPolicyAssignments: policyAssignment.name]
 
 var deduplicatedPolicyAssignments = filter(
   unionedPolicyAssignments,
@@ -102,7 +110,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroup().name})')
+    roleName: replace(roleDef.properties.roleName, '(alz)', '(${managementGroup().name})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
