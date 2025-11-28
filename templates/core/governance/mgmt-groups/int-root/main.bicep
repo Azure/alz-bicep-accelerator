@@ -501,6 +501,9 @@ type alzCoreType = {
   @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
   managementGroupParentId: string?
 
+  @description('The intermediate root management group ID to use for policy assignments and role assignments.')
+  managementGroupIntermediateRootID: string?
+
   @description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
   customerRbacRoleDefs: array?
 
