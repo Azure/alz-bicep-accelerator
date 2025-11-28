@@ -100,6 +100,17 @@
                             "Destination": "Environment"
                         }
                     ]
+                },
+                "intermediate_root_management_group_id": {
+                    "source": "input",
+                    "description": "The intermediate root management group ID",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
                 }
             },
             "folders_or_files_to_retain": [
@@ -422,6 +433,17 @@
                     "targets": [
                         {
                             "Name": "NETWORK_TYPE",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "intermediate_root_management_group_id": {
+                    "source": "input",
+                    "description": "The intermediate root management group ID",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
                             "Destination": "Environment"
                         }
                     ]
