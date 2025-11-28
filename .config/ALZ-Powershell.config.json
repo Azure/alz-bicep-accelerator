@@ -236,7 +236,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-sandbox"
+                    "group": "governance-landingzones-children"
                 },
                 {
                     "order": 11,
@@ -248,7 +248,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-decommissioned"
+                    "group": "governance-landingzones-children"
                 },
                 {
                     "order": 12,
