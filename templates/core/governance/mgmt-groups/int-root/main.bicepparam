@@ -2,15 +2,16 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus2'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
 param intRootConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'met'
+  managementGroupName: 'alz'
   managementGroupParentId: '{{root_parent_management_group_id}}'
-  managementGroupDisplayName: 'Mara - ALZ Int Root'
+  managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
