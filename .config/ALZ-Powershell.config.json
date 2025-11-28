@@ -448,20 +448,64 @@
                     "order": 1,
                     "name": "governance-int-root",
                     "displayName": "Governance-Intermediate Root",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicepparam",
+                    "templateFilePath": "test/templates/management-group/main.bicep",
+                    "templateParametersFilePath": "test/templates/management-group/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-int-root"
+                    "group": "test"
+                },
+                {
+                    "order": 2,
+                    "name": "resource-group-management",
+                    "displayName": "Resource Group Test Management",
+                    "templateFilePath": "test/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "test/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 3,
+                    "name": "resource-group-connectivity",
+                    "displayName": "Resource Group Test Connectivity",
+                    "templateFilePath": "test/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "test/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 4,
+                    "name": "resource-group-identity",
+                    "displayName": "Resource Group Test Identity",
+                    "templateFilePath": "test/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "test/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_IDENTITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 5,
+                    "name": "resource-group-security",
+                    "displayName": "Resource Group Test Security",
+                    "templateFilePath": "test/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "test/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_SECURITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
                 }
             ],
             "deployment_file_groups": [
                 {
                     "order": 1,
-                    "name": "governance-int-root",
-                    "displayName": "Governance - Intermediate Root"
+                    "name": "test",
+                    "displayName": "Test"
                 }
             ],
             "destroy_script_path": ""
