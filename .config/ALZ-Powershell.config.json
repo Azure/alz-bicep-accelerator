@@ -11,7 +11,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "MANAGEMENT_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_MANAGEMENT",
                             "Destination": "Environment"
                         }
                     ]
@@ -23,7 +23,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "CONNECTIVITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_CONNECTIVITY",
                             "Destination": "Environment"
                         }
                     ]
@@ -35,7 +35,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "IDENTITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_IDENTITY",
                             "Destination": "Environment"
                         }
                     ]
@@ -47,7 +47,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "SECURITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_SECURITY",
                             "Destination": "Environment"
                         }
                     ]
@@ -336,7 +336,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "MANAGEMENT_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_MANAGEMENT",
                             "Destination": "Environment"
                         }
                     ]
@@ -348,7 +348,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "CONNECTIVITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_CONNECTIVITY",
                             "Destination": "Environment"
                         }
                     ]
@@ -360,7 +360,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "IDENTITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_IDENTITY",
                             "Destination": "Environment"
                         }
                     ]
@@ -372,7 +372,7 @@
                     "default": "",
                     "targets": [
                         {
-                            "Name": "SECURITY_SUBSCRIPTION_ID",
+                            "Name": "SUBSCRIPTION_ID_SECURITY",
                             "Destination": "Environment"
                         }
                     ]
