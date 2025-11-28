@@ -9,7 +9,7 @@ param parEnableTelemetry = true
 
 param platformConnectivityConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'platform-connectivity'
+  managementGroupName: 'connectivity'
   managementGroupParentId: 'platform'
   managementGroupDisplayName: 'Connectivity'
   managementGroupDoNotEnforcePolicyAssignments: []

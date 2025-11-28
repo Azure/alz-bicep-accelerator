@@ -11,7 +11,7 @@ param landingZonesConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'landingzones'
   managementGroupParentId: 'alz'
-  managementGroupDisplayName: 'Landing Zones'
+  managementGroupDisplayName: 'Landing zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []

@@ -51,6 +51,9 @@ var alzPolicyAssignmentsJson = [
 // var alzPolicyAssignmentRoleDefinitions = {
 // }
 
+var managementGroupFinalName = sandboxConfig.?managementGroupName ?? 'sandbox'
+
+
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
@@ -60,10 +63,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -74,8 +77,8 @@ var alzPolicyAssignmentsWithOverrides = [
       properties: union(
         policyAssignment.properties,
         {
-          scope: '/providers/Microsoft.Management/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         }
       )
     }
@@ -175,7 +178,7 @@ var allPolicyAssignments = [
 module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
-    managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-sandbox'
+    managementGroupName: managementGroupFinalName
     managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Sandbox'
     managementGroupDoNotEnforcePolicyAssignments: sandboxConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: sandboxConfig.?managementGroupExcludedPolicyAssignments

@@ -47,6 +47,8 @@ var alzPolicyAssignmentsJson = [
 // }
 // var alzPolicyAssignmentRoleDefinitions = {}
 
+var managementGroupFinalName = platformManagementConfig.?managementGroupName ?? 'management'
+
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
@@ -56,10 +58,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}/')
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -70,8 +72,8 @@ var alzPolicyAssignmentsWithOverrides = [
       properties: union(
         policyAssignment.properties,
         {
-          scope: '/providers/Microsoft.Management/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${platformManagementConfig.?managementGroupName ?? 'alz-platform-management'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         }
       )
     }
@@ -172,11 +174,11 @@ var allPolicyAssignments = [
 module platformManagement 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: platformManagementConfig.?createOrUpdateManagementGroup
-    managementGroupName: platformManagementConfig.?managementGroupName ?? 'alz-platform-management'
+    managementGroupName: managementGroupFinalName
     managementGroupDisplayName: platformManagementConfig.?managementGroupDisplayName ?? 'management'
     managementGroupDoNotEnforcePolicyAssignments: platformManagementConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: platformManagementConfig.?managementGroupExcludedPolicyAssignments
-    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'alz-platform'
+    managementGroupParentId: platformManagementConfig.?managementGroupParentId ?? 'platform'
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: platformManagementConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs

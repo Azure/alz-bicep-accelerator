@@ -120,6 +120,8 @@ var alzPolicyAssignmentRoleDefinitions = {
   'Enable-AUM-CheckUpdates': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.connectedMachineResourceAdministrator, builtInRoleDefinitionIds.managedIdentityOperator]
 }
 
+var managementGroupFinalName = landingZonesConfig.?managementGroupName ?? 'landingzones'
+
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
@@ -129,10 +131,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -146,8 +148,8 @@ var alzPolicyAssignmentsWithOverrides = [
       properties: union(
         policyAssignment.properties,
         {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${managementGroupFinalName}/')
         },
         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
@@ -177,7 +179,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroup().name})')
+    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroupFinalName})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
@@ -250,8 +252,8 @@ var allPolicyAssignments = [
 module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
-    managementGroupName: landingZonesConfig.?managementGroupName ?? 'landingzones'
-    managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing Zones'
+    managementGroupName: managementGroupFinalName
+    managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing zones'
     managementGroupDoNotEnforcePolicyAssignments: landingZonesConfig.?managementGroupDoNotEnforcePolicyAssignments ?? []
     managementGroupExcludedPolicyAssignments: landingZonesConfig.?managementGroupExcludedPolicyAssignments ?? []
     managementGroupParentId: landingZonesConfig.?managementGroupParentId ?? 'alz'

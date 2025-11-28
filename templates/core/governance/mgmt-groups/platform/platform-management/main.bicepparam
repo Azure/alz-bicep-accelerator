@@ -9,7 +9,7 @@ param parEnableTelemetry = true
 
 param platformManagementConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'platform-management'
+  managementGroupName: 'management'
   managementGroupParentId: 'platform'
   managementGroupDisplayName: 'Management'
   managementGroupDoNotEnforcePolicyAssignments: []
