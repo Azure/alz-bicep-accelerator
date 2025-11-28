@@ -177,7 +177,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: roleDef.properties.roleName
+    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroup().name})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
