@@ -231,4 +231,4 @@ module platformManagement 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import { alzCoreType as alzCoreType } from '../../int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../../../../alzCoreType.bicep'

@@ -42,4 +42,4 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // Type Definitions
 // ================ //
 
-import { alzCoreType as alzCoreType } from '../../../templates/core/governance/mgmt-groups/int-root/main.bicep'
+import { alzCoreType as alzCoreType } from '../../../templates/core/alzCoreType.bicep'

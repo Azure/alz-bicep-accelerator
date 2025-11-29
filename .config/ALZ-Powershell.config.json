@@ -114,7 +114,7 @@
                 }
             },
             "folders_or_files_to_retain": [
-                "templates",
+                "alzCoreType.bicep",
                 "bicepconfig.json"
             ],
             "subfolders_or_files_to_remove": [
