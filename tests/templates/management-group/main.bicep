@@ -8,7 +8,7 @@ targetScope = 'managementGroup'
 //================================
 
 @description('Required. The management group configuration.')
-param sandboxConfig alzCoreType
+param testConfig alzCoreType
 
 @description('The locations to deploy resources to.')
 param parLocations array = [
@@ -29,10 +29,10 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 
 module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
-    createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
-    managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-test'
-    managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Testing'
-    managementGroupParentId: sandboxConfig.?managementGroupParentId ?? tenantRootMgExisting.name
+    createOrUpdateManagementGroup: testConfig.?createOrUpdateManagementGroup
+    managementGroupName: testConfig.?managementGroupName ?? 'alz-test'
+    managementGroupDisplayName: testConfig.?managementGroupDisplayName ?? 'Testing'
+    managementGroupParentId: testConfig.?managementGroupParentId ?? tenantRootMgExisting.name
     location: parLocations[0]
     enableTelemetry: parEnableTelemetry
   }

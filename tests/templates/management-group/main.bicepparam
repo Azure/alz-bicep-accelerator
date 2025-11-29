@@ -7,7 +7,7 @@ param parLocations = [
 ]
 param parEnableTelemetry = true
 
-param sandboxConfig = {
+param testConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: '{{intermediate_root_management_group_id}}'
   managementGroupParentId: '{{root_parent_management_group_id}}'

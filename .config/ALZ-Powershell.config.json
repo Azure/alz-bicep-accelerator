@@ -468,8 +468,8 @@
             "deployment_files": [
                 {
                     "order": 1,
-                    "name": "governance-int-root",
-                    "displayName": "Governance-Intermediate Root",
+                    "name": "management-group",
+                    "displayName": "Management Group Test",
                     "templateFilePath": "tests/templates/management-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/management-group/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
