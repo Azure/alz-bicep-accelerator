@@ -469,7 +469,7 @@
                 {
                     "order": 1,
                     "name": "management-group",
-                    "displayName": "Management Group Test",
+                    "displayName": "Management Group Test {{unique_postfix}}",
                     "templateFilePath": "tests/templates/management-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/management-group/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -481,7 +481,7 @@
                 {
                     "order": 2,
                     "name": "resource-group-management",
-                    "displayName": "Resource Group Test Management",
+                    "displayName": "Resource Group Test Management {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
@@ -492,7 +492,7 @@
                 {
                     "order": 3,
                     "name": "resource-group-connectivity",
-                    "displayName": "Resource Group Test Connectivity",
+                    "displayName": "Resource Group Test Connectivity {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
@@ -503,7 +503,7 @@
                 {
                     "order": 4,
                     "name": "resource-group-identity",
-                    "displayName": "Resource Group Test Identity",
+                    "displayName": "Resource Group Test Identity {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_IDENTITY",
@@ -514,7 +514,7 @@
                 {
                     "order": 5,
                     "name": "resource-group-security",
-                    "displayName": "Resource Group Test Security",
+                    "displayName": "Resource Group Test Security {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_SECURITY",
