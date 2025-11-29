@@ -129,10 +129,10 @@ var alzPolicyAssignmentsWithOverrides = [
         policyAssignment.properties,
         parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
           scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'alz-landingzones'}/')
         } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'alz-landingzones'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'alz-landingzones'}/')
         },
         contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
           parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
@@ -146,8 +146,8 @@ var alzPolicyAssignmentsWithOverrides = [
       properties: union(
         policyAssignment.properties,
         {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
+          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'alz-landingzones'}'
+          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'alz-landingzones'}/')
         },
         contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
           roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
@@ -250,7 +250,7 @@ var allPolicyAssignments = [
 module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
-    managementGroupName: landingZonesConfig.?managementGroupName ?? 'landingzones'
+    managementGroupName: landingZonesConfig.?managementGroupName ?? 'alz-landingzones'
     managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing Zones'
     managementGroupDoNotEnforcePolicyAssignments: landingZonesConfig.?managementGroupDoNotEnforcePolicyAssignments ?? []
     managementGroupExcludedPolicyAssignments: landingZonesConfig.?managementGroupExcludedPolicyAssignments ?? []

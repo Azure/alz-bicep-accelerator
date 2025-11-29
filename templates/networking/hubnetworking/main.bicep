@@ -34,8 +34,8 @@ param parDnsPrivateResolverResourceGroupNamePrefix string = 'rg-alz-dnspr'
 param parDnsPrivateResolverResourceGroupNameOverrides array = []
 
 // Hub Networking Parameters
-@description('Required. The hub virtual networks to create.')
-param hubNetworks hubVirtualNetworkType
+@description('Optional. The hub virtual networks to create.')
+param hubNetworks hubVirtualNetworkType?
 
 // Resource Lock Parameters
 @sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
