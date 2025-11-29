@@ -278,45 +278,79 @@ var alzPolicyAssignmentRoleDefinitions = {
   'Deploy-MDFC-Config-H224': [builtInRoleDefinitionIds.owner]
   'Deploy-MDEndpoints': [builtInRoleDefinitionIds.contributor]
   'Deploy-MDEndpointsAMA': [builtInRoleDefinitionIds.rbacSecurityAdmin]
-  'Deploy-AzActivity-Log': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor]
-  'Deploy-Diag-LogsCat': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor]
+  'Deploy-AzActivity-Log': [
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+  ]
+  'Deploy-Diag-LogsCat': [
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+  ]
   'Enforce-ACSB': [builtInRoleDefinitionIds.contributor]
   'Deploy-MDFC-OssDb': [builtInRoleDefinitionIds.contributor]
   'Deploy-MDFC-SqlAtp': [builtInRoleDefinitionIds.sqlSecurityManager]
   'Deploy-SvcHealth-BuiltIn': [builtInRoleDefinitionIds.monitoringPolicyContributor]
 }
+var managementGroupFinalName = intRootConfig.?managementGroupName ?? 'alz'
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
-          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-        } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${intRootConfig.?managementGroupName ?? 'alz'}'
-        },
-        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
-        } : {},
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    } : {
-      location: parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        {
-          scope: '/providers/Microsoft.Management/managementGroups/${intRootConfig.?managementGroupName ?? 'alz'}'
-        },
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    }
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
+      ? {
+          location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
+              ? {
+                  scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+                }
+              : {
+                  scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+                },
+            contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters')
+              ? {
+                  parameters: union(
+                    policyAssignment.properties.?parameters ?? {},
+                    parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
+                  )
+                }
+              : {},
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {},
+            {
+              policyDefinitionId: replace(
+                policyAssignment.properties.policyDefinitionId,
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+              )
+            }
+          )
+        }
+      : {
+          location: parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            {
+              scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+            },
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {},
+            {
+              policyDefinitionId: replace(
+                policyAssignment.properties.policyDefinitionId,
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/'
+              )
+            }
+          )
+        }
   )
 ]
 
@@ -328,9 +362,7 @@ var unionedPolicySetDefs = union(alzPolicySetDefsJson, intRootConfig.?customerPo
 
 var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, intRootConfig.?customerPolicyAssignments ?? [])
 
-var unionedPolicyAssignmentNames = [
-  for policyAssignment in unionedPolicyAssignments: policyAssignment.name
-]
+var unionedPolicyAssignmentNames = [for policyAssignment in unionedPolicyAssignments: policyAssignment.name]
 
 var deduplicatedPolicyAssignments = filter(
   unionedPolicyAssignments,
@@ -340,7 +372,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: roleDef.properties.roleName
+    roleName: replace(roleDef.properties.roleName, '(alz)', '(${managementGroupFinalName})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
@@ -422,11 +454,11 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 module intRoot 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
-    managementGroupName: intRootConfig.?managementGroupName ?? 'ALZ'
+    managementGroupName: managementGroupFinalName
     managementGroupDisplayName: intRootConfig.?managementGroupDisplayName ?? 'Azure Landing Zones'
     managementGroupDoNotEnforcePolicyAssignments: intRootConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: intRootConfig.?managementGroupExcludedPolicyAssignments
-    managementGroupParentId: tenantRootMgExisting.name
+    managementGroupParentId: intRootConfig.?managementGroupParentId ?? tenantRootMgExisting.name
     managementGroupCustomRoleDefinitions: allRbacRoleDefs
     managementGroupRoleAssignments: intRootConfig.?customerRbacRoleAssignments
     managementGroupCustomPolicyDefinitions: allPolicyDefs
@@ -467,6 +499,9 @@ type alzCoreType = {
 
   @description('The parent management group ID to use for the management group to create or update. If not specified, the tenant root management group will be used.')
   managementGroupParentId: string?
+
+  @description('The intermediate root management group name of your ALZ hierarchy. This is used for replacing Resource IDs in policy assignments and role assignments etc. If not specified, `alz` will be used.')
+  managementGroupIntermediateRootName: string?
 
   @description('Optional. Additional customer provided RBAC role definitions to be used in tandem with the ALZ RBAC role definitions.')
   customerRbacRoleDefs: array?

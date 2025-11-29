@@ -8,8 +8,8 @@ targetScope = 'subscription'
 //========================================
 
 // Resource Group Parameters
-@description('The name of the Resource Group.')
-param parMgmtLoggingResourceGroup string = 'rg-alz-mgmt-001'
+@description('Optional. The name of the Resource Group.')
+param parMgmtLoggingResourceGroup string = ''
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
@@ -19,22 +19,22 @@ param parMgmtLoggingResourceGroup string = 'rg-alz-mgmt-001'
 param parResourceGroupLock lockType?
 
 // Automation Account Parameters
-@description('The name of the Automation Account.')
-param parAutomationAccountName string = 'alz-automation-account'
+@description('Required. The name of the Automation Account.')
+param parAutomationAccountName string
 
-@description('The flag to enable or disable the Automation Account.')
+@description('Optional. The flag to enable or disable the Automation Account.')
 param parDisableAutomationAccount bool = true
 
-@description('The location of the Automation Account.')
+@description('Optional. The location of the Automation Account.')
 param parAutomationAccountLocation string = 'eastus'
 
-@description('The flag to enable or disable the use of Managed Identity for the Automation Account.')
+@description('Optional. The flag to enable or disable the use of Managed Identity for the Automation Account.')
 param parAutomationAccountUseManagedIdentity bool = true
 
-@description('The flag to enable or disable the use of Public Network Access for the Automation Account.')
+@description('Optional. The flag to enable or disable the use of Public Network Access for the Automation Account.')
 param parAutomationAccountPublicNetworkAccess bool = true
 
-@description('The SKU of the Automation Account.')
+@description('Optional. The SKU of the Automation Account.')
 @allowed([
   'Basic'
   'Free'
@@ -49,24 +49,24 @@ param parAutomationAccountSku string = 'Basic'
 param parAutomationAccountLock lockType?
 
 // Log Analytics Workspace Parameters
-@description('The name of the Log Analytics Workspace.')
-param parLogAnalyticsWorkspaceName string = 'alz-log-analytics'
+@description('Required. The name of the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceName string
 
-@description('The location of the Log Analytics Workspace.')
-param parLogAnalyticsWorkspaceLocation string = 'eastus'
+@description('Required. The location of the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceLocation string
 
-@description('The SKU of the Log Analytics Workspace.')
+@description('Optional. The SKU of the Log Analytics Workspace.')
 param parLogAnalyticsWorkspaceSku string = 'PerGB2018'
 
-@description('The capacity reservation level for the Log Analytics Workspace.')
+@description('Optional. The capacity reservation level for the Log Analytics Workspace.')
 @maxValue(5000)
 @minValue(100)
 param parLogAnalyticsWorkspaceCapacityReservationLevel int = 100
 
-@description('The log retention in days for the Log Analytics Workspace.')
+@description('Optional. The log retention in days for the Log Analytics Workspace.')
 param parLogAnalyticsWorkspaceLogRetentionInDays int = 365
 
-@description('The flag to enable or disable onboarding the Log Analytics Workspace to Sentinel.')
+@description('Optional. The flag to enable or disable onboarding the Log Analytics Workspace to Sentinel.')
 param parLogAnalyticsWorkspaceOnboardSentinel bool = true
 
 @description('''Resource Lock Configuration for Log Analytics Workspace.
@@ -77,20 +77,20 @@ param parLogAnalyticsWorkspaceOnboardSentinel bool = true
 param parLogAnalyticsWorkspaceLock lockType?
 
 // User Assigned Identity Parameters
-@description('The name of the User Assigned Identity utilized for Azure Monitoring Agent.')
-param parUserAssignedIdentityName string = 'alz-logging-mi'
+@description('Required. The name of the User Assigned Identity utilized for Azure Monitoring Agent.')
+param parUserAssignedIdentityName string
 
 // Data Collection Rule Parameters
-@description('The name of the data collection rule for VM Insights.')
-param parDataCollectionRuleVMInsightsName string = 'alz-ama-vmi-dcr'
+@description('Required. The name of the data collection rule for VM Insights.')
+param parDataCollectionRuleVMInsightsName string
 
-@description('The name of the data collection rule for Change Tracking.')
-param parDataCollectionRuleChangeTrackingName string = 'alz-ama-ct-dcr'
+@description('Required. The name of the data collection rule for Change Tracking.')
+param parDataCollectionRuleChangeTrackingName string
 
-@description('The name of the data collection rule for Microsoft Defender for SQL.')
-param parDataCollectionRuleMDFCSQLName string = 'alz-ama-mdfcsql-dcr'
+@description('Required. The name of the data collection rule for Microsoft Defender for SQL.')
+param parDataCollectionRuleMDFCSQLName string
 
-@description('The experience for the VM Insights data collection rule.')
+@description('Optional. The experience for the VM Insights data collection rule.')
 param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'
 
 @description('''The lock configuration for the data collection rule for VM Insights.
@@ -101,12 +101,12 @@ param parDataCollectionRuleVMInsightsExperience string = 'PerfAndMap'
 param parAmaResourcesLock lockType?
 
 // General Parameters
-@description('The primary locations to deploy resources to.')
+@description('Required. The locations to deploy resources to.')
 param parLocations array = [
   deployment().location
 ]
 
-@description('Tags to be applied to resources.')
+@description('Optional. Tags to be applied to resources.')
 param parTags object = {}
 
 @sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
@@ -116,14 +116,14 @@ param parTags object = {}
 ''')
 param parGlobalResourceLock lockType
 
-@description('Enable or disable telemetry.')
+@description('Optional. Enable or disable telemetry.')
 param parEnableTelemetry bool = true
 
 //========================================
 // Resources
 //========================================
 
-module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.1' = {
+module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
   name: 'modMgmtLoggingResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parLocations[0])}'
   scope: subscription()
   params: {
@@ -144,7 +144,7 @@ resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01'
 }
 
 // Automation Account
-module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.16.1' = if (!parDisableAutomationAccount) {
+module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.17.0' = if (!parDisableAutomationAccount) {
   name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
@@ -169,7 +169,7 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 }
 
 // Log Analytics Workspace
-module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.12.0' = {
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.13.0' = {
   name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {

@@ -2,8 +2,8 @@ using 'main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parGlobalResourceLock = {
   name: 'GlobalResourceLock'
@@ -14,7 +14,7 @@ param parTags = {}
 param parEnableTelemetry = true
 
 // Resource Group Parameters
-param parMgmtLoggingResourceGroup = 'rg-alz-${parLocations[0]}'
+param parMgmtLoggingResourceGroup = 'rg-alz-logging-${parLocations[0]}'
 
 // Automation Account Parameters
 param parAutomationAccountName = 'aa-alz-${parLocations[0]}'

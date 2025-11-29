@@ -2,15 +2,16 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
 param landingZonesOnlineConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'landingzones-online'
+  managementGroupName: 'online'
   managementGroupParentId: 'landingzones'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Online'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -20,12 +21,12 @@ param landingZonesOnlineConfig = {
   customerPolicySetDefs: []
   customerPolicyAssignments: []
   subscriptionsToPlaceInManagementGroup: []
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
-  waitForConsistencyCounterBeforePolicyAssignments: 10
-  waitForConsistencyCounterBeforeRoleAssignment: 10
-  waitForConsistencyCounterBeforeSubPlacement: 10
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
+  waitForConsistencyCounterBeforePolicyAssignments: 30
+  waitForConsistencyCounterBeforeRoleAssignment: 30
+  waitForConsistencyCounterBeforeSubPlacement: 30
 }
 
 // Currently no policy assignments for online landing zones

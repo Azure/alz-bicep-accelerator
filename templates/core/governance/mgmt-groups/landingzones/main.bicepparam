@@ -2,8 +2,8 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
@@ -11,7 +11,8 @@ param landingZonesConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'landingzones'
   managementGroupParentId: 'alz'
-  managementGroupDisplayName: 'Landing Zones'
+  managementGroupIntermediateRootName: 'alz'
+  managementGroupDisplayName: 'Landing zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
@@ -20,12 +21,12 @@ param landingZonesConfig = {
   customerPolicySetDefs: []
   customerPolicyAssignments: []
   subscriptionsToPlaceInManagementGroup: []
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
-  waitForConsistencyCounterBeforePolicyAssignments: 10
-  waitForConsistencyCounterBeforeRoleAssignment: 10
-  waitForConsistencyCounterBeforeSubPlacement: 10
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
+  waitForConsistencyCounterBeforePolicyAssignments: 30
+  waitForConsistencyCounterBeforeRoleAssignment: 30
+  waitForConsistencyCounterBeforeSubPlacement: 30
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
@@ -43,65 +44,65 @@ param parPolicyAssignmentParameterOverrides = {
   }
   'Enable-DDoS-VNET': {
     ddosPlan: {
-      value: '/subscriptions/{{your-connectivity-subscription-id}}/resourceGroups/rg-alz-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
+      value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/rg-alz-conn-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
     }
   }
   'Deploy-AzSqlDb-Auditing': {
     logAnalyticsWorkspaceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/log-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/log-alz-${parLocations[0]}'
     }
   }
   'Deploy-vmArc-ChangeTrack': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
     }
   }
   'Deploy-VM-ChangeTrack': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
     }
     userAssignedIdentityResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
     }
   }
   'Deploy-VMSS-ChangeTrack': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-changetracking-${parLocations[0]}'
     }
     userAssignedIdentityResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
     }
   }
   'Deploy-vmHybr-Monitoring': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
     }
   }
   'Deploy-VM-Monitoring': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
     }
     userAssignedIdentityResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
     }
   }
   'Deploy-VMSS-Monitoring': {
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-vminsights-${parLocations[0]}'
     }
     userAssignedIdentityResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
     }
   }
   'Deploy-MDFC-DefSQL-AMA': {
     userWorkspaceResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/log-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/log-alz-${parLocations[0]}'
     }
     dcrResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-mdfcsql-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.Insights/dataCollectionRules/dcr-alz-mdfcsql-${parLocations[0]}'
     }
     userAssignedIdentityResourceId: {
-      value: '/subscriptions/{{your-management-subscription-id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
+      value: '/subscriptions/{{management_subscription_id}}/resourceGroups/rg-alz-logging-${parLocations[0]}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-alz-${parLocations[0]}'
     }
   }
 }

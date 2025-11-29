@@ -2,15 +2,16 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
 param platformIdentityConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'platform-identity'
+  managementGroupName: 'identity'
   managementGroupParentId: 'platform'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Identity'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -19,13 +20,13 @@ param platformIdentityConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: []
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
-  waitForConsistencyCounterBeforePolicyAssignments: 10
-  waitForConsistencyCounterBeforeRoleAssignment: 10
-  waitForConsistencyCounterBeforeSubPlacement: 10
+  subscriptionsToPlaceInManagementGroup: ['{{identity_subscription_id}}']
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
+  waitForConsistencyCounterBeforePolicyAssignments: 30
+  waitForConsistencyCounterBeforeRoleAssignment: 30
+  waitForConsistencyCounterBeforeSubPlacement: 30
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files

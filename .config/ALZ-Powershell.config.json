@@ -1,0 +1,536 @@
+{
+    "starter_modules": {
+        "platform_landing_zone": {
+            "short_name": "Azure Verified Modules for Platform Landing Zone (ALZ)",
+            "description": "Complete Azure Platform Landing Zones Configurable Deployment with Multi-Region Support using Azure Verified Modules",
+            "inputs": {
+                "management_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the management subscription",
+                    "sourceInput": "subscription_ids[\"management\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_MANAGEMENT",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "connectivity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the connectivity subscription",
+                    "sourceInput": "subscription_ids[\"connectivity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_CONNECTIVITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "identity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the identity subscription",
+                    "sourceInput": "subscription_ids[\"identity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_IDENTITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "security_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the security subscription",
+                    "sourceInput": "subscription_ids[\"security\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_SECURITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "primary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[0]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION",
+                            "Destination": "Environment"
+                        },
+                        {
+                            "Name": "LOCATION_PRIMARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "secondary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[1]",
+                    "description": "The secondary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION_SECONDARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "sourceInput": "root_parent_management_group_id",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "networkType": {
+                    "source": "input",
+                    "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
+                    "default": "hubNetworking",
+                    "targets": [
+                        {
+                            "Name": "NETWORK_TYPE",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "intermediate_root_management_group_id": {
+                    "source": "input",
+                    "description": "The intermediate root management group ID",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                }
+            },
+            "folders_or_files_to_retain": [
+                "templates",
+                "bicepconfig.json"
+            ],
+            "subfolders_or_files_to_remove": [
+                ".github",
+                ".gitignore",
+                "CODE_OF_CONDUCT.md",
+                "DEVELOPER.md",
+                "examples",
+                "LICENSE",
+                "README.md",
+                "SECURITY.md",
+                "SUPPORT.md"
+            ],
+            "deployment_files": [
+                {
+                    "order": 1,
+                    "name": "governance-int-root",
+                    "displayName": "Governance-Intermediate Root",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-int-root"
+                },
+                {
+                    "order": 2,
+                    "name": "governance-platform",
+                    "displayName": "Governance-Platform",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform"
+                },
+                {
+                    "order": 3,
+                    "name": "governance-platform-connectivity",
+                    "displayName": "Governance-Platform Connectivity",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 4,
+                    "name": "governance-platform-identity",
+                    "displayName": "Governance-Platform Identity",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 5,
+                    "name": "governance-platform-management",
+                    "displayName": "Governance-Platform Management",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 6,
+                    "name": "governance-platform-security",
+                    "displayName": "Governance-Platform Security",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 7,
+                    "name": "governance-landingzones",
+                    "displayName": "Governance-Landing Zones",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones"
+                },
+                {
+                    "order": 8,
+                    "name": "governance-landingzones-corp",
+                    "displayName": "Governance-Landing Zones Corp",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones-children"
+                },
+                {
+                    "order": 9,
+                    "name": "governance-landingzones-online",
+                    "displayName": "Governance-Landing Zones Online",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones-children"
+                },
+                {
+                    "order": 10,
+                    "name": "governance-sandbox",
+                    "displayName": "Governance-Sandbox",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones-children"
+                },
+                {
+                    "order": 11,
+                    "name": "governance-decommissioned",
+                    "displayName": "Governance-Decommissioned",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones-children"
+                },
+                {
+                    "order": 12,
+                    "name": "core-logging",
+                    "displayName": "Core-Logging",
+                    "templateFilePath": "templates/core/logging/main.bicep",
+                    "templateParametersFilePath": "templates/core/logging/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "core"
+                },
+                {
+                    "order": 13,
+                    "name": "networking-hubnetworking",
+                    "displayName": "Networking-Hub Networking",
+                    "templateFilePath": "templates/networking/hubnetworking/main.bicep",
+                    "templateParametersFilePath": "templates/networking/hubnetworking/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "networking",
+                    "networkType": "hubNetworking"
+                },
+                {
+                    "order": 14,
+                    "name": "networking-virtualwan",
+                    "displayName": "Networking-Virtual WAN",
+                    "templateFilePath": "templates/networking/virtualwan/main.bicep",
+                    "templateParametersFilePath": "templates/networking/virtualwan/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "networking",
+                    "networkType": "vwanConnectivity"
+                }
+            ],
+            "deployment_file_groups": [
+                {
+                    "order": 1,
+                    "name": "governance-int-root",
+                    "displayName": "Governance - Intermediate Root"
+                },
+                {
+                    "order": 2,
+                    "name": "governance-platform",
+                    "displayName": "Governance - Platform"
+                },
+                {
+                    "order": 3,
+                    "name": "governance-landingzones",
+                    "displayName": "Governance - Landing Zones"
+                },
+                {
+                    "order": 4,
+                    "name": "governance-platform-children",
+                    "displayName": "Governance - Platform Children"
+                },
+                {
+                    "order": 5,
+                    "name": "governance-landingzones-children",
+                    "displayName": "Governance - Landing Zone Children"
+                },
+                {
+                    "order": 6,
+                    "name": "core",
+                    "displayName": "Core Logging"
+                },
+                {
+                    "order": 7,
+                    "name": "networking",
+                    "displayName": "Networking"
+                }
+            ],
+            "destroy_script_path": ""
+        },
+        "test": {
+            "short_name": "Test",
+            "description": "Test config for e2e tests",
+            "inputs": {
+                "management_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the management subscription",
+                    "sourceInput": "subscription_ids[\"management\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_MANAGEMENT",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "connectivity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the connectivity subscription",
+                    "sourceInput": "subscription_ids[\"connectivity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_CONNECTIVITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "identity_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the identity subscription",
+                    "sourceInput": "subscription_ids[\"identity\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_IDENTITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "security_subscription_id": {
+                    "source": "powershell",
+                    "description": "The subscription ID for the security subscription",
+                    "sourceInput": "subscription_ids[\"security\"]",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "SUBSCRIPTION_ID_SECURITY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "primary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[0]",
+                    "description": "The primary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION",
+                            "Destination": "Environment"
+                        },
+                        {
+                            "Name": "LOCATION_PRIMARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "secondary_location": {
+                    "source": "powershell",
+                    "sourceInput": "starter_locations[1]",
+                    "description": "The secondary Azure location for deployments",
+                    "targets": [
+                        {
+                            "Name": "LOCATION_SECONDARY",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "sourceInput": "root_parent_management_group_id",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "networkType": {
+                    "source": "input",
+                    "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
+                    "default": "hubNetworking",
+                    "targets": [
+                        {
+                            "Name": "NETWORK_TYPE",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "intermediate_root_management_group_id": {
+                    "source": "input",
+                    "description": "The intermediate root management group ID",
+                    "default": "alz",
+                    "targets": [
+                        {
+                            "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                }
+            },
+            "folders_or_files_to_retain": [
+                "tests",
+                "templates",
+                "bicepconfig.json"
+            ],
+            "subfolders_or_files_to_remove": [
+                ".github",
+                ".gitignore",
+                "CODE_OF_CONDUCT.md",
+                "DEVELOPER.md",
+                "examples",
+                "LICENSE",
+                "README.md",
+                "SECURITY.md",
+                "SUPPORT.md"
+            ],
+            "deployment_files": [
+                {
+                    "order": 1,
+                    "name": "governance-int-root",
+                    "displayName": "Governance-Intermediate Root",
+                    "templateFilePath": "tests/templates/management-group/main.bicep",
+                    "templateParametersFilePath": "tests/templates/management-group/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 2,
+                    "name": "resource-group-management",
+                    "displayName": "Resource Group Test Management",
+                    "templateFilePath": "tests/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 3,
+                    "name": "resource-group-connectivity",
+                    "displayName": "Resource Group Test Connectivity",
+                    "templateFilePath": "tests/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 4,
+                    "name": "resource-group-identity",
+                    "displayName": "Resource Group Test Identity",
+                    "templateFilePath": "tests/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_IDENTITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                },
+                {
+                    "order": 5,
+                    "name": "resource-group-security",
+                    "displayName": "Resource Group Test Security",
+                    "templateFilePath": "tests/templates/resource-group/main.bicep",
+                    "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_SECURITY",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "test"
+                }
+            ],
+            "deployment_file_groups": [
+                {
+                    "order": 1,
+                    "name": "test",
+                    "displayName": "Test"
+                }
+            ],
+            "destroy_script_path": ""
+        }
+    }
+}
