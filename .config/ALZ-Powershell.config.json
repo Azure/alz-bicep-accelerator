@@ -70,7 +70,7 @@
                 "secondary_location": {
                     "source": "powershell",
                     "sourceInput": "starter_locations[1]",
-                    "description": "The primary Azure location for deployments",
+                    "description": "The secondary Azure location for deployments",
                     "targets": [
                         {
                             "Name": "LOCATION_SECONDARY",
