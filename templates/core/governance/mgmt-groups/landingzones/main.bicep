@@ -36,14 +36,11 @@ var builtInRoleDefinitionIds = {
   connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
 }
 
-var alzRbacRoleDefsJson = [
-]
+var alzRbacRoleDefsJson = []
 
-var alzPolicyDefsJson = [
-]
+var alzPolicyDefsJson = []
 
-var alzPolicySetDefsJson = [
-]
+var alzPolicySetDefsJson = []
 
 var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/landingzones/Audit-AppGW-WAF.alz_policy_assignment.json')
@@ -102,58 +99,144 @@ var alzPolicyAssignmentsJson = [
 ]
 
 var alzPolicyAssignmentRoleDefinitions = {
-  'Deploy-GuestAttest': [builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.managedIdentityContributor]
+  'Deploy-GuestAttest': [
+    builtInRoleDefinitionIds.reader
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.managedIdentityContributor
+  ]
   'Deploy-VM-Backup': [builtInRoleDefinitionIds.owner]
   'Enable-DDoS-VNET': [builtInRoleDefinitionIds.networkContributor]
   'Enforce-TLS-SSL-Q225': [builtInRoleDefinitionIds.owner]
-  'Deploy-AzSqlDb-Auditing': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.sqlSecurityManager]
+  'Deploy-AzSqlDb-Auditing': [
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.sqlSecurityManager
+  ]
   'Deploy-SQL-Threat': [builtInRoleDefinitionIds.owner]
   'Deploy-SQL-TDE': [builtInRoleDefinitionIds.sqlDbContributor]
-  'Deploy-vmArc-ChangeTrack': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader]
-  'Deploy-VM-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
-  'Deploy-VMSS-ChangeTrack': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
-  'Deploy-vmHybr-Monitoring': [builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.reader, builtInRoleDefinitionIds.connectedMachineResourceAdministrator]
-  'Deploy-VM-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
-  'Deploy-VMSS-Monitoring': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
-  'Deploy-MDFC-DefSQL-AMA': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.logAnalyticsContributor, builtInRoleDefinitionIds.monitoringContributor, builtInRoleDefinitionIds.managedIdentityOperator, builtInRoleDefinitionIds.reader]
+  'Deploy-vmArc-ChangeTrack': [
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.reader
+  ]
+  'Deploy-VM-ChangeTrack': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.reader
+  ]
+  'Deploy-VMSS-ChangeTrack': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.reader
+  ]
+  'Deploy-vmHybr-Monitoring': [
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.reader
+    builtInRoleDefinitionIds.connectedMachineResourceAdministrator
+  ]
+  'Deploy-VM-Monitoring': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.reader
+  ]
+  'Deploy-VMSS-Monitoring': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.reader
+  ]
+  'Deploy-MDFC-DefSQL-AMA': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.logAnalyticsContributor
+    builtInRoleDefinitionIds.monitoringContributor
+    builtInRoleDefinitionIds.managedIdentityOperator
+    builtInRoleDefinitionIds.reader
+  ]
   'Enforce-ASR': [builtInRoleDefinitionIds.contributor]
-  'Enable-AUM-CheckUpdates': [builtInRoleDefinitionIds.vmContributor, builtInRoleDefinitionIds.connectedMachineResourceAdministrator, builtInRoleDefinitionIds.managedIdentityOperator]
+  'Enable-AUM-CheckUpdates': [
+    builtInRoleDefinitionIds.vmContributor
+    builtInRoleDefinitionIds.connectedMachineResourceAdministrator
+    builtInRoleDefinitionIds.managedIdentityOperator
+  ]
 }
+
+var managementGroupFinalName = landingZonesConfig.?managementGroupName ?? 'landingzones'
+var intRootManagementGroupFinalName = landingZonesConfig.?managementGroupIntermediateRootName ?? 'alz'
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
-          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
-        } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
-        },
-        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
-        } : {},
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    } : {
-      location: parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        {
-          scope: '/providers/Microsoft.Management/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${landingZonesConfig.?managementGroupName ?? 'landingzones'}/')
-        },
-        contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name) ? {
-          roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-        } : {}
-      )
-    }
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
+      ? {
+          location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
+              ? {
+                  scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+                }
+              : {
+                  scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+                },
+            contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters')
+              ? {
+                  parameters: union(
+                    policyAssignment.properties.?parameters ?? {},
+                    parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
+                  )
+                }
+              : {},
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
+          )
+        }
+      : {
+          location: parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            {
+              scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+            },
+            contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+              ? {
+                  roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+                }
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
+          )
+        }
   )
 ]
 
@@ -163,11 +246,12 @@ var unionedPolicyDefs = union(alzPolicyDefsJson, landingZonesConfig.?customerPol
 
 var unionedPolicySetDefs = union(alzPolicySetDefsJson, landingZonesConfig.?customerPolicySetDefs ?? [])
 
-var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, landingZonesConfig.?customerPolicyAssignments ?? [])
+var unionedPolicyAssignments = union(
+  alzPolicyAssignmentsWithOverrides,
+  landingZonesConfig.?customerPolicyAssignments ?? []
+)
 
-var unionedPolicyAssignmentNames = [
-  for policyAssignment in unionedPolicyAssignments: policyAssignment.name
-]
+var unionedPolicyAssignmentNames = [for policyAssignment in unionedPolicyAssignments: policyAssignment.name]
 
 var deduplicatedPolicyAssignments = filter(
   unionedPolicyAssignments,
@@ -177,7 +261,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroup().name})')
+    roleName: replace(roleDef.properties.roleName, '(alz)', '(${managementGroupFinalName})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
@@ -250,8 +334,8 @@ var allPolicyAssignments = [
 module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
-    managementGroupName: landingZonesConfig.?managementGroupName ?? 'landingzones'
-    managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing Zones'
+    managementGroupName: managementGroupFinalName
+    managementGroupDisplayName: landingZonesConfig.?managementGroupDisplayName ?? 'Landing zones'
     managementGroupDoNotEnforcePolicyAssignments: landingZonesConfig.?managementGroupDoNotEnforcePolicyAssignments ?? []
     managementGroupExcludedPolicyAssignments: landingZonesConfig.?managementGroupExcludedPolicyAssignments ?? []
     managementGroupParentId: landingZonesConfig.?managementGroupParentId ?? 'alz'
@@ -277,4 +361,3 @@ module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../int-root/main.bicep'
-

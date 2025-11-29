@@ -29,14 +29,11 @@ param parPolicyAssignmentParameterOverrides object = {}
 //   networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
 // }
 
-var alzRbacRoleDefsJson = [
-]
+var alzRbacRoleDefsJson = []
 
-var alzPolicyDefsJson = [
-]
+var alzPolicyDefsJson = []
 
-var alzPolicySetDefsJson = [
-]
+var alzPolicySetDefsJson = []
 
 var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/sandbox/Enforce-ALZ-Sandbox.alz_policy_assignment.json')
@@ -51,34 +48,71 @@ var alzPolicyAssignmentsJson = [
 // var alzPolicyAssignmentRoleDefinitions = {
 // }
 
+var managementGroupFinalName = sandboxConfig.?managementGroupName ?? 'sandbox'
+var intRootManagementGroupFinalName = sandboxConfig.?managementGroupIntermediateRootName ?? 'alz'
+
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
-    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name) ? {
-      location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null ? {
-          scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
-        } : {
-          scope: '/providers/Microsoft.Management/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
-        },
-        contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters') ? {
-          parameters: union(policyAssignment.properties.?parameters ?? {}, parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters)
-        } : {}
-      )
-    } : {
-      location: parLocations[0]
-      properties: union(
-        policyAssignment.properties,
-        {
-          scope: '/providers/Microsoft.Management/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}'
-          policyDefinitionId: replace(policyAssignment.properties.policyDefinitionId, '/managementGroups/alz/', '/managementGroups/${sandboxConfig.?managementGroupName ?? 'alz-sandbox'}/')
+    contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
+      ? {
+          location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
+              ? {
+                  scope: parPolicyAssignmentParameterOverrides[policyAssignment.name].scope
+                }
+              : {
+                  scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+                },
+            contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'parameters')
+              ? {
+                  parameters: union(
+                    policyAssignment.properties.?parameters ?? {},
+                    parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
+                  )
+                }
+              : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
+          )
         }
-      )
-    }
+      : {
+          location: parLocations[0]
+          properties: union(
+            policyAssignment.properties,
+            {
+              scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
+            },
+            // Uncomment the following block when role assignments are needed for policy assignments
+            // contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
+            //   ? {
+            //       roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
+            //     }
+            //   : {},
+            {
+              policyDefinitionId: replace(
+                replace(
+                  policyAssignment.properties.policyDefinitionId,
+                  '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}/',
+                  '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+                ),
+                '/providers/Microsoft.Management/managementGroups/alz/',
+                '/providers/Microsoft.Management/managementGroups/${intRootManagementGroupFinalName}/'
+              )
+            }
+          )
+        }
   )
 ]
 
@@ -90,9 +124,7 @@ var unionedPolicySetDefs = union(alzPolicySetDefsJson, sandboxConfig.?customerPo
 
 var unionedPolicyAssignments = union(alzPolicyAssignmentsWithOverrides, sandboxConfig.?customerPolicyAssignments ?? [])
 
-var unionedPolicyAssignmentNames = [
-  for policyAssignment in unionedPolicyAssignments: policyAssignment.name
-]
+var unionedPolicyAssignmentNames = [for policyAssignment in unionedPolicyAssignments: policyAssignment.name]
 
 var deduplicatedPolicyAssignments = filter(
   unionedPolicyAssignments,
@@ -102,7 +134,7 @@ var deduplicatedPolicyAssignments = filter(
 var allRbacRoleDefs = [
   for roleDef in unionedRbacRoleDefs: {
     name: roleDef.name
-    roleName: replace(roleDef.properties.roleName , '(alz)', '(${managementGroup().name})')
+    roleName: replace(roleDef.properties.roleName, '(alz)', '(${managementGroup().name})')
     description: roleDef.properties.description
     actions: roleDef.properties.permissions[0].actions
     notActions: roleDef.properties.permissions[0].notActions
@@ -175,7 +207,7 @@ var allPolicyAssignments = [
 module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
   params: {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
-    managementGroupName: sandboxConfig.?managementGroupName ?? 'alz-sandbox'
+    managementGroupName: managementGroupFinalName
     managementGroupDisplayName: sandboxConfig.?managementGroupDisplayName ?? 'Sandbox'
     managementGroupDoNotEnforcePolicyAssignments: sandboxConfig.?managementGroupDoNotEnforcePolicyAssignments
     managementGroupExcludedPolicyAssignments: sandboxConfig.?managementGroupExcludedPolicyAssignments
