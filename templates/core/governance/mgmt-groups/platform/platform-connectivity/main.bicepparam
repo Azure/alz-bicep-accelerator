@@ -9,8 +9,9 @@ param parEnableTelemetry = true
 
 param platformConnectivityConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'platform-connectivity'
+  managementGroupName: 'connectivity'
   managementGroupParentId: 'platform'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Connectivity'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -19,7 +20,7 @@ param platformConnectivityConfig = {
   customerPolicyDefs: []
   customerPolicySetDefs: []
   customerPolicyAssignments: []
-  subscriptionsToPlaceInManagementGroup: [ '{{connectivity_subscription_id}}' ]
+  subscriptionsToPlaceInManagementGroup: ['{{connectivity_subscription_id}}']
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30

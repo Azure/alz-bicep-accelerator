@@ -9,8 +9,9 @@ param parEnableTelemetry = true
 
 param landingZonesOnlineConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'landingzones-online'
+  managementGroupName: 'online'
   managementGroupParentId: 'landingzones'
+  managementGroupIntermediateRootName: 'alz'
   managementGroupDisplayName: 'Online'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
