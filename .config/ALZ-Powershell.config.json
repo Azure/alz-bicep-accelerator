@@ -132,7 +132,7 @@
                 {
                     "order": 1,
                     "name": "governance-int-root",
-                    "displayName": "Governance-Intermediate Root",
+                    "displayName": "Governance-Intermediate Root {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/int-root/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -144,7 +144,7 @@
                 {
                     "order": 2,
                     "name": "governance-platform",
-                    "displayName": "Governance-Platform",
+                    "displayName": "Governance-Platform {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -156,7 +156,7 @@
                 {
                     "order": 3,
                     "name": "governance-platform-connectivity",
-                    "displayName": "Governance-Platform Connectivity",
+                    "displayName": "Governance-Platform Connectivity {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -168,7 +168,7 @@
                 {
                     "order": 4,
                     "name": "governance-platform-identity",
-                    "displayName": "Governance-Platform Identity",
+                    "displayName": "Governance-Platform Identity {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -192,7 +192,7 @@
                 {
                     "order": 6,
                     "name": "governance-platform-security",
-                    "displayName": "Governance-Platform Security",
+                    "displayName": "Governance-Platform Security {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -204,7 +204,7 @@
                 {
                     "order": 7,
                     "name": "governance-landingzones",
-                    "displayName": "Governance-Landing Zones",
+                    "displayName": "Governance-Landing Zones {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -216,7 +216,7 @@
                 {
                     "order": 8,
                     "name": "governance-landingzones-corp",
-                    "displayName": "Governance-Landing Zones Corp",
+                    "displayName": "Governance-Landing Zones Corp {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -228,7 +228,7 @@
                 {
                     "order": 9,
                     "name": "governance-landingzones-online",
-                    "displayName": "Governance-Landing Zones Online",
+                    "displayName": "Governance-Landing Zones Online {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -240,7 +240,7 @@
                 {
                     "order": 10,
                     "name": "governance-sandbox",
-                    "displayName": "Governance-Sandbox",
+                    "displayName": "Governance-Sandbox {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -252,7 +252,7 @@
                 {
                     "order": 11,
                     "name": "governance-decommissioned",
-                    "displayName": "Governance-Decommissioned",
+                    "displayName": "Governance-Decommissioned {{time_stamp}}",
                     "templateFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicep",
                     "templateParametersFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -264,7 +264,7 @@
                 {
                     "order": 12,
                     "name": "core-logging",
-                    "displayName": "Core-Logging",
+                    "displayName": "Core-Logging {{time_stamp}}",
                     "templateFilePath": "templates/core/logging/main.bicep",
                     "templateParametersFilePath": "templates/core/logging/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
@@ -275,7 +275,7 @@
                 {
                     "order": 13,
                     "name": "networking-hubnetworking",
-                    "displayName": "Networking-Hub Networking",
+                    "displayName": "Networking-Hub Networking {{time_stamp}}",
                     "templateFilePath": "templates/networking/hubnetworking/main.bicep",
                     "templateParametersFilePath": "templates/networking/hubnetworking/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
@@ -287,7 +287,7 @@
                 {
                     "order": 14,
                     "name": "networking-virtualwan",
-                    "displayName": "Networking-Virtual WAN",
+                    "displayName": "Networking-Virtual WAN {{time_stamp}}",
                     "templateFilePath": "templates/networking/virtualwan/main.bicep",
                     "templateParametersFilePath": "templates/networking/virtualwan/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
@@ -469,7 +469,7 @@
                 {
                     "order": 1,
                     "name": "management-group",
-                    "displayName": "Management Group Test {{unique_postfix}}",
+                    "displayName": "Management Group Test {{time_stamp}} {{unique_postfix}}",
                     "templateFilePath": "tests/templates/management-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/management-group/main.bicepparam",
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
@@ -481,7 +481,7 @@
                 {
                     "order": 2,
                     "name": "resource-group-management",
-                    "displayName": "Resource Group Test Management {{unique_postfix}}",
+                    "displayName": "Resource Group Test Management {{time_stamp}} {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
@@ -492,7 +492,7 @@
                 {
                     "order": 3,
                     "name": "resource-group-connectivity",
-                    "displayName": "Resource Group Test Connectivity {{unique_postfix}}",
+                    "displayName": "Resource Group Test Connectivity {{time_stamp}} {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
@@ -503,7 +503,7 @@
                 {
                     "order": 4,
                     "name": "resource-group-identity",
-                    "displayName": "Resource Group Test Identity {{unique_postfix}}",
+                    "displayName": "Resource Group Test Identity {{time_stamp}} {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_IDENTITY",
@@ -514,7 +514,7 @@
                 {
                     "order": 5,
                     "name": "resource-group-security",
-                    "displayName": "Resource Group Test Security {{unique_postfix}}",
+                    "displayName": "Resource Group Test Security {{time_stamp}} {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_SECURITY",
