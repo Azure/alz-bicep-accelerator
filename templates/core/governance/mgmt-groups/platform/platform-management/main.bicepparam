@@ -21,12 +21,12 @@ param platformManagementConfig = {
   customerPolicySetDefs: []
   customerPolicyAssignments: []
   subscriptionsToPlaceInManagementGroup: ['{{management_subscription_id}}']
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
-  waitForConsistencyCounterBeforePolicyAssignments: 30
-  waitForConsistencyCounterBeforeRoleAssignment: 30
-  waitForConsistencyCounterBeforeSubPlacement: 30
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 20
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 20
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 20
+  waitForConsistencyCounterBeforePolicyAssignments: 20
+  waitForConsistencyCounterBeforeRoleAssignment: 20
+  waitForConsistencyCounterBeforeSubPlacement: 20
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
