@@ -475,7 +475,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
+                    "firstRunWhatIf": true,
                     "group": "test"
                 },
                 {
@@ -486,7 +486,7 @@
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "subscription",
-                    "firstRunWhatIf": false,
+                    "firstRunWhatIf": true,
                     "group": "test"
                 },
                 {
@@ -497,7 +497,7 @@
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_CONNECTIVITY",
                     "deploymentType": "subscription",
-                    "firstRunWhatIf": false,
+                    "firstRunWhatIf": true,
                     "group": "test"
                 },
                 {
@@ -508,7 +508,7 @@
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_IDENTITY",
                     "deploymentType": "subscription",
-                    "firstRunWhatIf": false,
+                    "firstRunWhatIf": true,
                     "group": "test"
                 },
                 {
@@ -519,7 +519,7 @@
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
                     "subscriptionId": "SUBSCRIPTION_ID_SECURITY",
                     "deploymentType": "subscription",
-                    "firstRunWhatIf": false,
+                    "firstRunWhatIf": true,
                     "group": "test"
                 }
             ],
