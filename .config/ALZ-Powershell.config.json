@@ -475,7 +475,7 @@
                     "managementGroupId": "MANAGEMENT_GROUP_ID",
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
-                    "firstRunWhatIf": true,
+                    "firstRunWhatIf": false,
                     "group": "test"
                 },
                 {
