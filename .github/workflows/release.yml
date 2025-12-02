@@ -1,50 +1,59 @@
-name: Artifacts
+---
+name: Release
 
 on:
   release:
-    types: [ published ]
+    types: [published]
   workflow_dispatch:
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   release:
-    name: Generate Accelerator Release Artifacts
-    permissions:
-      contents: write
+    name: Generate Release
     runs-on: ubuntu-latest
     steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-      with:
-        egress-policy: audit
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Zip and Tar
+        run: |
+          mkdir staging
+          cp -r templates staging/templates
+          cp -r tests staging/tests
+          cp -r .config staging/.config
+          cp bicepconfig.json staging/bicepconfig.json
+          cd staging
+          tar -cvzf ../starter_modules.tar.gz .
+          zip -r ../starter_modules.zip .
 
-    - name: Zip and Tar
-      run: |
-        mkdir staging
-        cp -r templates staging
-        cd staging
-        tar -cvzf ../accelerator.tar.gz .
-        zip -r ../accelerator.zip .
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: starter_modules
+          path: |
+            starter_modules.tar.gz
+            starter_modules.zip
 
-    - name: Upload Artifacts to Action
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-      with:
-        name: accelerator
-        path: |
-          accelerator.tar.gz
-          accelerator.zip
+      - name: Check for Valid Git Ref
+        if: github.event_name != 'pull_request'
+        run: |
+          $gitRef = "${{ github.ref }}"
+          if (!$gitRef.StartsWith("refs/tags/")) {
+            Write-Error "Invalid Git ref $gitRef"
+            exit 1
+          } else {
+            Write-Output "Valid Git ref $gitRef"
+          }
+        shell: pwsh
 
-    - name: Add Artifacts to Release
-      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          ./accelerator.tar.gz
-          ./accelerator.zip
+      - name: Release
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./starter_modules.tar.gz
+            ./starter_modules.zip
