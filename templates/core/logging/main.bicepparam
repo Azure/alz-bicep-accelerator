@@ -30,7 +30,15 @@ param parLogAnalyticsWorkspaceLocation = parLocations[0]
 param parLogAnalyticsWorkspaceSku = 'PerGB2018'
 param parLogAnalyticsWorkspaceCapacityReservationLevel = 100
 param parLogAnalyticsWorkspaceLogRetentionInDays = 365
-param parLogAnalyticsWorkspaceOnboardSentinel = true
+param parLogAnalyticsWorkspaceDailyQuotaGb = null
+param parLogAnalyticsWorkspaceReplication = null
+param parLogAnalyticsWorkspaceFeatures = null
+param parLogAnalyticsWorkspaceDataExports = null
+param parLogAnalyticsWorkspaceDataSources = null
+param parLogAnalyticsWorkspaceSolutions = [
+  'SecurityInsights'
+  'ChangeTracking'
+]
 
 // Data Collection Rule Parameters
 param parUserAssignedIdentityName = 'mi-alz-${parLocations[0]}'
