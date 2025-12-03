@@ -28,6 +28,7 @@ param hubNetworks = [
     ]
     enablePeering: true
     dnsServers: []
+    routes: []
     peeringSettings: [
       {
         remoteVirtualNetworkName: 'vnet-alz-${parLocations[1]}'
@@ -72,11 +73,8 @@ param hubNetworks = [
         name: 'pip-fw-alz-${parLocations[0]}-01'
       }
       managementIPAddressObject: {
-        name: 'pip-fw-mgmt-alz${parLocations[0]}-mgmt'
+        name: 'pip-fw-mgmt-alz-${parLocations[0]}'
       }
-      zones: [
-        1
-      ]
     }
     bastionHost: {
       enableBastion: true
@@ -89,11 +87,6 @@ param hubNetworks = [
       vpnMode: 'activeActiveBgp'
       vpnType: 'RouteBased'
       asn: 65515
-      publicIpZones: [
-        1
-        2
-        3
-      ]
     }
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
@@ -101,18 +94,11 @@ param hubNetworks = [
       clusterMode: 'activePassiveNoBgp'
       adminState: 'Enabled'
       resiliencyModel: 'SingleHomed'
-      publicIpZones: []
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
-      privateDnsZones: [
-        'privatelink.{regionName}.azurecontainerapps.io'
-        'privatelink.{regionName}.kusto.windows.net'
-        'privatelink.{regionName}.azmk8s.io'
-        'privatelink.{regionName}.prometheus.monitor.azure.com'
-        'privatelink.{regionCode}.backup.windowsazure.com'
-      ]
+      privateDnsZones: []
     }
     ddosProtectionPlanSettings: {
       enableDdosProtection: true
@@ -171,11 +157,8 @@ param hubNetworks = [
         name: 'pip-fw-alz-${parLocations[1]}-01'
       }
       managementIPAddressObject: {
-        name: 'pip-fw-${parLocations[1]}-mgmt'
+        name: 'pip-fw-mgmt-alz-${parLocations[1]}'
       }
-      zones: [
-        1
-      ]
     }
     bastionHost: {
       enableBastion: true
@@ -188,11 +171,6 @@ param hubNetworks = [
       vpnMode: 'activeActiveBgp'
       vpnType: 'RouteBased'
       asn: 65515
-      publicIpZones: [
-        1
-        2
-        3
-      ]
     }
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
@@ -200,12 +178,17 @@ param hubNetworks = [
       clusterMode: 'activePassiveNoBgp'
       adminState: 'Enabled'
       resiliencyModel: 'SingleHomed'
-      publicIpZones: []
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
-      privateDnsZones: []
+      privateDnsZones: [
+        'privatelink.{regionName}.azurecontainerapps.io'
+        'privatelink.{regionName}.kusto.windows.net'
+        'privatelink.{regionName}.azmk8s.io'
+        'privatelink.{regionName}.prometheus.monitor.azure.com'
+        'privatelink.{regionCode}.backup.windowsazure.com'
+      ]
     }
     ddosProtectionPlanSettings: {
       enableDdosProtection: true

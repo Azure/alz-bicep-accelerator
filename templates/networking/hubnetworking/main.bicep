@@ -69,6 +69,9 @@ param parEnableTelemetry bool = true
 var hubResourceGroupNames = [for (location, i) in parLocations: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}-${location}' : parHubNetworkingResourceGroupNameOverrides[i]]
 var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${location}' : parDnsResourceGroupNameOverrides[i]]
 var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
+var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'azureFirewalls', hub.location), ',')))]
+var hubVpnGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
+var hubExpressRouteGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
 
 //========================================
 // Resources Groups
@@ -171,7 +174,7 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
                 threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Standard')
                   ? 'Alert'
                   : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
-                zones: hub.?azureFirewallSettings.?zones ?? null
+                zones: hub.?azureFirewallSettings.?zones ?? hubAzureFirewallRecommendedZones[i]
                 lock: parGlobalResourceLock ?? hub.?azureFirewallSettings.?lock
                 tags: parTags
               }
@@ -443,7 +446,7 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' 
       virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
       domainNameLabel: hub.?vpnGatewaySettings.?domainNameLabel ?? []
       publicIpAvailabilityZones: hub.?vpnGatewaySettings.?skuName != 'Basic'
-        ? hub.?vpnGatewaySettings.?publicIpZones ?? [1, 2, 3]
+        ? hub.?vpnGatewaySettings.?publicIpZones ?? hubVpnGatewayRecommendedPublicIpZones[i]
         : []
       lock: parGlobalResourceLock ?? hub.?vpnGatewaySettings.?lock
       tags: parTags
@@ -471,7 +474,7 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
       enableDnsForwarding: hub.?expressRouteGatewaySettings.?enableDnsForwarding ?? false
       enablePrivateIpAddress: hub.?expressRouteGatewaySettings.?enablePrivateIpAddress ?? false
       virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
-      publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? []
+      publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? hubExpressRouteGatewayRecommendedPublicIpZones[i]
       adminState: hub.?expressRouteGatewaySettings.?adminState ?? 'Enabled'
       resiliencyModel: hub.?expressRouteGatewaySettings.?resiliencyModel ?? 'SingleHomed'
       lock: parGlobalResourceLock ?? hub.?expressRouteGatewaySettings.?lock
@@ -793,7 +796,7 @@ type azureFirewallType = {
   @description('Optional. Threat Intel mode.')
   threatIntelMode: ('Alert' | 'Deny' | 'Off')?
 
-  @description('Optional. Zones.')
+  @description('Optional. Availability zones for the Azure Firewall. Defaults to recommended zones for the hub location when not specified.')
   zones: int[]?
 
   @description('Optional. Enable/Disable dns proxy setting.')
@@ -982,7 +985,7 @@ type vpnGatewaySettingsType = {
   @description('Optional. Custom BGP IP addresses for active-active BGP configurations.')
   customBgpIpAddresses: string[]?
 
-  @description('Optional. Availability zones for the public IP addresses used by the gateway.')
+  @description('Optional. Availability zones for the gateway public IP addresses. Defaults to recommended zones for the hub location when not specified.')
   publicIpZones: array?
 
   @description('Optional. Base64-encoded root certificate data for Point-to-Site VPN authentication.')
@@ -1026,7 +1029,7 @@ type expressRouteGatewaySettingsType = {
   @description('Optional. Enable private IP support on the ExpressRoute gateway.')
   enablePrivateIpAddress: bool?
 
-  @description('Optional. Availability zones for the ExpressRoute gateway public IPs.')
+  @description('Optional. Availability zones for the ExpressRoute gateway public IP addresses. Defaults to recommended zones for the hub location when not specified.')
   publicIpZones: array?
 
   @description('Optional. Lock settings for the ExpressRoute gateway.')
