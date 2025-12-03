@@ -73,6 +73,7 @@ var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: json(format('[{0
 var hubVpnGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
 var hubExpressRouteGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
 
+
 //========================================
 // Resources Groups
 //========================================
@@ -155,7 +156,6 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
             ? {
                 azureFirewallName: hub.?azureFirewallSettings.?azureFirewallName
                 hubIPAddresses: hub.?azureFirewallSettings.?hubIPAddresses
-                virtualHubResourceId: hub.?azureFirewallSettings.?virtualHubResourceId
                 additionalPublicIpConfigurations: hub.?azureFirewallSettings.?additionalPublicIpConfigurations
                 applicationRuleCollections: hub.?azureFirewallSettings.?applicationRuleCollections
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
@@ -244,6 +244,7 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
       threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Standard')
         ? 'Alert'
         : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
+
       enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
         : hub.?azureFirewallSettings.?dnsProxyEnabled
@@ -500,7 +501,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
       privateLinkPrivateDnsZones: empty(hub.?privateDnsSettings.?privateDnsZones) ? null : hub.?privateDnsSettings.?privateDnsZones
       virtualNetworkLinks: [
         for id in union(
-          [
+        [
             resourceId(
               subscription().subscriptionId,
               hubResourceGroupNames[indexOf(parLocations, hub.location)],
@@ -512,7 +513,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
           hub.?privateDnsSettings.?virtualNetworkResourceIdsToLinkTo ?? []
         ): {
           virtualNetworkResourceId: id
-        }
+              }
       ]
       lock: parGlobalResourceLock ?? hub.?privateDnsSettings.?lock
       tags: parTags
@@ -740,11 +741,7 @@ type azureFirewallType = {
   azureFirewallName: string?
 
   @description('Optional. Hub IP addresses.')
-  hubIPAddresses: object?
-
-  @description('Optional. Virtual Hub resource ID if you want to associate to a pre-existing one.')
-  virtualHubResourceId: string?
-
+  hubIpAddresses: object?
   @description('Optional. Additional public IP configurations.')
   additionalPublicIpConfigurations: array?
 
@@ -825,6 +822,9 @@ type privateDnsType = {
   @description('Required. Enable/Disable Private DNS Resolver deployment.')
   enableDnsPrivateResolver: bool
 
+  @description('Optional. Additional virtual network link objects to merge with the automatically generated hub link.')
+  virtualNetworkLinks: dnsVirtualNetworkLinkType[]?
+
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
 
@@ -851,6 +851,23 @@ type privateDnsType = {
 
   @description('Optional. Role assignments for Private DNS resources.')
   roleAssignments: roleAssignmentType?
+}
+
+type dnsVirtualNetworkLinkType = {
+  @description('Optional. The resource name for the virtual network link.')
+  name: string?
+
+  @description('Required. The resource ID of the virtual network to link.')
+  virtualNetworkResourceId: string
+
+  @description('Optional. Enables auto-registration of DNS records for the linked virtual network.')
+  registrationEnabled: bool?
+
+  @description('Optional. Resolution policy for the virtual network link.')
+  resolutionPolicy: ('Default' | 'NxDomainRedirect')?
+
+  @description('Optional. Tags for the virtual network link resource.')
+  tags: object?
 }
 
 type roleAssignmentType = {
