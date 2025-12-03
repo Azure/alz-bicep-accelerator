@@ -172,6 +172,8 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
                   ? 'Alert'
                   : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
                 zones: hub.?azureFirewallSettings.?zones ?? null
+                lock: parGlobalResourceLock ?? hub.?azureFirewallSettings.?lock
+                tags: parTags
               }
             : null
           subnets: [

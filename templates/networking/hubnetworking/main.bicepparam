@@ -28,7 +28,15 @@ param hubNetworks = [
     ]
     enablePeering: true
     dnsServers: []
-    routes: []
+    peeringSettings: [
+      {
+        remoteVirtualNetworkName: 'vnet-alz-${parLocations[1]}'
+        allowForwardedTraffic: true
+        allowGatewayTransit: false
+        allowVirtualNetworkAccess: true
+        useRemoteGateways: false
+      }
+    ]
     subnets: [
       {
         name: 'AzureBastionSubnet'
@@ -61,15 +69,10 @@ param hubNetworks = [
       enableAzureFirewall: true
       azureSkuTier: 'Standard'
       publicIPAddressObject: {
-        name: 'pip-fw-${parLocations[0]}-01'
+        name: 'pip-fw-alz-${parLocations[0]}-01'
       }
-      additionalPublicIpConfigurations: [
-        {
-          name: 'pip-fw-${parLocations[0]}-02'
-        }
-      ]
       managementIPAddressObject: {
-        name: 'pip-fw-${parLocations[0]}-mgmt'
+        name: 'pip-fw-mgmt-alz${parLocations[0]}-mgmt'
       }
       zones: [
         1
@@ -124,6 +127,15 @@ param hubNetworks = [
     enablePeering: true
     dnsServers: []
     routes: []
+    peeringSettings: [
+      {
+        remoteVirtualNetworkName: 'vnet-alz-${parLocations[0]}'
+        allowForwardedTraffic: true
+        allowGatewayTransit: false
+        allowVirtualNetworkAccess: true
+        useRemoteGateways: false
+      }
+    ]
     subnets: [
       {
         name: 'AzureBastionSubnet'
@@ -156,13 +168,8 @@ param hubNetworks = [
       enableAzureFirewall: true
       azureSkuTier: 'Standard'
       publicIPAddressObject: {
-        name: 'pip-fw-${parLocations[1]}-01'
+        name: 'pip-fw-alz-${parLocations[1]}-01'
       }
-      additionalPublicIpConfigurations: [
-        {
-          name: 'pip-fw-${parLocations[1]}-02'
-        }
-      ]
       managementIPAddressObject: {
         name: 'pip-fw-${parLocations[1]}-mgmt'
       }
