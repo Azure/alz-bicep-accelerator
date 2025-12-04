@@ -91,9 +91,6 @@ param hubNetworks = [
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
       skuName: 'ErGw1AZ'
-      clusterMode: 'activePassiveNoBgp'
-      adminState: 'Enabled'
-      resiliencyModel: 'SingleHomed'
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
@@ -175,9 +172,6 @@ param hubNetworks = [
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
       skuName: 'ErGw1AZ'
-      clusterMode: 'activePassiveNoBgp'
-      adminState: 'Enabled'
-      resiliencyModel: 'SingleHomed'
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true

@@ -155,14 +155,9 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
           azureFirewallSettings: hub.azureFirewallSettings.enableAzureFirewall
             ? {
                 azureFirewallName: hub.?azureFirewallSettings.?azureFirewallName
-                additionalPublicIpConfigurations: hub.?azureFirewallSettings.?additionalPublicIpConfigurations
-                applicationRuleCollections: hub.?azureFirewallSettings.?applicationRuleCollections
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
                 firewallPolicyId: hub.?azureFirewallSettings.?firewallPolicyId ?? resFirewallPolicy[i].?outputs.resourceId
                 managementIPAddressObject: hub.?azureFirewallSettings.?managementIPAddressObject
-                managementIPResourceID: hub.?azureFirewallSettings.?managementIPResourceID
-                natRuleCollections: hub.?azureFirewallSettings.?natRuleCollections
-                networkRuleCollections: hub.?azureFirewallSettings.?networkRuleCollections
                 publicIPAddressObject: hub.?azureFirewallSettings.?publicIPAddressObject ?? (!empty(hub.?azureFirewallSettings.?publicIPResourceID ?? '')
                   ? null
                   : {
@@ -736,41 +731,18 @@ type azureFirewallType = {
 
   @description('Optional. The name of the Azure Firewall to create.')
   azureFirewallName: string?
-  @description('Optional. Additional public IP configurations.')
-  additionalPublicIpConfigurations: array?
-
-  @description('Optional. Application rule collections.')
-  applicationRuleCollections: array?
 
   @description('Optional. Azure Firewall SKU.')
   azureSkuTier: 'Basic' | 'Standard' | 'Premium'?
 
-  @description('Optional. Diagnostic settings.')
-  diagnosticSettings: diagnosticSettingType?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
-
   @description('Optional. Resource ID of an existing Azure Firewall Policy to associate with the firewall. If not specified and enableAzureFirewall is true, a new firewall policy will be created.')
   firewallPolicyId: string?
-
-  @description('Optional. The location of the Azure Firewall. Defaults to the location of the resource group.')
-  location: string?
 
   @description('Optional. Lock settings.')
   lock: lockType?
 
   @description('Optional. Management IP address configuration.')
   managementIPAddressObject: object?
-
-  @description('Optional. Management IP resource ID.')
-  managementIPResourceID: string?
-
-  @description('Optional. NAT rule collections.')
-  natRuleCollections: array?
-
-  @description('Optional. Network rule collections.')
-  networkRuleCollections: array?
 
   @description('Optional. Public IP address object.')
   publicIPAddressObject: object?
