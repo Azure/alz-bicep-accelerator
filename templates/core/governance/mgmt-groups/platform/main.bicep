@@ -21,6 +21,11 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
+@description('Optional. Management group names for cross-MG RBAC assignments. Specify child management group names where policy-assigned managed identities need permissions.')
+param parCrossMgRbacScopes object = {
+  landingZones: 'landingzones'
+}
+
 var builtInRoleDefinitionIds = {
   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
   aksContributor: 'ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
@@ -164,10 +169,80 @@ var alzPolicyAssignmentRoleDefinitions = {
     builtInRoleDefinitionIds.managedIdentityOperator
   ]
   'Enforce-ASR': [builtInRoleDefinitionIds.contributor]
+  'Enforce-Encrypt-CMK0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-APIM0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-AppServices0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Automation0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-BotService0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CogServ0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Compute0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContApps0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContInst0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContReg0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CosmosDb0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataExpl0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataFactory0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventGrid0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventHub0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVault': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVaultSup0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Kubernetes0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MachLearn0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MySQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Network0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-OpenAI0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-PostgreSQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ServiceBus0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-SQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Storage0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Synapse0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-VirtualDesk0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-Subnet-Private': [builtInRoleDefinitionIds.contributor]
 }
 
 var managementGroupFinalName = platformConfig.?managementGroupName ?? 'platform'
 var intRootManagementGroupFinalName = platformConfig.?managementGroupIntermediateRootName ?? 'alz'
+
+// Additional management groups to assign RBAC roles to for cross-MG policy assignments
+// Note: AVM module expects MG names, not full resource IDs - it constructs paths internally
+// Platform MG is automatically assigned (policy assignment scope), only listing additional cross-MG scopes here
+var alzPolicyAssignmentAdditionalRbacScopes = {
+  'Deploy-VM-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-VM-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-vmArc-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-VMSS-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-vmHybr-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-VMSS-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+  'Deploy-MDFC-DefSQL-AMA': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+    ]
+  }
+}
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
@@ -175,6 +250,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -197,6 +273,13 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
+            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
+              ? {
+                  additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalManagementGroupsIDsToAssignRbacTo
+                  additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalSubscriptionIDsToAssignRbacTo
+                  additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalResourceGroupResourceIDsToAssignRbacTo
+                }
+              : {},
             {
               policyDefinitionId: replace(
                 replace(
@@ -212,6 +295,7 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
@@ -221,6 +305,19 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
+              : {},
+            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
+              ? union(
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalManagementGroupsIDsToAssignRbacTo')
+                    ? {additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalManagementGroupsIDsToAssignRbacTo}
+                    : {},
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalSubscriptionIDsToAssignRbacTo')
+                    ? {additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo}
+                    : {},
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalResourceGroupResourceIDsToAssignRbacTo')
+                    ? {additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalResourceGroupResourceIDsToAssignRbacTo}
+                    : {}
+                )
               : {},
             {
               policyDefinitionId: replace(

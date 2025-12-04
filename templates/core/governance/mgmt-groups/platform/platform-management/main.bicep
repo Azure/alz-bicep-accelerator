@@ -21,13 +21,6 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
-// Built-in Azure RBAC role definition IDs (ready for future use)
-// var builtInRoleDefinitionIds = {
-//   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-//   networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
-//   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-// }
-
 var alzRbacRoleDefsJson = []
 
 var alzPolicyDefsJson = []
@@ -35,13 +28,6 @@ var alzPolicyDefsJson = []
 var alzPolicySetDefsJson = []
 
 var alzPolicyAssignmentsJson = []
-
-// Policy assignment to role definition mappings (ready for future use)
-// When adding policy assignments, use this pattern:
-// var alzPolicyAssignmentRoleDefinitions = {
-//   'Deploy-Log-Analytics': [builtInRoleDefinitionIds.contributor]
-// }
-// var alzPolicyAssignmentRoleDefinitions = {}
 
 var managementGroupFinalName = platformManagementConfig.?managementGroupName ?? 'management'
 var intRootManagementGroupFinalName = platformManagementConfig.?managementGroupIntermediateRootName ?? 'alz'
@@ -89,12 +75,6 @@ var alzPolicyAssignmentsWithOverrides = [
             {
               scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
             },
-            // Uncomment the following block when role assignments are needed for policy assignments
-            // contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
-            //   ? {
-            //       roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-            //     }
-            //   : {},
             {
               policyDefinitionId: replace(
                 replace(
