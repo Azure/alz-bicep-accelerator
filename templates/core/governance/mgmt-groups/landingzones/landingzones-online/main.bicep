@@ -193,7 +193,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.3.2' = {
+module landingZonesOnline 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: landingZonesOnlineConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
