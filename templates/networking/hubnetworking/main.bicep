@@ -155,7 +155,6 @@ module resHubNetwork 'br/public:avm/ptn/network/hub-networking:0.5.0' = [
           azureFirewallSettings: hub.azureFirewallSettings.enableAzureFirewall
             ? {
                 azureFirewallName: hub.?azureFirewallSettings.?azureFirewallName
-                hubIPAddresses: hub.?azureFirewallSettings.?hubIPAddresses
                 additionalPublicIpConfigurations: hub.?azureFirewallSettings.?additionalPublicIpConfigurations
                 applicationRuleCollections: hub.?azureFirewallSettings.?applicationRuleCollections
                 azureSkuTier: hub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
@@ -467,7 +466,7 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
     params: {
       name: hub.?expressRouteGatewaySettings.?name ?? 'ergw-${hub.location}'
       clusterSettings: {
-        clusterMode: any(hub.?expressRouteGatewaySettings.?clusterMode ?? 'activePassiveNoBgp')
+        clusterMode: 'activePassiveNoBgp'
       }
       location: hub.location
       gatewayType: 'ExpressRoute'
@@ -476,8 +475,6 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
       enablePrivateIpAddress: hub.?expressRouteGatewaySettings.?enablePrivateIpAddress ?? false
       virtualNetworkResourceId: resHubNetwork[i]!.outputs.hubVirtualNetworks[0].resourceId
       publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? hubExpressRouteGatewayRecommendedPublicIpZones[i]
-      adminState: hub.?expressRouteGatewaySettings.?adminState ?? 'Enabled'
-      resiliencyModel: hub.?expressRouteGatewaySettings.?resiliencyModel ?? 'SingleHomed'
       lock: parGlobalResourceLock ?? hub.?expressRouteGatewaySettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry
@@ -739,9 +736,6 @@ type azureFirewallType = {
 
   @description('Optional. The name of the Azure Firewall to create.')
   azureFirewallName: string?
-
-  @description('Optional. Hub IP addresses.')
-  hubIpAddresses: object?
   @description('Optional. Additional public IP configurations.')
   additionalPublicIpConfigurations: array?
 
@@ -1030,15 +1024,6 @@ type expressRouteGatewaySettingsType = {
 
   @description('Optional. The SKU name of the ExpressRoute gateway.')
   skuName: 'ErGw1AZ' | 'ErGw2AZ' | 'ErGw3AZ' | 'ErGwScale'?
-
-  @description('Optional. The ExpressRoute gateway cluster mode.')
-  clusterMode: 'activePassiveNoBgp' | 'activeActiveNoBgp'?
-
-  @description('Optional. The admin state for the ExpressRoute gateway.')
-  adminState: 'Enabled' | 'Disabled'?
-
-  @description('Optional. The resiliency model for the ExpressRoute gateway.')
-  resiliencyModel: 'SingleHomed' | 'MultiHomed'?
 
   @description('Optional. Enable DNS forwarding through the ExpressRoute gateway.')
   enableDnsForwarding: bool?
