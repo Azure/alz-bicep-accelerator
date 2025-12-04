@@ -78,7 +78,7 @@
                         }
                     ]
                 },
-                "management_group_id": {
+                "root_parent_management_group_id": {
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
@@ -425,7 +425,7 @@
                         }
                     ]
                 },
-                "management_group_id": {
+                "root_parent_management_group_id": {
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
