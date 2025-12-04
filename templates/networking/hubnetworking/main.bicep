@@ -513,7 +513,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
           hub.?privateDnsSettings.?virtualNetworkResourceIdsToLinkTo ?? []
         ): {
           virtualNetworkResourceId: id
-              }
+        }
       ]
       lock: parGlobalResourceLock ?? hub.?privateDnsSettings.?lock
       tags: parTags
