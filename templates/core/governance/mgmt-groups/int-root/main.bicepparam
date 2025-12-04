@@ -2,15 +2,15 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  'eastus'
-  'westus2'
+  '{{primary_location}}'
+  '{{secondary_location}}'
 ]
 param parEnableTelemetry = true
 
 param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'alz'
-  managementGroupParentId: '627755e9-a244-4d05-b88e-e5b35826dc60'
+  managementGroupParentId: '{{root_parent_management_group_id}}'
   managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -33,7 +33,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-MDFC-Config-H224': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       emailSecurityContact: {
         value: 'security@yourcompany.com'
@@ -49,7 +49,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzActivity-Log': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       logsEnabled: {
         value: 'True'
@@ -59,7 +59,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-Diag-LogsCat': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
@@ -70,7 +70,7 @@ param parPolicyAssignmentParameterOverrides = {
       }
       actionGroupResources: {
         value: {
-          actionGroupEmail: ['ztrocinski@yourcompany.com']
+          actionGroupEmail: ['triage@yourcompany.com']
           eventHubResourceId: []
           functionResourceId: ''
           functionTriggerUrl: ''
@@ -84,7 +84,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzSqlDb-Auditing': {
     parameters: {
       logAnalyticsWorkspaceResourceId: {
-        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
