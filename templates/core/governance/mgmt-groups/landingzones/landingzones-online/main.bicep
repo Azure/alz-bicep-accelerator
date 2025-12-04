@@ -49,6 +49,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -81,17 +82,12 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
               scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
             },
-            // Uncomment the following block when role assignments are needed for policy assignments
-            // contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
-            //   ? {
-            //       roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-            //     }
-            //   : {},
             {
               policyDefinitionId: replace(
                 replace(
