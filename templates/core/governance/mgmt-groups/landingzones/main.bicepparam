@@ -31,19 +31,6 @@ param landingZonesConfig = {
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
 param parPolicyAssignmentParameterOverrides = {
-  'Deploy-VM-Backup': {
-    parameters: {
-      exclusionTagName: {
-        value: 'BackupExclusion'
-      }
-      exclusionTagValue: {
-        value: 'true'
-      }
-      vaultLocation: {
-        value: parLocations[0]
-      }
-    }
-  }
   'Enable-DDoS-VNET': {
     parameters: {
       ddosPlan: {
