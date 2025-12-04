@@ -66,8 +66,26 @@ param parLogAnalyticsWorkspaceCapacityReservationLevel int = 100
 @description('Optional. The log retention in days for the Log Analytics Workspace.')
 param parLogAnalyticsWorkspaceLogRetentionInDays int = 365
 
-@description('Optional. The flag to enable or disable onboarding the Log Analytics Workspace to Sentinel.')
-param parLogAnalyticsWorkspaceOnboardSentinel bool = true
+@description('Optional. The daily ingestion quota in GB for the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceDailyQuotaGb int?
+
+@description('Optional. The replication configuration for the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceReplication object?
+
+@description('Optional. The feature configuration for the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceFeatures object?
+
+@description('Optional. The data export rules for the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceDataExports array?
+
+@description('Optional. The data sources for the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceDataSources array?
+
+@description('Optional. The solutions to deploy to the Log Analytics Workspace.')
+param parLogAnalyticsWorkspaceSolutions array = [
+  'SecurityInsights'
+  'ChangeTracking'
+]
 
 @description('''Resource Lock Configuration for Log Analytics Workspace.
 - `name` - The name of the lock.
@@ -119,6 +137,22 @@ param parGlobalResourceLock lockType
 @description('Optional. Enable or disable telemetry.')
 param parEnableTelemetry bool = true
 
+var varGallerySolutions = [
+  for solution in parLogAnalyticsWorkspaceSolutions: {
+    name: '${solution}(${parLogAnalyticsWorkspaceName})'
+    plan: {
+      name: '${solution}(${parLogAnalyticsWorkspaceName})'
+      product: solution == 'SecurityInsights'
+        ? 'OMSGallery/SecurityInsights'
+        : solution == 'ChangeTracking'
+          ? 'OMSGallery/ChangeTracking'
+          : 'OMSGallery/${solution}'
+      publisher: 'Microsoft'
+      promotionCode: ''
+    }
+  }
+]
+
 //========================================
 // Resources
 //========================================
@@ -169,17 +203,23 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 }
 
 // Log Analytics Workspace
-module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.13.0' = {
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.14.0' = {
   name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
     name: parLogAnalyticsWorkspaceName
     location: !empty(parLogAnalyticsWorkspaceLocation) ? parLogAnalyticsWorkspaceLocation : parLocations[0]
-    skuName: parLogAnalyticsWorkspaceSku == 'CapacityReservation' ? parLogAnalyticsWorkspaceSku : null
+    skuName: parLogAnalyticsWorkspaceSku
     tags: parTags
-    skuCapacityReservationLevel: parLogAnalyticsWorkspaceCapacityReservationLevel
+    skuCapacityReservationLevel: parLogAnalyticsWorkspaceSku == 'CapacityReservation' ? parLogAnalyticsWorkspaceCapacityReservationLevel : null
     dataRetention: parLogAnalyticsWorkspaceLogRetentionInDays
-    onboardWorkspaceToSentinel: parLogAnalyticsWorkspaceOnboardSentinel
+    gallerySolutions: !empty(varGallerySolutions) ? varGallerySolutions : null
+    onboardWorkspaceToSentinel: contains(parLogAnalyticsWorkspaceSolutions, 'SecurityInsights')
+    dailyQuotaGb: parLogAnalyticsWorkspaceDailyQuotaGb
+    replication: parLogAnalyticsWorkspaceReplication
+    features: parLogAnalyticsWorkspaceFeatures
+    dataExports: parLogAnalyticsWorkspaceDataExports
+    dataSources: parLogAnalyticsWorkspaceDataSources
     lock: parGlobalResourceLock ?? parLogAnalyticsWorkspaceLock
     enableTelemetry: parEnableTelemetry
   }
