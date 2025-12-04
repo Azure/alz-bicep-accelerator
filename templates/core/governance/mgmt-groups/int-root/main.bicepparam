@@ -2,15 +2,15 @@ using './main.bicep'
 
 // General Parameters
 param parLocations = [
-  '{{primary_location}}'
-  '{{secondary_location}}'
+  'eastus'
+  'westus2'
 ]
 param parEnableTelemetry = true
 
 param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: 'alz'
-  managementGroupParentId: '{{root_parent_management_group_id}}'
+  managementGroupParentId: '627755e9-a244-4d05-b88e-e5b35826dc60'
   managementGroupDisplayName: 'Azure Landing Zones'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -20,12 +20,12 @@ param intRootConfig = {
   customerPolicySetDefs: []
   customerPolicyAssignments: []
   subscriptionsToPlaceInManagementGroup: []
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
-  waitForConsistencyCounterBeforePolicyAssignments: 30
-  waitForConsistencyCounterBeforeRoleAssignment: 30
-  waitForConsistencyCounterBeforeSubPlacement: 30
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
+  waitForConsistencyCounterBeforePolicyAssignments: 10
+  waitForConsistencyCounterBeforeRoleAssignment: 10
+  waitForConsistencyCounterBeforeSubPlacement: 10
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
@@ -33,7 +33,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-MDFC-Config-H224': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       emailSecurityContact: {
         value: 'security@yourcompany.com'
@@ -46,7 +46,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzActivity-Log': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       logsEnabled: {
         value: 'True'
@@ -56,7 +56,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-Diag-LogsCat': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
@@ -67,7 +67,7 @@ param parPolicyAssignmentParameterOverrides = {
       }
       actionGroupResources: {
         value: {
-          actionGroupEmail: ['triage@yourcompany.com']
+          actionGroupEmail: ['ztrocinski@yourcompany.com']
           eventHubResourceId: []
           functionResourceId: ''
           functionTriggerUrl: ''
@@ -75,6 +75,13 @@ param parPolicyAssignmentParameterOverrides = {
           logicappResourceId: ''
           webhookServiceUri: []
         }
+      }
+    }
+  }
+  'Deploy-AzSqlDb-Auditing': {
+    parameters: {
+      logAnalyticsWorkspaceResourceId: {
+        value: '/subscriptions/86dc1e50-f967-40b2-aa0a-3babc7be8ab6/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
