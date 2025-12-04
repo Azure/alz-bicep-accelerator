@@ -22,13 +22,13 @@ param parEnableTelemetry bool = true
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
-  owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
-  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
-  rbacSecurityAdmin: 'fb1c8493-542b-48eb-b624-b4c8fea62acd'
-  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
-  monitoringPolicyContributor: '47be4a87-7950-4631-9daf-b664a405f074'
+  owner: '/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+  contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+  logAnalyticsContributor: '/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  monitoringContributor: '/providers/Microsoft.Authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  rbacSecurityAdmin: '/providers/Microsoft.Authorization/roleDefinitions/fb1c8493-542b-48eb-b624-b4c8fea62acd'
+  sqlSecurityManager: '/providers/Microsoft.Authorization/roleDefinitions/056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  monitoringPolicyContributor: '/providers/Microsoft.Authorization/roleDefinitions/47be4a87-7950-4631-9daf-b664a405f074'
 }
 
 var alzRbacRoleDefsJson = [

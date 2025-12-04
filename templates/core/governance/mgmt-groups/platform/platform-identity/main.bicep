@@ -22,10 +22,10 @@ param parEnableTelemetry bool = true
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
-  backupContributor: '5e467623-bb1f-42f4-a55d-6e525e11384b'
-  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+  vmContributor: '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  backupContributor: '/providers/Microsoft.Authorization/roleDefinitions/5e467623-bb1f-42f4-a55d-6e525e11384b'
+  reader: '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7'
 }
 
 var alzRbacRoleDefsJson = []
