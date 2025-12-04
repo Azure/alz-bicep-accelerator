@@ -182,7 +182,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformManagement 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module platformManagement 'br/public:avm/ptn/alz/empty:0.3.2' = {
   params: {
     createOrUpdateManagementGroup: platformManagementConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName

@@ -208,7 +208,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.2' = {
   params: {
     createOrUpdateManagementGroup: platformIdentityConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
