@@ -203,43 +203,40 @@ var alzPolicyAssignmentRoleDefinitions = {
 var managementGroupFinalName = platformConfig.?managementGroupName ?? 'platform'
 var intRootManagementGroupFinalName = platformConfig.?managementGroupIntermediateRootName ?? 'alz'
 
-// Additional management groups to assign RBAC roles to for cross-MG policy assignments
-// Note: AVM module expects MG names, not full resource IDs - it constructs paths internally
-// Platform MG is automatically assigned (policy assignment scope), only listing additional cross-MG scopes here
 var alzPolicyAssignmentAdditionalRbacScopes = {
   'Deploy-VM-ChangeTrack': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-VM-Monitoring': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-vmArc-ChangeTrack': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-VMSS-ChangeTrack': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-vmHybr-Monitoring': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-VMSS-Monitoring': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
   'Deploy-MDFC-DefSQL-AMA': {
     additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? '${intRootManagementGroupFinalName}-landingzones'
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
     ]
   }
 }
@@ -395,28 +392,36 @@ var allPolicySetDefinitions = [
 ]
 
 var allPolicyAssignments = [
-  for policyAssignment in deduplicatedPolicyAssignments: {
-    name: policyAssignment.name
-    displayName: policyAssignment.properties.?displayName
-    description: policyAssignment.properties.?description
-    policyDefinitionId: policyAssignment.properties.policyDefinitionId
-    parameters: policyAssignment.properties.?parameters
-    parameterOverrides: policyAssignment.properties.?parameterOverrides
-    identity: policyAssignment.identity.?type ?? 'None'
-    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
-    roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
-    nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
-    metadata: policyAssignment.properties.?metadata
-    enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
-    notScopes: policyAssignment.properties.?notScopes
-    location: policyAssignment.?location
-    overrides: policyAssignment.properties.?overrides
-    resourceSelectors: policyAssignment.properties.?resourceSelectors
-    definitionVersion: policyAssignment.properties.?definitionVersion
-    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo
-    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo
-    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
-  }
+  for policyAssignment in deduplicatedPolicyAssignments: union(
+    {
+      name: policyAssignment.name
+      displayName: policyAssignment.properties.?displayName
+      description: policyAssignment.properties.?description
+      policyDefinitionId: policyAssignment.properties.policyDefinitionId
+      parameters: policyAssignment.properties.?parameters
+      parameterOverrides: policyAssignment.properties.?parameterOverrides
+      identity: policyAssignment.identity.?type ?? 'None'
+      userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
+      roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
+      nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
+      metadata: policyAssignment.properties.?metadata
+      enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
+      notScopes: policyAssignment.properties.?notScopes
+      location: policyAssignment.?location
+      overrides: policyAssignment.properties.?overrides
+      resourceSelectors: policyAssignment.properties.?resourceSelectors
+      definitionVersion: policyAssignment.properties.?definitionVersion
+    },
+    policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo != null
+      ? { additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo }
+      : {},
+    policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo != null
+      ? { additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo }
+      : {},
+    policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo != null
+      ? { additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo }
+      : {}
+  )
 ]
 
 // ============ //
