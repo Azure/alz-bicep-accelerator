@@ -24,7 +24,7 @@ param intRootConfig = {
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
   waitForConsistencyCounterBeforePolicyAssignments: 10
-  waitForConsistencyCounterBeforeRoleAssignment: 10
+  waitForConsistencyCounterBeforeRoleAssignment: 20
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
 
