@@ -258,7 +258,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-landingzones-children"
+                    "group": "governance-sandbox"
                 },
                 {
                     "order": 11,
@@ -270,7 +270,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-landingzones-children"
+                    "group": "governance-decommissioned"
                 },
                 {
                     "order": 12,
@@ -326,21 +326,31 @@
                 },
                 {
                     "order": 4,
+                    "name": "governance-sandbox",
+                    "displayName": "Governance - Sandbox"
+                },
+                {
+                    "order": 5,
+                    "name": "governance-decommissioned",
+                    "displayName": "Governance - Decommissioned"
+                },
+                {
+                    "order": 6,
                     "name": "governance-platform-children",
                     "displayName": "Governance - Platform Children"
                 },
                 {
-                    "order": 5,
+                    "order": 7,
                     "name": "governance-landingzones-children",
                     "displayName": "Governance - Landing Zone Children"
                 },
                 {
-                    "order": 6,
+                    "order": 8,
                     "name": "core",
                     "displayName": "Core Logging"
                 },
                 {
-                    "order": 7,
+                    "order": 9,
                     "name": "networking",
                     "displayName": "Networking"
                 }
