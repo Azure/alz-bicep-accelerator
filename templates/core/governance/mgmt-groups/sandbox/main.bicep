@@ -21,14 +21,6 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to override. Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
-// Built-in Azure RBAC role definition IDs (ready for future use)
-// var builtInRoleDefinitionIds = {
-//   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-//   owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
-//   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-//   networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
-// }
-
 var alzRbacRoleDefsJson = []
 
 var alzPolicyDefsJson = []
@@ -39,15 +31,6 @@ var alzPolicyAssignmentsJson = [
   loadJsonContent('../../lib/alz/sandbox/Enforce-ALZ-Sandbox.alz_policy_assignment.json')
 ]
 
-// Policy assignment to role definition mappings (ready for future use)
-// Currently no role assignments needed for Enforce-ALZ-Sandbox policy
-// When adding policies requiring deployIfNotExists/modify, use this pattern:
-// var alzPolicyAssignmentRoleDefinitions = {
-//   'Deploy-Security-Policy': [builtInRoleDefinitionIds.contributor]
-// }
-// var alzPolicyAssignmentRoleDefinitions = {
-// }
-
 var managementGroupFinalName = sandboxConfig.?managementGroupName ?? 'sandbox'
 var intRootManagementGroupFinalName = sandboxConfig.?managementGroupIntermediateRootName ?? 'alz'
 
@@ -57,6 +40,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -89,17 +73,12 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
               scope: '/providers/Microsoft.Management/managementGroups/${managementGroupFinalName}'
             },
-            // Uncomment the following block when role assignments are needed for policy assignments
-            // contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
-            //   ? {
-            //       roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
-            //     }
-            //   : {},
             {
               policyDefinitionId: replace(
                 replace(
@@ -204,7 +183,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module sandbox 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
@@ -223,7 +202,7 @@ module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: sandboxConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
     waitForConsistencyCounterBeforeCustomRoleDefinitions: sandboxConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
     waitForConsistencyCounterBeforePolicyAssignments: sandboxConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: sandboxConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeRoleAssignments: sandboxConfig.?waitForConsistencyCounterBeforeRoleAssignments
     waitForConsistencyCounterBeforeSubPlacement: sandboxConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }

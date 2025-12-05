@@ -78,7 +78,7 @@
                         }
                     ]
                 },
-                "management_group_id": {
+                "root_parent_management_group_id": {
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
@@ -90,7 +90,7 @@
                         }
                     ]
                 },
-                "networkType": {
+                "network_type": {
                     "source": "input",
                     "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
                     "default": "hubNetworking",
@@ -154,66 +154,6 @@
                 },
                 {
                     "order": 2,
-                    "name": "governance-platform",
-                    "displayName": "Governance-Platform",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/main.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform"
-                },
-                {
-                    "order": 3,
-                    "name": "governance-platform-connectivity",
-                    "displayName": "Governance-Platform Connectivity",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform-children"
-                },
-                {
-                    "order": 4,
-                    "name": "governance-platform-identity",
-                    "displayName": "Governance-Platform Identity",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform-children"
-                },
-                {
-                    "order": 5,
-                    "name": "governance-platform-management",
-                    "displayName": "Governance-Platform Management",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform-children"
-                },
-                {
-                    "order": 6,
-                    "name": "governance-platform-security",
-                    "displayName": "Governance-Platform Security",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform-children"
-                },
-                {
-                    "order": 7,
                     "name": "governance-landingzones",
                     "displayName": "Governance-Landing Zones",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main.bicep",
@@ -225,7 +165,7 @@
                     "group": "governance-landingzones"
                 },
                 {
-                    "order": 8,
+                    "order": 3,
                     "name": "governance-landingzones-corp",
                     "displayName": "Governance-Landing Zones Corp",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicep",
@@ -237,7 +177,7 @@
                     "group": "governance-landingzones-children"
                 },
                 {
-                    "order": 9,
+                    "order": 4,
                     "name": "governance-landingzones-online",
                     "displayName": "Governance-Landing Zones Online",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicep",
@@ -249,6 +189,66 @@
                     "group": "governance-landingzones-children"
                 },
                 {
+                    "order": 5,
+                    "name": "governance-platform",
+                    "displayName": "Governance-Platform",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform"
+                },
+                {
+                    "order": 6,
+                    "name": "governance-platform-connectivity",
+                    "displayName": "Governance-Platform Connectivity",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 7,
+                    "name": "governance-platform-identity",
+                    "displayName": "Governance-Platform Identity",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 8,
+                    "name": "governance-platform-management",
+                    "displayName": "Governance-Platform Management",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 9,
+                    "name": "governance-platform-security",
+                    "displayName": "Governance-Platform Security",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
                     "order": 10,
                     "name": "governance-sandbox",
                     "displayName": "Governance-Sandbox",
@@ -258,7 +258,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-landingzones-children"
+                    "group": "governance-sandbox"
                 },
                 {
                     "order": 11,
@@ -270,7 +270,7 @@
                     "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
                     "deploymentType": "managementGroup",
                     "firstRunWhatIf": false,
-                    "group": "governance-landingzones-children"
+                    "group": "governance-decommissioned"
                 },
                 {
                     "order": 12,
@@ -316,31 +316,41 @@
                 },
                 {
                     "order": 2,
-                    "name": "governance-platform",
-                    "displayName": "Governance - Platform"
-                },
-                {
-                    "order": 3,
                     "name": "governance-landingzones",
                     "displayName": "Governance - Landing Zones"
                 },
                 {
-                    "order": 4,
-                    "name": "governance-platform-children",
-                    "displayName": "Governance - Platform Children"
-                },
-                {
-                    "order": 5,
+                    "order": 3,
                     "name": "governance-landingzones-children",
                     "displayName": "Governance - Landing Zone Children"
                 },
                 {
+                    "order": 4,
+                    "name": "governance-platform",
+                    "displayName": "Governance - Platform"
+                },
+                {
+                    "order": 5,
+                    "name": "governance-platform-children",
+                    "displayName": "Governance - Platform Children"
+                },
+                {
                     "order": 6,
+                    "name": "governance-sandbox",
+                    "displayName": "Governance - Sandbox"
+                },
+                {
+                    "order": 7,
+                    "name": "governance-decommissioned",
+                    "displayName": "Governance - Decommissioned"
+                },
+                {
+                    "order": 8,
                     "name": "core",
                     "displayName": "Core Logging"
                 },
                 {
-                    "order": 7,
+                    "order": 9,
                     "name": "networking",
                     "displayName": "Networking"
                 }
@@ -425,7 +435,7 @@
                         }
                     ]
                 },
-                "management_group_id": {
+                "root_parent_management_group_id": {
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
@@ -437,7 +447,7 @@
                         }
                     ]
                 },
-                "networkType": {
+                "network_type": {
                     "source": "input",
                     "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
                     "default": "hubNetworking",

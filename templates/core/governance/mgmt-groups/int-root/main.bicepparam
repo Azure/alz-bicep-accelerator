@@ -24,7 +24,7 @@ param intRootConfig = {
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
   waitForConsistencyCounterBeforePolicyAssignments: 30
-  waitForConsistencyCounterBeforeRoleAssignment: 30
+  waitForConsistencyCounterBeforeRoleAssignments: 30
   waitForConsistencyCounterBeforeSubPlacement: 30
 }
 
@@ -37,6 +37,9 @@ param parPolicyAssignmentParameterOverrides = {
       }
       emailSecurityContact: {
         value: 'security@yourcompany.com'
+      }
+      ascExportResourceGroupName: {
+        value: 'rg-alz-asc-${parLocations[0]}'
       }
       ascExportResourceGroupLocation: {
         value: parLocations[0]
@@ -75,6 +78,13 @@ param parPolicyAssignmentParameterOverrides = {
           logicappResourceId: ''
           webhookServiceUri: []
         }
+      }
+    }
+  }
+  'Deploy-AzSqlDb-Auditing': {
+    parameters: {
+      logAnalyticsWorkspaceResourceId: {
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }

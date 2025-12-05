@@ -22,18 +22,18 @@ param parEnableTelemetry bool = true
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  owner: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
-  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
-  networkContributor: '4d97b98b-1d4f-4787-a291-c67834d212e7'
-  managedIdentityOperator: 'f1a07417-d97a-45cb-824c-7a7467783830'
-  managedIdentityContributor: 'e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
-  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
-  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
-  sqlDbContributor: '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
-  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
-  connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
+  contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+  owner: '/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+  reader: '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  vmContributor: '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  networkContributor: '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7'
+  managedIdentityOperator: '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
+  managedIdentityContributor: '/providers/Microsoft.Authorization/roleDefinitions/e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
+  logAnalyticsContributor: '/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  sqlSecurityManager: '/providers/Microsoft.Authorization/roleDefinitions/056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  sqlDbContributor: '/providers/Microsoft.Authorization/roleDefinitions/9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+  monitoringContributor: '/providers/Microsoft.Authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  connectedMachineResourceAdministrator: '/providers/Microsoft.Authorization/roleDefinitions/cd570a14-e51a-42ad-bac8-bafd67325302'
 }
 
 var alzRbacRoleDefsJson = []
@@ -166,6 +166,35 @@ var alzPolicyAssignmentRoleDefinitions = {
     builtInRoleDefinitionIds.connectedMachineResourceAdministrator
     builtInRoleDefinitionIds.managedIdentityOperator
   ]
+  'Enforce-Encrypt-CMK0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-APIM0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-AppServices0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Automation0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-BotService0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CogServ0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Compute0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContApps0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContInst0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContReg0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CosmosDb0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataExpl0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataFactory0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventGrid0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventHub0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVault': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVaultSup0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Kubernetes0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MachLearn0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MySQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Network0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-OpenAI0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-PostgreSQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ServiceBus0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-SQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Storage0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Synapse0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-VirtualDesk0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-Subnet-Private': [builtInRoleDefinitionIds.contributor]
 }
 
 var managementGroupFinalName = landingZonesConfig.?managementGroupName ?? 'landingzones'
@@ -177,6 +206,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -214,6 +244,7 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
@@ -331,7 +362,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module landingZones 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: landingZonesConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
@@ -350,7 +381,7 @@ module landingZones 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: landingZonesConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
     waitForConsistencyCounterBeforeCustomRoleDefinitions: landingZonesConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
     waitForConsistencyCounterBeforePolicyAssignments: landingZonesConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: landingZonesConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeRoleAssignments: landingZonesConfig.?waitForConsistencyCounterBeforeRoleAssignments
     waitForConsistencyCounterBeforeSubPlacement: landingZonesConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }

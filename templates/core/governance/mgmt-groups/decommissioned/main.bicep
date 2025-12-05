@@ -23,7 +23,7 @@ param parPolicyAssignmentParameterOverrides object = {}
 
 // Built-in Azure RBAC role definition IDs
 var builtInRoleDefinitionIds = {
-  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  vmContributor: '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
 }
 
 var alzRbacRoleDefsJson = []
@@ -203,7 +203,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module decommissioned 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module decommissioned 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: decommissionedConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
@@ -222,7 +222,7 @@ module decommissioned 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: decommissionedConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
     waitForConsistencyCounterBeforeCustomRoleDefinitions: decommissionedConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
     waitForConsistencyCounterBeforePolicyAssignments: decommissionedConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: decommissionedConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeRoleAssignments: decommissionedConfig.?waitForConsistencyCounterBeforeRoleAssignments
     waitForConsistencyCounterBeforeSubPlacement: decommissionedConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }

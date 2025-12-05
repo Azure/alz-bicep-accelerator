@@ -22,10 +22,10 @@ param parEnableTelemetry bool = true
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
-  backupContributor: '5e467623-bb1f-42f4-a55d-6e525e11384b'
-  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+  vmContributor: '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  backupContributor: '/providers/Microsoft.Authorization/roleDefinitions/5e467623-bb1f-42f4-a55d-6e525e11384b'
+  reader: '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7'
 }
 
 var alzRbacRoleDefsJson = []
@@ -54,6 +54,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -91,6 +92,7 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
@@ -208,7 +210,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: platformIdentityConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
@@ -227,7 +229,7 @@ module platformIdentity 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformIdentityConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
     waitForConsistencyCounterBeforeCustomRoleDefinitions: platformIdentityConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
     waitForConsistencyCounterBeforePolicyAssignments: platformIdentityConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: platformIdentityConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeRoleAssignments: platformIdentityConfig.?waitForConsistencyCounterBeforeRoleAssignments
     waitForConsistencyCounterBeforeSubPlacement: platformIdentityConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }

@@ -21,20 +21,25 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
+@description('Optional. Management group names for cross-MG RBAC assignments. Specify child management group names where policy-assigned managed identities need permissions.')
+param parCrossMgRbacScopes object = {
+  landingZones: 'landingzones'
+}
+
 var builtInRoleDefinitionIds = {
-  contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-  aksContributor: 'ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
-  aksPolicyAddon: '18ed5180-3e48-46fd-8541-4ea054d57064'
-  logAnalyticsContributor: '92aaf0da-9dab-42b6-94a3-d43ce8d16293'
-  sqlSecurityManager: '056cd41c-7e88-42e1-933e-88ba6a50c9c3'
-  sqlDbContributor: '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
-  backupContributor: '5e467623-bb1f-42f4-a55d-6e525e11384b'
-  vmContributor: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
-  connectedMachineResourceAdministrator: 'cd570a14-e51a-42ad-bac8-bafd67325302'
-  monitoringContributor: '749f88d5-cbae-40b8-bcfc-e573ddc772fa'
-  managedIdentityOperator: 'f1a07417-d97a-45cb-824c-7a7467783830'
-  managedIdentityContributor: 'e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
-  reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
+  aksContributor: '/providers/Microsoft.Authorization/roleDefinitions/ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
+  aksPolicyAddon: '/providers/Microsoft.Authorization/roleDefinitions/18ed5180-3e48-46fd-8541-4ea054d57064'
+  logAnalyticsContributor: '/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293'
+  sqlSecurityManager: '/providers/Microsoft.Authorization/roleDefinitions/056cd41c-7e88-42e1-933e-88ba6a50c9c3'
+  sqlDbContributor: '/providers/Microsoft.Authorization/roleDefinitions/9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+  backupContributor: '/providers/Microsoft.Authorization/roleDefinitions/5e467623-bb1f-42f4-a55d-6e525e11384b'
+  vmContributor: '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
+  connectedMachineResourceAdministrator: '/providers/Microsoft.Authorization/roleDefinitions/cd570a14-e51a-42ad-bac8-bafd67325302'
+  monitoringContributor: '/providers/Microsoft.Authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa'
+  managedIdentityOperator: '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
+  managedIdentityContributor: '/providers/Microsoft.Authorization/roleDefinitions/e40ec5ca-96e0-45a2-b4ff-59039f2c2b59'
+  reader: '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7'
 }
 
 var alzRbacRoleDefsJson = []
@@ -164,10 +169,77 @@ var alzPolicyAssignmentRoleDefinitions = {
     builtInRoleDefinitionIds.managedIdentityOperator
   ]
   'Enforce-ASR': [builtInRoleDefinitionIds.contributor]
+  'Enforce-Encrypt-CMK0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-APIM0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-AppServices0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Automation0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-BotService0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CogServ0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Compute0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContApps0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContInst0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ContReg0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-CosmosDb0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataExpl0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-DataFactory0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventGrid0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-EventHub0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVault': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-KeyVaultSup0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Kubernetes0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MachLearn0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-MySQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Network0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-OpenAI0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-PostgreSQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-ServiceBus0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-SQL0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Storage0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-Synapse0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-GR-VirtualDesk0': [builtInRoleDefinitionIds.contributor]
+  'Enforce-Subnet-Private': [builtInRoleDefinitionIds.contributor]
 }
 
 var managementGroupFinalName = platformConfig.?managementGroupName ?? 'platform'
 var intRootManagementGroupFinalName = platformConfig.?managementGroupIntermediateRootName ?? 'alz'
+
+var alzPolicyAssignmentAdditionalRbacScopes = {
+  'Deploy-VM-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-VM-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-vmArc-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-VMSS-ChangeTrack': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-vmHybr-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-VMSS-Monitoring': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+  'Deploy-MDFC-DefSQL-AMA': {
+    additionalManagementGroupsIDsToAssignRbacTo: [
+      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
+    ]
+  }
+}
 
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
@@ -175,6 +247,7 @@ var alzPolicyAssignmentsWithOverrides = [
     contains(parPolicyAssignmentParameterOverrides, policyAssignment.name)
       ? {
           location: parPolicyAssignmentParameterOverrides[policyAssignment.name].?location ?? parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             parPolicyAssignmentParameterOverrides[policyAssignment.name].?scope != null
@@ -197,6 +270,13 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
+            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
+              ? {
+                  additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalManagementGroupsIDsToAssignRbacTo
+                  additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalSubscriptionIDsToAssignRbacTo
+                  additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalResourceGroupResourceIDsToAssignRbacTo
+                }
+              : {},
             {
               policyDefinitionId: replace(
                 replace(
@@ -212,6 +292,7 @@ var alzPolicyAssignmentsWithOverrides = [
         }
       : {
           location: parLocations[0]
+          identity: policyAssignment.?identity
           properties: union(
             policyAssignment.properties,
             {
@@ -221,6 +302,19 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
+              : {},
+            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
+              ? union(
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalManagementGroupsIDsToAssignRbacTo')
+                    ? {additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalManagementGroupsIDsToAssignRbacTo}
+                    : {},
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalSubscriptionIDsToAssignRbacTo')
+                    ? {additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo}
+                    : {},
+                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalResourceGroupResourceIDsToAssignRbacTo')
+                    ? {additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalResourceGroupResourceIDsToAssignRbacTo}
+                    : {}
+                )
               : {},
             {
               policyDefinitionId: replace(
@@ -298,35 +392,43 @@ var allPolicySetDefinitions = [
 ]
 
 var allPolicyAssignments = [
-  for policyAssignment in deduplicatedPolicyAssignments: {
-    name: policyAssignment.name
-    displayName: policyAssignment.properties.?displayName
-    description: policyAssignment.properties.?description
-    policyDefinitionId: policyAssignment.properties.policyDefinitionId
-    parameters: policyAssignment.properties.?parameters
-    parameterOverrides: policyAssignment.properties.?parameterOverrides
-    identity: policyAssignment.identity.?type ?? 'None'
-    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
-    roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
-    nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
-    metadata: policyAssignment.properties.?metadata
-    enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
-    notScopes: policyAssignment.properties.?notScopes
-    location: policyAssignment.?location
-    overrides: policyAssignment.properties.?overrides
-    resourceSelectors: policyAssignment.properties.?resourceSelectors
-    definitionVersion: policyAssignment.properties.?definitionVersion
-    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo
-    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo
-    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
-  }
+  for policyAssignment in deduplicatedPolicyAssignments: union(
+    {
+      name: policyAssignment.name
+      displayName: policyAssignment.properties.?displayName
+      description: policyAssignment.properties.?description
+      policyDefinitionId: policyAssignment.properties.policyDefinitionId
+      parameters: policyAssignment.properties.?parameters
+      parameterOverrides: policyAssignment.properties.?parameterOverrides
+      identity: policyAssignment.identity.?type ?? 'None'
+      userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
+      roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
+      nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
+      metadata: policyAssignment.properties.?metadata
+      enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
+      notScopes: policyAssignment.properties.?notScopes
+      location: policyAssignment.?location
+      overrides: policyAssignment.properties.?overrides
+      resourceSelectors: policyAssignment.properties.?resourceSelectors
+      definitionVersion: policyAssignment.properties.?definitionVersion
+    },
+    policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo != null
+      ? { additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo }
+      : {},
+    policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo != null
+      ? { additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo }
+      : {},
+    policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo != null
+      ? { additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo }
+      : {}
+  )
 ]
 
 // ============ //
 //   Resources  //
 // ============ //
 
-module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module platform 'br/public:avm/ptn/alz/empty:0.3.3' = {
   params: {
     createOrUpdateManagementGroup: platformConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
@@ -345,7 +447,7 @@ module platform 'br/public:avm/ptn/alz/empty:0.3.1' = {
     waitForConsistencyCounterBeforeCustomPolicySetDefinitions: platformConfig.?waitForConsistencyCounterBeforeCustomPolicySetDefinitions
     waitForConsistencyCounterBeforeCustomRoleDefinitions: platformConfig.?waitForConsistencyCounterBeforeCustomRoleDefinitions
     waitForConsistencyCounterBeforePolicyAssignments: platformConfig.?waitForConsistencyCounterBeforePolicyAssignments
-    waitForConsistencyCounterBeforeRoleAssignments: platformConfig.?waitForConsistencyCounterBeforeRoleAssignment
+    waitForConsistencyCounterBeforeRoleAssignments: platformConfig.?waitForConsistencyCounterBeforeRoleAssignments
     waitForConsistencyCounterBeforeSubPlacement: platformConfig.?waitForConsistencyCounterBeforeSubPlacement
     enableTelemetry: parEnableTelemetry
   }
