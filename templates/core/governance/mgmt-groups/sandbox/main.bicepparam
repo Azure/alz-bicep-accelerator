@@ -25,7 +25,7 @@ param sandboxConfig = {
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
   waitForConsistencyCounterBeforePolicyAssignments: 30
-  waitForConsistencyCounterBeforeRoleAssignment: 30
+  waitForConsistencyCounterBeforeRoleAssignments: 30
   waitForConsistencyCounterBeforeSubPlacement: 30
 }
 

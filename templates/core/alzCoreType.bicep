@@ -56,7 +56,7 @@ type alzCoreType = {
   waitForConsistencyCounterBeforePolicyAssignments: int?
 
   @description('Optional. The number of consistency counters to wait for before creating or updating role assignments. If not specified, the default value is 10.')
-  waitForConsistencyCounterBeforeRoleAssignment: int?
+  waitForConsistencyCounterBeforeRoleAssignments: int?
 
   @description('Optional. The number of consistency counters to wait for before sub placement. If not specified, the default value is 10.')
   waitForConsistencyCounterBeforeSubPlacement: int?
