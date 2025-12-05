@@ -90,7 +90,7 @@
                         }
                     ]
                 },
-                "networkType": {
+                "network_type": {
                     "source": "input",
                     "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
                     "default": "hubNetworking",
@@ -447,7 +447,7 @@
                         }
                     ]
                 },
-                "networkType": {
+                "network_type": {
                     "source": "input",
                     "description": "The type of networking to deploy. (e.g. 'hubNetworking', 'vwanConnectivity')",
                     "default": "hubNetworking",
