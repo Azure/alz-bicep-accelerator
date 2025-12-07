@@ -66,9 +66,9 @@ param parEnableTelemetry bool = true
 //========================================
 
 // Compute actual resource group names (either from override arrays or generated from prefix + location)
-var hubResourceGroupNames = [for (location, i) in parLocations: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}-${location}' : parHubNetworkingResourceGroupNameOverrides[i]]
-var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${location}' : parDnsResourceGroupNameOverrides[i]]
-var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
+var hubResourceGroupNames = [for (location, i) in parLocations: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}${location}' : parHubNetworkingResourceGroupNameOverrides[i]]
+var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}${location}' : parDnsResourceGroupNameOverrides[i]]
+var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
 
 //========================================
 // Resources Groups

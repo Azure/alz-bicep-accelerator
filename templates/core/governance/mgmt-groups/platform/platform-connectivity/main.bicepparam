@@ -9,9 +9,9 @@ param parEnableTelemetry = true
 
 param platformConnectivityConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: 'connectivity'
-  managementGroupParentId: 'platform'
-  managementGroupIntermediateRootName: 'alz'
+  managementGroupName: '{{management_group_id_prefix}}{{management_group_connectivity_id||connectivity}}{{management_group_id_postfix}}'
+  managementGroupParentId: '{{management_group_id_prefix}}{{management_group_platform_id||platform}}{{management_group_id_postfix}}'
+  managementGroupIntermediateRootName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
   managementGroupDisplayName: 'Connectivity'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
@@ -34,7 +34,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Enable-DDoS-VNET': {
     parameters: {
       ddosPlan: {
-        value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/rg-alz-conn-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
+        value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/{{resource_group_hub_networking_name_prefix||rg-alz-conn-}}${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
       }
     }
   }
