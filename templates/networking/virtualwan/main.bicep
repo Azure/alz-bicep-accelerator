@@ -38,7 +38,7 @@ param parDnsPrivateResolverResourceGroupNameOverrides array = []
 param vwan vwanNetworkType
 
 @description('Optional. The virtual WAN hubs to create.')
-param vwanHubs vwanHubType?
+param vwanHubs vwanHubType[]?
 
 // Resource Lock Parameters
 @sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
@@ -73,14 +73,12 @@ var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsReso
 var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
 
 // Compute recommended availability zones for each hub location
-var vwanBastionRecommendedZones = [for hub in vwanHubs!: json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
-var vwanBastionPublicIpRecommendedZones = [for hub in vwanHubs!: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
+var vwanBastionRecommendedZones = [for hub in (vwanHubs ?? []): json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var vwanBastionPublicIpRecommendedZones = [for hub in (vwanHubs ?? []): json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
 
 //========================================
 // Resource Groups
 //========================================
-
-// Create resource groups for each location
 module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: {
     name: 'modVwanResourceGroup-${uniqueString(parVirtualWanResourceGroupNamePrefix, location)}'
@@ -96,7 +94,7 @@ module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' 
 ]
 
 module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enablePrivateDnsZones)) > 0) {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.enablePrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -110,7 +108,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' =
 ]
 
 module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enableDnsPrivateResolver)) > 0) {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.enableDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -146,7 +144,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.3' = {
 }
 
 module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
-  for (vwanHub, i) in vwanHubs!: {
+  for (vwanHub, i) in (vwanHubs ?? []): {
     name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -166,7 +164,7 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
       p2SVpnGatewayResourceId: vwanHub.?p2SVpnGatewayId
       hubRouteTables: vwanHub.?routeTableRoutes
       hubVirtualNetworkConnections: vwanHub.?hubVirtualNetworkConnections
-      preferredRoutingGateway: vwanHub.?preferredRoutingGateway ?? 'None'
+      preferredRoutingGateway: vwanHub.?preferredRoutingGateway ?? 'ExpressRoute'
       hubRoutingPreference: vwanHub.?hubRoutingPreference ?? 'ExpressRoute'
       routingIntent: vwanHub.?routingIntent
       routeTableRoutes: vwanHub.?routeTableRoutes
@@ -182,8 +180,109 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   }
 ]
 
+//=====================
+// S2S VPN Gateways
+//=====================
+module resS2sVpnGateway 'br/public:avm/res/network/vpn-gateway:0.2.2' = [
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.s2sVpnGatewaySettings.?enabled ?? false) {
+    name: 'vpnGateway-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+      resVirtualWanHub
+    ]
+    params: {
+      name: vwanHub.s2sVpnGatewaySettings.?name ?? 'vpngw-${vwanHub.hubName}'
+      location: vwanHub.location
+      virtualHubResourceId: resVirtualWanHub[i].outputs.resourceId
+      bgpSettings: vwanHub.s2sVpnGatewaySettings.?bgpSettings != null ? {
+        asn: vwanHub.s2sVpnGatewaySettings.bgpSettings!.asn
+        peerWeight: vwanHub.s2sVpnGatewaySettings.bgpSettings!.peerWeight
+        bgpPeeringAddresses: union(
+          vwanHub.s2sVpnGatewaySettings.bgpSettings!.?instance0BgpPeeringAddress != null ? [
+            {
+              customBgpIpAddresses: vwanHub.s2sVpnGatewaySettings.bgpSettings!.instance0BgpPeeringAddress!.customIps
+            }
+          ] : [],
+          vwanHub.s2sVpnGatewaySettings.bgpSettings!.?instance1BgpPeeringAddress != null ? [
+            {
+              customBgpIpAddresses: vwanHub.s2sVpnGatewaySettings.bgpSettings!.instance1BgpPeeringAddress!.customIps
+            }
+          ] : []
+        )
+      } : null
+      vpnGatewayScaleUnit: vwanHub.s2sVpnGatewaySettings.?scaleUnit ?? 1
+      enableBgpRouteTranslationForNat: vwanHub.s2sVpnGatewaySettings.?bgpRouteTranslationForNatEnabled ?? false
+      isRoutingPreferenceInternet: (vwanHub.s2sVpnGatewaySettings.?routingPreference ?? 'ExpressRoute') == 'Internet'
+      natRules: []
+      vpnConnections: []
+      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
+      tags: parTags ?? vwanHub.s2sVpnGatewaySettings.?tags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
+//=====================
+// P2S VPN Server Configurations
+//=====================
+module resVpnServerConfigurations 'br/public:avm/res/network/vpn-server-configuration:0.1.2' = [
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.p2sVpnGatewaySettings.?enabled ?? false) {
+    name: 'vpnServerConfig-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+    ]
+    params: {
+      name: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?name ?? 'vpnservercfg-${vwanHub.hubName}'
+      location: vwanHub.location
+      vpnAuthenticationTypes: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.vpnAuthenticationTypes
+      vpnProtocols: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?vpnProtocols ?? ['IkeV2', 'OpenVPN']
+      aadAudience: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?aadAuthenticationParameters.?aadAudience
+      aadIssuer: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?aadAuthenticationParameters.?aadIssuer
+      aadTenant: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?aadAuthenticationParameters.?aadTenant
+      radiusServers: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?radiusServers
+      vpnClientRootCertificates: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?vpnClientRootCertificates
+      vpnClientRevokedCertificates: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?vpnClientRevokedCertificates
+      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
+      tags: parTags ?? vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?tags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
+//=====================
+// P2S VPN Gateways
+//=====================
+module resP2sVpnGateway 'br/public:avm/res/network/p2s-vpn-gateway:0.1.3' = [
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.p2sVpnGatewaySettings.?enabled ?? false) {
+    name: 'p2sVpnGateway-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+      resVirtualWanHub
+      resVpnServerConfigurations
+    ]
+    params: {
+      name: vwanHub.p2sVpnGatewaySettings.?name ?? 'p2svpngw-${vwanHub.hubName}'
+      location: vwanHub.location
+      virtualHubResourceId: resVirtualWanHub[i].outputs.resourceId
+      vpnServerConfigurationResourceId: resVpnServerConfigurations[i]!.outputs.resourceId
+      p2SConnectionConfigurationsName: 'P2SConnectionConfig'
+      vpnClientAddressPoolAddressPrefixes: vwanHub.p2sVpnGatewaySettings.?vpnClientAddressPool.addressPrefixes ?? null
+      enableInternetSecurity: vwanHub.p2sVpnGatewaySettings.?enableInternetSecurity ?? true
+      customDnsServers: vwanHub.p2sVpnGatewaySettings.?dnsServers ?? []
+      vpnGatewayScaleUnit: vwanHub.p2sVpnGatewaySettings.scaleUnit
+      isRoutingPreferenceInternet: false
+      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
+      tags: parTags ?? vwanHub.p2sVpnGatewaySettings.?tags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
 module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true) {
     name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -200,14 +299,14 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
         [
           {
             name: 'DNSPrivateResolverInboundSubnet'
-            addressPrefix: cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 0)
+            addressPrefix: cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 0)
             privateEndpointNetworkPolicies: 'Enabled'
             privateLinkServiceNetworkPolicies: 'Enabled'
             defaultOutboundAccess: false
           }
           {
             name: 'DNSPrivateResolverOutboundSubnet'
-            addressPrefix: length(vwanHub.sideCarVirtualNetwork.addressPrefixes) > 1 ? vwanHub.sideCarVirtualNetwork.addressPrefixes[1] : cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 1)
+            addressPrefix: length(vwanHub.sideCarVirtualNetwork.addressPrefixes) > 1 ? vwanHub.sideCarVirtualNetwork.addressPrefixes[1] : cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 1)
             privateEndpointNetworkPolicies: 'Enabled'
             privateLinkServiceNetworkPolicies: 'Enabled'
             defaultOutboundAccess: false
@@ -216,7 +315,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
         vwanHub.bastionSettings.enableBastion ? [
           {
             name: 'AzureBastionSubnet'
-            addressPrefix: vwanHub.bastionSettings.?subnetAddressPrefix ?? cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 26, 0)
+            addressPrefix: vwanHub.bastionSettings.?subnetAddressPrefix ?? cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 26, 2)
             defaultOutboundAccess: vwanHub.bastionSettings.?subnetDefaultOutboundAccessEnabled ?? false
           }
         ] : []
@@ -228,7 +327,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       diagnosticSettings: vwanHub.?sideCarVirtualNetwork.?diagnosticSettings
       dnsServers: vwanHub.?sideCarVirtualNetwork.?dnsServers
       enableVmProtection: vwanHub.?sideCarVirtualNetwork.?enableVmProtection
-      ddosProtectionPlanResourceId: resDdosProtectionPlan[i].?outputs.resourceId ?? null
+      ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.enableDdosProtection ? resDdosProtectionPlan[i].?outputs.resourceId : null)
       tags: parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -240,7 +339,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
 // DNS
 //=====================
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enablePrivateDnsZones) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.enablePrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -257,7 +356,7 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 ]
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enableDnsPrivateResolver) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.enableDnsPrivateResolver) {
     name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -291,7 +390,7 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
 // Network security
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.ddosProtectionPlanSettings.enableDdosProtection) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.ddosProtectionPlanSettings.enableDdosProtection) {
     name: 'ddosPlan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.?ddosProtectionPlanSettings.?name ?? '', vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -308,7 +407,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
 ]
 
 module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.azureFirewallSettings.enableAzureFirewall && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.azureFirewallSettings.enableAzureFirewall && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -336,7 +435,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
 // Azure Bastion
 //=====================
 module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
     name: 'bastionPip-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -359,7 +458,7 @@ module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' =
 ]
 
 module resBastion 'br/public:avm/res/network/bastion-host:0.8.1' = [
-  for (vwanHub, i) in vwanHubs!: if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
     name: 'bastion-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -515,6 +614,15 @@ type vwanHubType = {
   @description('Optional. Resource ID of an existing Point-to-Site VPN Gateway to associate with the Virtual WAN hub.')
   p2SVpnGatewayId: string?
 
+  @description('Required. Site-to-Site VPN gateway configuration to deploy for this hub.')
+  s2sVpnGatewaySettings: s2sVpnGatewayType
+
+  @description('Optional. VPN sites configuration to deploy for this hub.')
+  vpnSites: vpnSiteType[]?
+
+  @description('Required. Point-to-Site VPN gateway configuration to deploy for this hub.')
+  p2sVpnGatewaySettings: p2sVpnGatewayType
+
   @description('Optional. The hub virtual network connections and associated properties.')
   hubVirtualNetworkConnections: array?
 
@@ -545,8 +653,8 @@ type vwanHubType = {
   @description('Optional. The virtual router IP addresses.')
   virtualRouterIps: array?
 
-  @description('Required. Virtual network gateway configuration settings.')
-  virtualNetworkGatewaySettings: virtualNetworkGatewaySettingsType
+  @description('Required. ExpressRoute Gateway configuration to deploy for this hub.')
+  expressRouteGatewaySettings: expressRouteGatewaySettingsType
 
   @description('Required. DDoS protection plan configuration settings.')
   ddosProtectionPlanSettings: ddosProtectionType
@@ -568,7 +676,7 @@ type vwanHubType = {
 
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
-}[]?
+}
 
 type peeringSettingsType = {
   @description('Optional. Allow forwarded traffic.')
@@ -883,64 +991,391 @@ type subnetOptionsType = ({
   delegation: string?
 })[]
 
-type virtualNetworkGatewaySettingsType = {
-  @description('Required. Enable/Disable virtual network gateway deployment.')
-  enableVirtualNetworkGateway: bool
+//=====================
+// VWAN Gateway Types
+//=====================
 
-  @description('Optional. Name of the virtual network gateway.')
+type expressRouteGatewaySettingsType = {
+  @description('Required. Enable/Disable ExpressRoute Gateway deployment.')
+  enabled: bool
+
+  @description('Optional. Name of the ExpressRoute Gateway.')
   name: string?
 
-  @description('Optional. The gateway type. Set to Vpn or ExpressRoute.')
-  gatewayType: 'Vpn' | 'ExpressRoute'?
+  @description('Optional. Enable/Disable accepting traffic from non-Virtual WAN networks. Default false.')
+  allowNonVirtualWanTraffic: bool?
 
-  @description('Required. The SKU of the gateway.')
-  skuName:
-    | 'Basic'
-    | 'VpnGw1AZ'
-    | 'VpnGw2AZ'
-    | 'VpnGw3AZ'
-    | 'VpnGw4AZ'
-    | 'VpnGw5AZ'
-    | 'Standard'
-    | 'HighPerformance'
-    | 'UltraPerformance'
-    | 'ErGw1AZ'
-    | 'ErGw2AZ'
-    | 'ErGw3AZ'
+  @description('Optional. Minimum number of scale units for the ExpressRoute Gateway. Default 1.')
+  minScaleUnits: int?
 
-  @description('Required. VPN mode and BGP configuration.')
-  vpnMode: 'activeActiveBgp' | 'activeActiveNoBgp' | 'activePassiveBgp' | 'activePassiveNoBgp'
+  @description('Optional. Maximum number of scale units for the ExpressRoute Gateway. Default 1.')
+  maxScaleUnits: int?
 
-  @description('Optional. The VPN type. Defaults to RouteBased if not specified.')
-  vpnType: 'RouteBased' | 'PolicyBased'?
+  @description('Optional. ExpressRoute connections configuration.')
+  expressRouteConnections: {
+    @description('Required. Name of the connection.')
+    name: string
 
-  @description('Optional. The gateway generation.')
-  vpnGatewayGeneration: 'Generation1' | 'Generation2' | 'None'?
+    @description('Required. Resource ID of the ExpressRoute circuit peering.')
+    expressRouteCircuitPeeringResourceId: string
 
-  @description('Optional. Enable/disable BGP route translation for NAT.')
-  enableBgpRouteTranslationForNat: bool?
+    @description('Optional. Enable/Disable internet security. Default true.')
+    enableInternetSecurity: bool?
 
-  @description('Optional. Enable/disable DNS forwarding.')
-  enableDnsForwarding: bool?
+    @description('Optional. Authorization key for the connection.')
+    authorizationKey: string?
 
-  @description('Optional. ASN to use for BGP.')
-  asn: int?
+    @description('Optional. Routing weight for the connection. Default 0.')
+    routingWeight: int?
 
-  @description('Optional. Custom BGP IP addresses (when BGP enabled modes are used).')
-  customBgpIpAddresses: string[]?
+    @description('Optional. Bypass ExpressRoute Gateway for data forwarding.')
+    expressRouteGatewayBypass: bool?
 
-  @description('Optional. Availability zones for public IPs.')
-  publicIpZones: array?
+    @description('Optional. Routing configuration.')
+    routingConfiguration: {
+      @description('Optional. Associated route table.')
+      associatedRouteTable: {
+        @description('Required. Route table resource ID.')
+        id: string
+      }?
 
-  @description('Optional. Client root certificate data (Base64) for P2S.')
-  clientRootCertData: string?
+      @description('Optional. Propagated route tables.')
+      propagatedRouteTables: {
+        @description('Optional. Route table resource IDs to propagate to.')
+        ids: {
+          @description('Required. Route table resource ID.')
+          id: string
+        }[]?
 
-  @description('Optional. VPN client address pool CIDR prefix.')
-  vpnClientAddressPoolPrefix: string?
+        @description('Optional. Labels for route propagation.')
+        labels: string[]?
+      }?
 
-  @description('Optional. Azure AD configuration for VPN client (OpenVPN).')
-  vpnClientAadConfiguration: object?
+      @description('Optional. Inbound route map resource ID.')
+      inboundRouteMapResourceId: string?
 
-  @description('Optional. Array of domain name labels for public IPs.')
-  domainNameLabel: string[]?
+      @description('Optional. Outbound route map resource ID.')
+      outboundRouteMapResourceId: string?
+    }?
+  }[]?
+
+  @description('Optional. Lock configuration for the ExpressRoute Gateway.')
+  lock: lockType?
+
+  @description('Optional. Tags for the ExpressRoute Gateway.')
+  tags: object?
+}
+
+type s2sVpnGatewayType = {
+  @description('Required. Enable/Disable Site-to-Site VPN Gateway deployment.')
+  enabled: bool
+
+  @description('Optional. Name of the Site-to-Site VPN Gateway.')
+  name: string?
+
+  @description('Optional. The scale unit for the VPN Gateway. Default 1.')
+  scaleUnit: int?
+
+  @description('Optional. Enable BGP route translation for NAT. Default false.')
+  bgpRouteTranslationForNatEnabled: bool?
+
+  @description('Optional. BGP settings for the VPN Gateway.')
+  bgpSettings: {
+    @description('Required. The BGP speaker ASN.')
+    asn: int
+
+    @description('Required. The weight added to routes learned from this BGP speaker.')
+    peerWeight: int
+
+    @description('Optional. BGP peering address with custom IPs for instance 0.')
+    instance0BgpPeeringAddress: {
+      @description('Required. List of custom BGP IP addresses.')
+      customIps: string[]
+    }?
+
+    @description('Optional. BGP peering address with custom IPs for instance 1.')
+    instance1BgpPeeringAddress: {
+      @description('Required. List of custom BGP IP addresses.')
+      customIps: string[]
+    }?
+  }?
+
+  @description('Optional. Routing preference for the VPN Gateway. Default ExpressRoute.')
+  routingPreference: ('ExpressRoute' | 'Internet')?
+
+  @description('Optional. VPN connections configuration for this gateway.')
+  vpnConnections: vpnConnectionType[]?
+
+  @description('Optional. Lock configuration for the VPN Gateway.')
+  lock: lockType?
+
+  @description('Optional. Tags for the VPN Gateway.')
+  tags: object?
+}
+
+type vpnSiteType = {
+  @description('Required. Name of the VPN site.')
+  name: string
+
+  @description('Optional. Device model information.')
+  deviceModel: string?
+
+  @description('Optional. Device vendor information.')
+  deviceVendor: string?
+
+  @description('Optional. List of IP address CIDRs for the site (required if BGP is not used).')
+  addressPrefixes: string[]?
+
+  @description('Required. VPN site links configuration.')
+  links: {
+    @description('Required. Name of the VPN site link.')
+    name: string
+
+    @description('Optional. FQDN of the VPN site link.')
+    fqdn: string?
+
+    @description('Optional. IP address of the VPN site link.')
+    ipAddress: string?
+
+    @description('Optional. BGP configuration for the link.')
+    bgpProperties: {
+      @description('Required. BGP ASN.')
+      asn: int
+
+      @description('Required. BGP peering address.')
+      bgpPeeringAddress: string
+    }?
+
+    @description('Optional. Link provider name.')
+    linkProviderName: string?
+
+    @description('Optional. Link speed in Mbps.')
+    linkSpeedInMbps: int?
+  }[]
+
+  @description('Optional. O365 policy configuration.')
+  o365Policy: {
+    @description('Required. O365 traffic category settings.')
+    breakOutCategories: {
+      @description('Optional. Allow breakout for optimize category.')
+      optimize: bool?
+
+      @description('Optional. Allow breakout for allow category.')
+      allow: bool?
+
+      @description('Optional. Allow breakout for default category.')
+      default: bool?
+    }
+  }?
+
+  @description('Optional. Lock configuration for the VPN site.')
+  lock: lockType?
+
+  @description('Optional. Tags for the VPN site.')
+  tags: object?
+}
+
+type vpnConnectionType = {
+  @description('Required. Name of the VPN connection.')
+  name: string
+
+  @description('Required. Name of the VPN site this connection connects to.')
+  vpnSiteName: string
+
+  @description('Optional. Enable internet security for the connection. Default true.')
+  enableInternetSecurity: bool?
+
+  @description('Optional. Enable BGP for the connection.')
+  enableBgp: bool?
+
+  @description('Optional. Use local Azure IP address for the connection.')
+  useLocalAzureIpAddress: bool?
+
+  @description('Optional. Use policy-based traffic selectors.')
+  usePolicyBasedTrafficSelectors: bool?
+
+  @description('Optional. VPN connection protocol type. Default IkeV2.')
+  vpnConnectionProtocolType: ('IKEv1' | 'IKEv2')?
+
+  @description('Optional. Connection bandwidth in Mbps.')
+  connectionBandwidthInMbps: int?
+
+  @description('Optional. Shared key for the connection.')
+  sharedKey: string?
+
+  @description('Optional. Routing configuration for the connection.')
+  routing: {
+    @description('Optional. Associated route table resource ID.')
+    associatedRouteTableId: string?
+
+    @description('Optional. Propagated route tables configuration.')
+    propagatedRouteTables: {
+      @description('Optional. List of route table resource IDs.')
+      ids: string[]?
+
+      @description('Optional. List of labels.')
+      labels: string[]?
+    }?
+
+    @description('Optional. Inbound route map resource ID.')
+    inboundRouteMapId: string?
+
+    @description('Optional. Outbound route map resource ID.')
+    outboundRouteMapId: string?
+  }?
+
+  @description('Optional. IPsec policy for the connection.')
+  ipsecPolicies: {
+    @description('Required. DH Groups for IPsec.')
+    dhGroup: ('DHGroup1' | 'DHGroup2' | 'DHGroup14' | 'DHGroup24' | 'DHGroup2048' | 'ECP256' | 'ECP384' | 'None')
+
+    @description('Required. IKE encryption algorithm.')
+    ikeEncryption: ('AES128' | 'AES192' | 'AES256' | 'DES' | 'DES3' | 'GCMAES128' | 'GCMAES256')
+
+    @description('Required. IKE integrity algorithm.')
+    ikeIntegrity: ('GCMAES128' | 'GCMAES256' | 'MD5' | 'SHA1' | 'SHA256' | 'SHA384')
+
+    @description('Required. IPsec encryption algorithm.')
+    ipsecEncryption: ('AES128' | 'AES192' | 'AES256' | 'DES' | 'DES3' | 'GCMAES128' | 'GCMAES192' | 'GCMAES256' | 'None')
+
+    @description('Required. IPsec integrity algorithm.')
+    ipsecIntegrity: ('GCMAES128' | 'GCMAES192' | 'GCMAES256' | 'MD5' | 'SHA1' | 'SHA256')
+
+    @description('Required. PFS Groups for IPsec.')
+    pfsGroup: ('ECP256' | 'ECP384' | 'None' | 'PFS1' | 'PFS2' | 'PFS14' | 'PFS24' | 'PFS2048' | 'PFSMM')
+
+    @description('Required. IPsec SA lifetime in seconds.')
+    saLifeTimeSeconds: int
+
+    @description('Required. IPsec SA lifetime in kilobytes.')
+    saDataSizeKilobytes: int
+  }[]?
+
+  @description('Optional. Traffic selector policies for the connection.')
+  trafficSelectorPolicies: {
+    @description('Required. List of local address ranges.')
+    localAddressRanges: string[]
+
+    @description('Required. List of remote address ranges.')
+    remoteAddressRanges: string[]
+  }[]?
+}
+
+type p2sVpnGatewayType = {
+  @description('Required. Enable/Disable Point-to-Site VPN Gateway deployment.')
+  enabled: bool
+
+  @description('Optional. Name of the Point-to-Site VPN Gateway.')
+  name: string?
+
+  @description('Required. The scale unit for the P2S VPN Gateway.')
+  scaleUnit: int
+
+  @description('Optional. DNS servers for the P2S VPN Gateway.')
+  dnsServers: string[]?
+
+  @description('Required. VPN server configuration for P2S clients.')
+  vpnServerConfiguration: {
+    @description('Optional. Name of the VPN server configuration.')
+    name: string?
+
+    @description('Required. VPN authentication types. Options: AAD, Certificate, Radius.')
+    vpnAuthenticationTypes: ('AAD' | 'Certificate' | 'Radius')[]
+
+    @description('Optional. VPN protocols. Options: IkeV2, OpenVPN.')
+    vpnProtocols: ('IkeV2' | 'OpenVPN')[]?
+
+    @description('Optional. Azure Active Directory authentication configuration.')
+    aadAuthenticationParameters: {
+      @description('Required. AAD tenant URL.')
+      aadTenant: string
+
+      @description('Required. AAD audience.')
+      aadAudience: string
+
+      @description('Required. AAD issuer.')
+      aadIssuer: string
+    }?
+
+    @description('Optional. VPN client root certificate public data (Base64-encoded) for Certificate authentication.')
+    vpnClientRootCertificates: {
+      @description('Required. Name of the root certificate.')
+      name: string
+
+      @description('Required. Public certificate data in Base64 format.')
+      publicCertData: string
+    }[]?
+
+    @description('Optional. VPN client revoked certificates.')
+    vpnClientRevokedCertificates: {
+      @description('Required. Name of the revoked certificate.')
+      name: string
+
+      @description('Required. Revoked certificate thumbprint.')
+      thumbprint: string
+    }[]?
+
+    @description('Optional. Radius server configuration for Radius authentication.')
+    radiusServers: {
+      @description('Required. Radius server address.')
+      radiusServerAddress: string
+
+      @description('Required. Radius server secret.')
+      radiusServerSecret: string
+
+      @description('Optional. Radius server score.')
+      radiusServerScore: int?
+    }[]?
+
+    @description('Optional. Lock configuration for the VPN server configuration.')
+    lock: lockType?
+
+    @description('Optional. Tags for the VPN server configuration.')
+    tags: object?
+  }
+
+  @description('Required. VPN client address pool configuration.')
+  vpnClientAddressPool: {
+    @description('Optional. List of address prefixes for VPN clients.')
+    addressPrefixes: string[]
+  }
+
+  @description('Optional. Custom DNS configuration for the P2S connection.')
+  customDnsConfigs: {
+    @description('Optional. FQDN for custom DNS.')
+    fqdn: string?
+
+    @description('Required. List of IP addresses for custom DNS.')
+    ipAddresses: string[]
+  }[]?
+
+  @description('Optional. Enable routing for the connection. Default true.')
+  enableInternetSecurity: bool?
+
+  @description('Optional. Routing configuration for P2S.')
+  routing: {
+    @description('Optional. Associated route table resource ID.')
+    associatedRouteTableId: string?
+
+    @description('Optional. Propagated route tables configuration.')
+    propagatedRouteTables: {
+      @description('Optional. List of route table resource IDs.')
+      ids: string[]?
+
+      @description('Optional. List of labels.')
+      labels: string[]?
+    }?
+
+    @description('Optional. Inbound route map resource ID.')
+    inboundRouteMapId: string?
+
+    @description('Optional. Outbound route map resource ID.')
+    outboundRouteMapId: string?
+  }?
+
+  @description('Optional. Lock configuration for the P2S VPN Gateway.')
+  lock: lockType?
+
+  @description('Optional. Tags for the P2S VPN Gateway.')
+  tags: object?
 }

@@ -42,13 +42,30 @@ param vwanHubs = [
     enableTelemetry: parEnableTelemetry
     azureFirewallSettings: {
       enableAzureFirewall: true
+      name: 'afw-alz-${parLocations[0]}'
     }
-    virtualNetworkGatewaySettings: {
-      enableVirtualNetworkGateway: true
-      gatewayType: 'ExpressRoute'
-      skuName: 'ErGw1AZ'
-      vpnType: 'RouteBased'
-      vpnMode: 'activeActiveBgp'
+    expressRouteGatewaySettings: {
+      enabled: false
+      name: 'ergw-alz-${parLocations[0]}'
+      minScaleUnits: 1
+      maxScaleUnits: 1
+      allowNonVirtualWanTraffic: false
+    }
+    s2sVpnGatewaySettings: {
+      name: 's2s-alz-${parLocations[0]}'
+      enabled: false
+      scaleUnit: 1
+    }
+    p2sVpnGatewaySettings: {
+      name: 'p2s-alz-${parLocations[0]}'
+      enabled: false
+      scaleUnit: 1
+      vpnServerConfiguration: {
+        vpnAuthenticationTypes: ['AAD']
+      }
+      vpnClientAddressPool: {
+        addressPrefixes: ['172.16.0.0/24']
+      }
     }
     ddosProtectionPlanSettings: {
       enableDdosProtection: true
@@ -58,6 +75,7 @@ param vwanHubs = [
     dnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
+      privateDnsResolverName: 'dnspr-alz-${parLocations[0]}'
     }
     bastionSettings: {
       enableBastion: true
@@ -81,13 +99,30 @@ param vwanHubs = [
     enableTelemetry: parEnableTelemetry
     azureFirewallSettings: {
       enableAzureFirewall: true
+      name: 'afw-alz-${parLocations[1]}'
     }
-    virtualNetworkGatewaySettings: {
-      enableVirtualNetworkGateway: true
-      gatewayType: 'ExpressRoute'
-      skuName: 'ErGw1AZ'
-      vpnType: 'RouteBased'
-      vpnMode: 'activeActiveBgp'
+    expressRouteGatewaySettings: {
+      enabled: false  // Deploy based on connectivity needs
+      name: 'ergw-alz-${parLocations[1]}'
+      minScaleUnits: 1
+      maxScaleUnits: 1
+      allowNonVirtualWanTraffic: false
+    }
+    s2sVpnGatewaySettings: {
+      name: 's2s-alz-${parLocations[1]}'
+      enabled: false
+      scaleUnit: 1  // Baseline scale unit
+    }
+    p2sVpnGatewaySettings: {
+      name: 'p2s-alz-${parLocations[1]}'
+      enabled: false
+      scaleUnit: 1  // Baseline scale unit
+      vpnServerConfiguration: {
+        vpnAuthenticationTypes: ['AAD']  // Common auth type
+      }
+      vpnClientAddressPool: {
+        addressPrefixes: ['172.16.1.0/24']  // Example client address pool (different from Hub 1)
+      }
     }
     ddosProtectionPlanSettings: {
       enableDdosProtection: true
@@ -97,6 +132,7 @@ param vwanHubs = [
     dnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
+      privateDnsResolverName: 'dnspr-alz-${parLocations[1]}'
     }
     bastionSettings: {
       enableBastion: true
@@ -112,3 +148,5 @@ param vwanHubs = [
     }
   }
 ]
+
+
