@@ -203,44 +203,6 @@ var alzPolicyAssignmentRoleDefinitions = {
 var managementGroupFinalName = platformConfig.?managementGroupName ?? 'platform'
 var intRootManagementGroupFinalName = platformConfig.?managementGroupIntermediateRootName ?? 'alz'
 
-var alzPolicyAssignmentAdditionalRbacScopes = {
-  'Deploy-VM-ChangeTrack': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-VM-Monitoring': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-vmArc-ChangeTrack': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-VMSS-ChangeTrack': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-vmHybr-Monitoring': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-VMSS-Monitoring': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-  'Deploy-MDFC-DefSQL-AMA': {
-    additionalManagementGroupsIDsToAssignRbacTo: [
-      parCrossMgRbacScopes.?landingZones ?? 'landingzones'
-    ]
-  }
-}
-
 var alzPolicyAssignmentsWithOverrides = [
   for policyAssignment in alzPolicyAssignmentsJson: union(
     policyAssignment,
@@ -270,13 +232,6 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
-            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
-              ? {
-                  additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalManagementGroupsIDsToAssignRbacTo
-                  additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalSubscriptionIDsToAssignRbacTo
-                  additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].?additionalResourceGroupResourceIDsToAssignRbacTo
-                }
-              : {},
             {
               policyDefinitionId: replace(
                 replace(
@@ -302,19 +257,6 @@ var alzPolicyAssignmentsWithOverrides = [
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
-              : {},
-            contains(alzPolicyAssignmentAdditionalRbacScopes, policyAssignment.name)
-              ? union(
-                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalManagementGroupsIDsToAssignRbacTo')
-                    ? {additionalManagementGroupsIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalManagementGroupsIDsToAssignRbacTo}
-                    : {},
-                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalSubscriptionIDsToAssignRbacTo')
-                    ? {additionalSubscriptionIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo}
-                    : {},
-                  contains(alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name], 'additionalResourceGroupResourceIDsToAssignRbacTo')
-                    ? {additionalResourceGroupResourceIDsToAssignRbacTo: alzPolicyAssignmentAdditionalRbacScopes[policyAssignment.name].additionalResourceGroupResourceIDsToAssignRbacTo}
-                    : {}
-                )
               : {},
             {
               policyDefinitionId: replace(
@@ -413,13 +355,17 @@ var allPolicyAssignments = [
       definitionVersion: policyAssignment.properties.?definitionVersion
     },
     policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo != null
-      ? { additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo }
+      ? {
+          additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo
+        }
       : {},
     policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo != null
       ? { additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo }
       : {},
     policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo != null
-      ? { additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo }
+      ? {
+          additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo
+        }
       : {}
   )
 ]

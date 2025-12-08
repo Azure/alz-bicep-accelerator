@@ -7,11 +7,6 @@ param parLocations = [
 ]
 param parEnableTelemetry = true
 
-// Cross-MG RBAC Scopes - specify management group names for role assignments
-param parCrossMgRbacScopes = {
-  landingZones: '{{management_group_id_prefix}}{{management_group_landingzones_id||landingzones}}{{management_group_id_postfix}}'
-}
-
 param platformConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: '{{management_group_id_prefix}}{{management_group_platform_id||platform}}{{management_group_id_postfix}}'
