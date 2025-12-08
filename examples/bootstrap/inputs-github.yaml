@@ -33,7 +33,6 @@ apply_approvers: ["<email-address>"]
 create_branch_policies: true
 
 # Advanced Inputs
-network_type: "hubNetworking"
 bootstrap_module_version: "latest"
 starter_module_version: "latest"
 #output_folder_path: "/accelerator/output"

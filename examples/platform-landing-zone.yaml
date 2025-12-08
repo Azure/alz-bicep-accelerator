@@ -1,5 +1,4 @@
 # Management Groups
-
 management_group_id_prefix: ""
 management_group_id_postfix: ""
 management_group_name_prefix: ""
@@ -36,8 +35,10 @@ management_group_sandbox_id: "sandbox"
 management_group_sandbox_name: "Sandbox"
 
 # Resource Groups
-
 resource_group_logging_name_prefix: "rg-alz-logging-"
 resource_group_hub_networking_name_prefix: "rg-alz-conn-"
 resource_group_dns_name_prefix: "rg-alz-dns-"
 resource_group_private_dns_resolver_name_prefix: "rg-alz-dnspr-"
+
+# Networking
+network_type: "hubNetworking"
