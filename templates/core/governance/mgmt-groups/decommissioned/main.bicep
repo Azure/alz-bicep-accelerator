@@ -203,7 +203,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module decommissioned 'br/public:avm/ptn/alz/empty:0.3.3' = {
+module decommissioned 'br/public:avm/ptn/alz/empty:0.3.4' = {
   params: {
     createOrUpdateManagementGroup: decommissionedConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
