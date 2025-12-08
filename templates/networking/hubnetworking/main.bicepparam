@@ -24,59 +24,73 @@ param hubNetworks = [
     name: 'vnet-alz-${parLocations[0]}'
     location: parLocations[0]
     addressPrefixes: [
-      '10.0.0.0/16'
+      '10.20.0.0/16'
     ]
     enablePeering: true
     dnsServers: []
     routes: []
+    peeringSettings: [
+      {
+        remoteVirtualNetworkName: 'vnet-alz-${parLocations[1]}'
+        allowForwardedTraffic: true
+        allowGatewayTransit: false
+        allowVirtualNetworkAccess: true
+        useRemoteGateways: false
+      }
+    ]
     subnets: [
       {
         name: 'AzureBastionSubnet'
-        addressPrefix: '10.0.15.0/24'
+        addressPrefix: '10.20.0.0/24'
       }
       {
         name: 'GatewaySubnet'
-        addressPrefix: '10.0.20.0/24'
+        addressPrefix: '10.20.254.0/24'
       }
       {
         name: 'AzureFirewallSubnet'
-        addressPrefix: '10.0.254.0/24'
+        addressPrefix: '10.20.255.0/24'
       }
       {
         name: 'AzureFirewallManagementSubnet'
-        addressPrefix: '10.0.253.0/24'
+        addressPrefix: '10.20.253.0/24'
       }
       {
         name: 'DNSPrivateResolverInboundSubnet'
-        addressPrefix: '10.0.4.0/28'
+        addressPrefix: '10.20.4.0/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
         name: 'DNSPrivateResolverOutboundSubnet'
-        addressPrefix: '10.0.4.16/28'
+        addressPrefix: '10.20.4.16/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
     azureFirewallSettings: {
       enableAzureFirewall: true
       azureSkuTier: 'Standard'
+      publicIPAddressObject: {
+        name: 'pip-fw-alz-${parLocations[0]}-01'
+      }
+      managementIPAddressObject: {
+        name: 'pip-fw-mgmt-alz-${parLocations[0]}'
+      }
     }
     bastionHost: {
       enableBastion: true
       skuName: 'Standard'
     }
-    virtualNetworkGatewaySettings: {
+    vpnGatewaySettings: {
       enableVirtualNetworkGateway: true
       gatewayType: 'Vpn'
       skuName: 'VpnGw1AZ'
       vpnMode: 'activeActiveBgp'
       vpnType: 'RouteBased'
       asn: 65515
-      publicIpZones: [
-        1
-        2
-        3
-      ]
+    }
+    expressRouteGatewaySettings: {
+      enableExpressRouteGateway: true
+      skuName: 'ErGw1AZ'
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
@@ -91,59 +105,87 @@ param hubNetworks = [
     name: 'vnet-alz-${parLocations[1]}'
     location: parLocations[1]
     addressPrefixes: [
-      '20.0.0.0/16'
+      '10.30.0.0/16'
     ]
-    enablePeering: false
+    enablePeering: true
     dnsServers: []
     routes: []
+    peeringSettings: [
+      {
+        remoteVirtualNetworkName: 'vnet-alz-${parLocations[0]}'
+        allowForwardedTraffic: true
+        allowGatewayTransit: false
+        allowVirtualNetworkAccess: true
+        useRemoteGateways: false
+      }
+    ]
     subnets: [
       {
         name: 'AzureBastionSubnet'
-        addressPrefix: '20.0.15.0/24'
+        addressPrefix: '10.30.0.0/24'
       }
       {
         name: 'GatewaySubnet'
-        addressPrefix: '20.0.20.0/24'
+        addressPrefix: '10.30.254.0/24'
       }
       {
         name: 'AzureFirewallSubnet'
-        addressPrefix: '20.0.254.0/24'
+        addressPrefix: '10.30.255.0/24'
       }
       {
         name: 'AzureFirewallManagementSubnet'
-        addressPrefix: '20.0.253.0/24'
+        addressPrefix: '10.30.253.0/24'
       }
       {
         name: 'DNSPrivateResolverInboundSubnet'
-        addressPrefix: '20.0.4.0/28'
+        addressPrefix: '10.30.4.0/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
       {
         name: 'DNSPrivateResolverOutboundSubnet'
-        addressPrefix: '20.0.4.16/28'
+        addressPrefix: '10.30.4.16/28'
         delegation: 'Microsoft.Network/dnsResolvers'
       }
     ]
     azureFirewallSettings: {
-      enableAzureFirewall: false
+      enableAzureFirewall: true
       azureSkuTier: 'Standard'
+      publicIPAddressObject: {
+        name: 'pip-fw-alz-${parLocations[1]}-01'
+      }
+      managementIPAddressObject: {
+        name: 'pip-fw-mgmt-alz-${parLocations[1]}'
+      }
     }
     bastionHost: {
-      enableBastion: false
-      skuName: 'Basic'
+      enableBastion: true
+      skuName: 'Standard'
     }
-    virtualNetworkGatewaySettings: {
-      enableVirtualNetworkGateway: false
+    vpnGatewaySettings: {
+      enableVirtualNetworkGateway: true
       gatewayType: 'Vpn'
       skuName: 'VpnGw1AZ'
-      vpnMode: 'activePassiveNoBgp'
+      vpnMode: 'activeActiveBgp'
+      vpnType: 'RouteBased'
+      asn: 65515
+    }
+    expressRouteGatewaySettings: {
+      enableExpressRouteGateway: true
+      skuName: 'ErGw1AZ'
     }
     privateDnsSettings: {
-      enablePrivateDnsZones: false
-      enableDnsPrivateResolver: false
+      enablePrivateDnsZones: true
+      enableDnsPrivateResolver: true
+      privateDnsZones: [
+        'privatelink.{regionName}.azurecontainerapps.io'
+        'privatelink.{regionName}.kusto.windows.net'
+        'privatelink.{regionName}.azmk8s.io'
+        'privatelink.{regionName}.prometheus.monitor.azure.com'
+        'privatelink.{regionCode}.backup.windowsazure.com'
+      ]
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: false
+      enableDdosProtection: true
     }
   }
 ]

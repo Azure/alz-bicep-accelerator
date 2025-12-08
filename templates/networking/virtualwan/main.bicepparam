@@ -96,8 +96,15 @@ param vwanHubs = [
       tags: {}
     }
     dnsSettings: {
-      enablePrivateDnsZones: false
-      enableDnsPrivateResolver: false
+      enablePrivateDnsZones: true
+      enableDnsPrivateResolver: true
+      privateDnsZones: [
+        'privatelink.{regionName}.azurecontainerapps.io'
+        'privatelink.{regionName}.kusto.windows.net'
+        'privatelink.{regionName}.azmk8s.io'
+        'privatelink.{regionName}.prometheus.monitor.azure.com'
+        'privatelink.{regionCode}.backup.windowsazure.com'
+      ]
     }
     sideCarVirtualNetwork: {
       name: 'vnet-sidecar-alz-${parLocations[1]}'
