@@ -78,7 +78,7 @@ var hubExpressRouteGatewayRecommendedPublicIpZones = [for hub in hubNetworks: js
 // Resources Groups
 //========================================
 
-module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: {
     name: 'modHubResourceGroup-${i}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -92,7 +92,7 @@ module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-grou
   }
 ]
 
-module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: if (length(filter(hubNetworks, hub => hub.location == location && hub.privateDnsSettings.enablePrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${i}-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -106,7 +106,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' =
   }
 ]
 
-module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: if (length(filter(hubNetworks, hub => hub.location == location && hub.privateDnsSettings.enableDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${i}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -224,7 +224,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
+module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
   for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'firewallPolicy-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[indexOf(parLocations, hub.location)])
@@ -480,7 +480,7 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
 // =====================
 // DNS
 // =====================
-module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
+module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
   for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enablePrivateDnsZones) {
     name: 'privateDnsZone-${hub.name}-${uniqueString(parDnsResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, hub.location)])
@@ -514,7 +514,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
   }
 ]
 
-module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
+module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
   for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enableDnsPrivateResolver) {
     name: 'dnsResolver-${hub.name}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, hub.location)])

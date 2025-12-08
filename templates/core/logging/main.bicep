@@ -157,7 +157,7 @@ var varGallerySolutions = [
 // Resources
 //========================================
 
-module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.2' = {
+module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0.4.3' = {
   name: 'modMgmtLoggingResourceGroup-${uniqueString(parMgmtLoggingResourceGroup,parLocations[0])}'
   scope: subscription()
   params: {
@@ -178,7 +178,7 @@ resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01'
 }
 
 // Automation Account
-module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.17.0' = if (!parDisableAutomationAccount) {
+module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.17.1' = if (!parDisableAutomationAccount) {
   name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
@@ -203,7 +203,7 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 }
 
 // Log Analytics Workspace
-module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.14.0' = {
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.14.1' = {
   name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {

@@ -77,7 +77,7 @@ var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: e
 //========================================
 
 // Create resource groups for each location
-module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: {
     name: 'modVwanResourceGroup-${uniqueString(parVirtualWanResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -91,7 +91,7 @@ module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' 
   }
 ]
 
-module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enablePrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -105,7 +105,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' =
   }
 ]
 
-module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.2' = [
+module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
   for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter(vwanHubs!, hub => hub.location == location && hub.dnsSettings.enableDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
@@ -176,7 +176,7 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
   }
 ]
 
-module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1' = [
+module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true) {
     name: 'sidecarVnet-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
@@ -222,7 +222,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.1
 //=====================
 // DNS
 //=====================
-module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.0' = [
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enablePrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
@@ -239,7 +239,7 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
   }
 ]
 
-module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.5' = [
+module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.dnsSettings.enableDnsPrivateResolver) {
     name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, vwanHub.location)])
@@ -290,7 +290,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
   }
 ]
 
-module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.3' = [
+module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
   for (vwanHub, i) in vwanHubs!: if (vwanHub.azureFirewallSettings.enableAzureFirewall && empty(vwanHub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
@@ -478,7 +478,7 @@ type vwanHubType = {
   dnsSettings: dnsSettingsType
 
   @description('Optional. Sidecar virtual network configuration.')
-  sideCarVirtualNetwork: sideCarVirtualNetworkType?
+  sideCarVirtualNetwork: sideCarVirtualNetworkType
 
   @description('Optional. Lock settings.')
   lock: lockType?
