@@ -14,9 +14,9 @@ param parTags = {}
 param parEnableTelemetry = true
 
 // Resource Group Parameters
-param parHubNetworkingResourceGroupNamePrefix = 'rg-alz-conn'
-param parDnsResourceGroupNamePrefix = 'rg-alz-dns'
-param parDnsPrivateResolverResourceGroupNamePrefix = 'rg-alz-dnspr'
+param parHubNetworkingResourceGroupNamePrefix = '{{resource_group_hub_networking_name_prefix||rg-alz-conn-}}'
+param parDnsResourceGroupNamePrefix = '{{resource_group_dns_name_prefix||rg-alz-dns-}}'
+param parDnsPrivateResolverResourceGroupNamePrefix = '{{resource_group_private_dns_resolver_name_prefix||rg-alz-dnspr-}}'
 
 // Hub Networking Parameters
 param hubNetworks = [
