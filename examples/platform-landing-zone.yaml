@@ -1,0 +1,43 @@
+# Management Groups
+
+management_group_id_prefix: ""
+management_group_id_postfix: ""
+management_group_name_prefix: ""
+management_group_name_postfix: ""
+
+management_group_int_root_id: "alz"
+management_group_int_root_name: "Azure Landing Zones"
+
+management_group_platform_id: "platform"
+management_group_platform_name: "Platform"
+
+management_group_connectivity_id: "connectivity"
+management_group_connectivity_name: "Connectivity"
+
+management_group_identity_id: "identity"
+management_group_identity_name: "Identity"
+
+management_group_security_id: "security"
+management_group_security_name: "Security"
+
+management_group_landing_zones_id: "landingzones"
+management_group_landing_zones_name: "Landing Zones"
+
+management_group_corp_id: "corp"
+management_group_corp_name: "Corp"
+
+management_group_online_id: "online"
+management_group_online_name: "Online"
+
+management_group_decommissioned_id: "decommissioned"
+management_group_decommissioned_name: "Decommissioned"
+
+management_group_sandbox_id: "sandbox"
+management_group_sandbox_name: "Sandbox"
+
+# Resource Groups
+
+resource_group_logging_name_prefix: "rg-alz-logging-"
+resource_group_hub_networking_name_prefix: "rg-alz-conn-"
+resource_group_dns_name_prefix: "rg-alz-dns-"
+resource_group_private_dns_resolver_name_prefix: "rg-alz-dnspr-"
