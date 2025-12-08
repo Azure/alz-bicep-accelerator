@@ -76,7 +76,7 @@ param hubNetworks = [
         name: 'pip-fw-mgmt-alz-${parLocations[0]}'
       }
     }
-    bastionHost: {
+    bastionHostSettings: {
       enableBastion: true
       skuName: 'Standard'
     }
@@ -157,7 +157,7 @@ param hubNetworks = [
         name: 'pip-fw-mgmt-alz-${parLocations[1]}'
       }
     }
-    bastionHost: {
+    bastionHostSettings: {
       enableBastion: true
       skuName: 'Standard'
     }
