@@ -49,11 +49,6 @@ param vwanHubs = [
       skuName: 'ErGw1AZ'
       vpnType: 'RouteBased'
       vpnMode: 'activeActiveBgp'
-      publicIpZones: [
-        1
-        2
-        3
-      ]
     }
     ddosProtectionPlanSettings: {
       enableDdosProtection: true
@@ -63,6 +58,11 @@ param vwanHubs = [
     dnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
+    }
+    bastionSettings: {
+      enableBastion: true
+      name: 'bas-alz-${parLocations[0]}'
+      sku: 'Standard'
     }
     sideCarVirtualNetwork: {
       name: 'vnet-sidecar-alz-${parLocations[0]}'
@@ -83,28 +83,25 @@ param vwanHubs = [
       enableAzureFirewall: true
     }
     virtualNetworkGatewaySettings: {
-      enableVirtualNetworkGateway: false
+      enableVirtualNetworkGateway: true
       gatewayType: 'ExpressRoute'
       skuName: 'ErGw1AZ'
       vpnType: 'RouteBased'
       vpnMode: 'activeActiveBgp'
-      publicIpZones: []
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: false
+      enableDdosProtection: true
       name: 'ddos-alz-${parLocations[1]}'
       tags: {}
     }
     dnsSettings: {
       enablePrivateDnsZones: true
       enableDnsPrivateResolver: true
-      privateDnsZones: [
-        'privatelink.{regionName}.azurecontainerapps.io'
-        'privatelink.{regionName}.kusto.windows.net'
-        'privatelink.{regionName}.azmk8s.io'
-        'privatelink.{regionName}.prometheus.monitor.azure.com'
-        'privatelink.{regionCode}.backup.windowsazure.com'
-      ]
+    }
+    bastionSettings: {
+      enableBastion: true
+      name: 'bas-alz-${parLocations[1]}'
+      sku: 'Standard'
     }
     sideCarVirtualNetwork: {
       name: 'vnet-sidecar-alz-${parLocations[1]}'

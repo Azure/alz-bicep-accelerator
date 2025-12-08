@@ -72,6 +72,10 @@ var vwanResourceGroupNames = [for (location, i) in parLocations: empty(parVirtua
 var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${location}' : parDnsResourceGroupNameOverrides[i]]
 var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
 
+// Compute recommended availability zones for each hub location
+var vwanBastionRecommendedZones = [for hub in vwanHubs!: json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var vwanBastionPublicIpRecommendedZones = [for hub in vwanHubs!: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
+
 //========================================
 // Resource Groups
 //========================================
@@ -153,8 +157,9 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
       location: vwanHub.location
       addressPrefix: vwanHub.addressPrefix
       virtualWanResourceId: resVirtualWan.outputs.resourceId
-      virtualRouterAutoScaleConfiguration: vwanHub.?virtualRouterAutoScaleConfiguration
-      allowBranchToBranchTraffic: vwanHub.allowBranchToBranchTraffic
+      sku: vwanHub.?sku
+      virtualRouterAutoScaleConfiguration: vwanHub.?virtualRouterAutoScaleConfiguration ?? { minCount: 2 }
+      allowBranchToBranchTraffic: vwanHub.?allowBranchToBranchTraffic ?? true
       azureFirewallResourceId: vwanHub.?azureFirewallSettings.?azureFirewallResourceID
       expressRouteGatewayResourceId: vwanHub.?expressRouteGatewayId
       vpnGatewayResourceId: vwanHub.?vpnGatewayId
@@ -162,6 +167,7 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
       hubRouteTables: vwanHub.?routeTableRoutes
       hubVirtualNetworkConnections: vwanHub.?hubVirtualNetworkConnections
       preferredRoutingGateway: vwanHub.?preferredRoutingGateway ?? 'None'
+      hubRoutingPreference: vwanHub.?hubRoutingPreference ?? 'ExpressRoute'
       routingIntent: vwanHub.?routingIntent
       routeTableRoutes: vwanHub.?routeTableRoutes
       securityProviderName: vwanHub.?securityProviderName
@@ -190,27 +196,38 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       flowTimeoutInMinutes: vwanHub.sideCarVirtualNetwork.?flowTimeoutInMinutes
       ipamPoolNumberOfIpAddresses: vwanHub.sideCarVirtualNetwork.?ipamPoolNumberOfIpAddresses
       lock: parGlobalResourceLock ?? vwanHub.sideCarVirtualNetwork.?lock
-      subnets: vwanHub.sideCarVirtualNetwork.?subnets ?? [
-        {
-          name: 'DNSPrivateResolverInboundSubnet'
-          addressPrefix: cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 0)
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
-        }
-        {
-          name: 'DNSPrivateResolverOutboundSubnet'
-          addressPrefix: length(vwanHub.sideCarVirtualNetwork.addressPrefixes) > 1 ? vwanHub.sideCarVirtualNetwork.addressPrefixes[1] : cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 1)
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
-        }
-      ]
-      vnetEncryption: vwanHub.sideCarVirtualNetwork.?vnetEncryption
-      vnetEncryptionEnforcement: vwanHub.sideCarVirtualNetwork.?vnetEncryptionEnforcement
-      roleAssignments: vwanHub.sideCarVirtualNetwork.?roleAssignments
+      subnets: vwanHub.sideCarVirtualNetwork.?subnets ?? union(
+        [
+          {
+            name: 'DNSPrivateResolverInboundSubnet'
+            addressPrefix: cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 0)
+            privateEndpointNetworkPolicies: 'Enabled'
+            privateLinkServiceNetworkPolicies: 'Enabled'
+            defaultOutboundAccess: false
+          }
+          {
+            name: 'DNSPrivateResolverOutboundSubnet'
+            addressPrefix: length(vwanHub.sideCarVirtualNetwork.addressPrefixes) > 1 ? vwanHub.sideCarVirtualNetwork.addressPrefixes[1] : cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 25, 1)
+            privateEndpointNetworkPolicies: 'Enabled'
+            privateLinkServiceNetworkPolicies: 'Enabled'
+            defaultOutboundAccess: false
+          }
+        ],
+        vwanHub.bastionSettings.enableBastion ? [
+          {
+            name: 'AzureBastionSubnet'
+            addressPrefix: vwanHub.bastionSettings.?subnetAddressPrefix ?? cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 26, 0)
+            defaultOutboundAccess: vwanHub.bastionSettings.?subnetDefaultOutboundAccessEnabled ?? false
+          }
+        ] : []
+      )
+      vnetEncryption: vwanHub.?sideCarVirtualNetwork.?vnetEncryption
+      vnetEncryptionEnforcement: vwanHub.?sideCarVirtualNetwork.?vnetEncryptionEnforcement
+      roleAssignments: vwanHub.?sideCarVirtualNetwork.?roleAssignments
       virtualNetworkBgpCommunity: vwanHub.?sideCarVirtualNetwork.?virtualNetworkBgpCommunity
-      diagnosticSettings: vwanHub.sideCarVirtualNetwork.?diagnosticSettings
-      dnsServers: vwanHub.sideCarVirtualNetwork.?dnsServers
-      enableVmProtection: vwanHub.sideCarVirtualNetwork.?enableVmProtection
+      diagnosticSettings: vwanHub.?sideCarVirtualNetwork.?diagnosticSettings
+      dnsServers: vwanHub.?sideCarVirtualNetwork.?dnsServers
+      enableVmProtection: vwanHub.?sideCarVirtualNetwork.?enableVmProtection
       ddosProtectionPlanResourceId: resDdosProtectionPlan[i].?outputs.resourceId ?? null
       tags: parTags
       enableTelemetry: parEnableTelemetry
@@ -253,13 +270,13 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
       virtualNetworkResourceId: resSidecarVirtualNetwork[i]!.outputs.resourceId
       inboundEndpoints: vwanHub.?dnsSettings.?inboundEndpoints ?? [
         {
-          name: 'pip-dnspr-inbound-alz-${vwanHub.location}'
+          name: 'dnspr-inbound-${vwanHub.location}'
           subnetResourceId: '${resSidecarVirtualNetwork[i]!.outputs.resourceId}/subnets/DNSPrivateResolverInboundSubnet'
         }
       ]
       outboundEndpoints: vwanHub.?dnsSettings.?outboundEndpoints ?? [
          {
-          name: 'pip-dnspr-outbound-alz-${vwanHub.location}'
+          name: 'dnspr-outbound-${vwanHub.location}'
           subnetResourceId: '${resSidecarVirtualNetwork[i]!.outputs.resourceId}/subnets/DNSPrivateResolverOutboundSubnet'
         }
       ]
@@ -310,6 +327,60 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
         : vwanHub.?azureFirewallSettings.?firewallDnsServers
       lock: parGlobalResourceLock ?? vwanHub.?azureFirewallSettings.?lock
       tags: parTags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
+//=====================
+// Azure Bastion
+//=====================
+module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' = [
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+    name: 'bastionPip-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      modVwanResourceGroups
+      resSidecarVirtualNetwork[i]
+    ]
+    params: {
+      name: vwanHub.bastionSettings.?bastionPublicIp.?name ?? 'pip-bas-${vwanHub.location}'
+      location: vwanHub.location
+      skuName: vwanHub.bastionSettings.?bastionPublicIp.?sku ?? 'Standard'
+      skuTier: vwanHub.bastionSettings.?bastionPublicIp.?skuTier ?? 'Regional'
+      publicIPAllocationMethod: vwanHub.bastionSettings.?bastionPublicIp.?allocationMethod ?? 'Static'
+      idleTimeoutInMinutes: vwanHub.bastionSettings.?bastionPublicIp.?idleTimeoutInMinutes ?? 4
+      availabilityZones: vwanHub.bastionSettings.?bastionPublicIp.?zones ?? vwanHub.bastionSettings.?zones ?? vwanBastionPublicIpRecommendedZones[i]
+      lock: parGlobalResourceLock ?? vwanHub.bastionSettings.?lock
+      tags: vwanHub.bastionSettings.?bastionPublicIp.?tags ?? parTags
+      enableTelemetry: parEnableTelemetry
+    }
+  }
+]
+
+module resBastion 'br/public:avm/res/network/bastion-host:0.8.1' = [
+  for (vwanHub, i) in vwanHubs!: if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+    name: 'bastion-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
+    scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    dependsOn: [
+      resSidecarVirtualNetwork[i]
+      resBastionPublicIp[i]
+    ]
+    params: {
+      name: vwanHub.bastionSettings.?name ?? 'bas-${vwanHub.location}'
+      location: vwanHub.location
+      virtualNetworkResourceId: resSidecarVirtualNetwork[i]!.outputs.resourceId
+      skuName: vwanHub.bastionSettings.?sku ?? 'Standard'
+      scaleUnits: vwanHub.bastionSettings.?scaleUnits ?? 2
+      bastionSubnetPublicIpResourceId: resBastionPublicIp[i]!.outputs.resourceId
+      availabilityZones: vwanHub.bastionSettings.?zones ?? vwanHub.bastionSettings.?bastionPublicIp.?zones ?? vwanBastionRecommendedZones[i]
+      disableCopyPaste: !(vwanHub.bastionSettings.?copyPasteEnabled ?? false)
+      enableFileCopy: vwanHub.bastionSettings.?fileCopyEnabled ?? false
+      enableIpConnect: vwanHub.bastionSettings.?ipConnectEnabled ?? false
+      enableKerberos: vwanHub.bastionSettings.?kerberosEnabled ?? false
+      enableShareableLink: vwanHub.bastionSettings.?shareableLinkEnabled ?? false
+      lock: parGlobalResourceLock ?? vwanHub.bastionSettings.?lock
+      tags: vwanHub.bastionSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -418,13 +489,19 @@ type vwanHubType = {
   @description('Required. The address prefix for the Virtual WAN hub.')
   addressPrefix: string
 
-  @description('Optional. The virtual router auto scale configuration.')
+  @description('Optional. The SKU of the Virtual Hub. Possible values are Basic, Standard. Default null (Standard behavior).')
+  sku: ('Basic' | 'Standard')?
+
+  @description('Optional. The virtual router auto scale configuration. Minimum capacity defaults to 2.')
   virtualRouterAutoScaleConfiguration: {
-    minInstances: int
+    minCount: int
   }?
 
-  @description('Required. Enable/Disable branch-to-branch traffic for the Virtual WAN hub.')
-  allowBranchToBranchTraffic: bool
+  @description('Optional. Enable/Disable branch-to-branch traffic for the Virtual WAN hub. Default true.')
+  allowBranchToBranchTraffic: bool?
+
+  @description('Optional. The hub routing preference. Possible values are ExpressRoute, VpnGateway, ASPath. Default ExpressRoute.')
+  hubRoutingPreference: ('ExpressRoute' | 'VpnGateway' | 'ASPath')?
 
   @description('Required. Azure Firewall configuration settings.')
   azureFirewallSettings: azureFirewallType
@@ -477,7 +554,10 @@ type vwanHubType = {
   @description('Required. DNS configuration settings including private DNS zones and resolver.')
   dnsSettings: dnsSettingsType
 
-  @description('Optional. Sidecar virtual network configuration.')
+  @description('Required. Azure Bastion configuration settings for the sidecar virtual network.')
+  bastionSettings: bastionType
+
+  @description('Required. Sidecar virtual network configuration.')
   sideCarVirtualNetwork: sideCarVirtualNetworkType
 
   @description('Optional. Lock settings.')
@@ -586,6 +666,83 @@ type ddosProtectionType = {
   lock: lockType?
 
   @description('Optional. Tags of the resource.')
+  tags: object?
+
+  @description('Optional. Enable/Disable usage telemetry for module.')
+  enableTelemetry: bool?
+}
+
+type bastionType = {
+  @description('Required. Enable/Disable Azure Bastion deployment for the sidecar virtual network.')
+  enableBastion: bool
+
+  @description('Optional. The IPv4 address prefix to use for the Azure Bastion subnet in CIDR format. Defaults to auto-calculated /26.')
+  subnetAddressPrefix: string?
+
+  @description('Optional. Should the default outbound access be enabled for the Azure Bastion subnet? Default false.')
+  subnetDefaultOutboundAccessEnabled: bool?
+
+  @description('Optional. The name of the Azure Bastion resource.')
+  name: string?
+
+  @description('Optional. Should copy-paste be enabled for Azure Bastion? Default false.')
+  copyPasteEnabled: bool?
+
+  @description('Optional. Should file copy be enabled for Azure Bastion? Requires Standard SKU. Default false.')
+  fileCopyEnabled: bool?
+
+  @description('Optional. Should IP connect be enabled for Azure Bastion? Requires Standard SKU. Default false.')
+  ipConnectEnabled: bool?
+
+  @description('Optional. Should Kerberos authentication be enabled for Azure Bastion? Default false.')
+  kerberosEnabled: bool?
+
+  @description('Optional. The number of scale units for Azure Bastion. Valid values are between 2 and 50. Default 2.')
+  scaleUnits: int?
+
+  @description('Optional. Should shareable links be enabled for Azure Bastion? Requires Standard SKU. Default false.')
+  shareableLinkEnabled: bool?
+
+  @description('Optional. The SKU of Azure Bastion. Possible values are Basic, Standard. Default Standard.')
+  sku: ('Basic' | 'Standard')?
+
+  @description('Optional. Should tunneling be enabled for Azure Bastion? Requires Standard SKU.')
+  tunnelingEnabled: bool?
+
+  @description('Optional. A set of availability zones for Azure Bastion.')
+  zones: int[]?
+
+  @description('Optional. Bastion public IP configuration.')
+  bastionPublicIp: {
+    @description('Optional. The name of the public IP for Azure Bastion.')
+    name: string?
+
+    @description('Optional. The allocation method for the public IP.')
+    allocationMethod: ('Static' | 'Dynamic')?
+
+    @description('Optional. The SKU of the public IP.')
+    sku: ('Basic' | 'Standard')?
+
+    @description('Optional. The SKU tier of the public IP.')
+    skuTier: ('Regional' | 'Global')?
+
+    @description('Optional. The idle timeout in minutes for the public IP. Default 4.')
+    idleTimeoutInMinutes: int?
+
+    @description('Optional. A set of availability zones for the public IP.')
+    zones: int[]?
+
+    @description('Optional. Tags to apply to the public IP.')
+    tags: object?
+
+    @description('Optional. The domain name label for the public IP.')
+    domainNameLabel: string?
+  }?
+
+  @description('Optional. Lock settings for Azure Bastion.')
+  lock: lockType?
+
+  @description('Optional. Tags of the Azure Bastion resource.')
   tags: object?
 
   @description('Optional. Enable/Disable usage telemetry for module.')
