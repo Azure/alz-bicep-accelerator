@@ -72,8 +72,6 @@ var hubExpressRouteGatewayRecommendedPublicIpZones = [for hub in hubNetworks: js
 var hubBastionRecommendedZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
 var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.enableAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
 
-
-//========================================
 // Resources Groups
 //========================================
 
@@ -131,7 +129,8 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
     name: 'vnet-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
-      modHubNetworkingResourceGroups
+      modHubNetworkingResourceGroups[i]
+      ...(hub.ddosProtectionPlanSettings.enableDdosProtection ? [resDdosProtectionPlan[i]] : [])
     ]
     params: {
       name: hub.name
