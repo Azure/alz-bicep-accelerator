@@ -143,7 +143,7 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.3' = {
   }
 }
 
-module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.2' = [
+module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.3' = [
   for (vwanHub, i) in (vwanHubs ?? []): {
     name: 'vwanHub-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwan.name)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
