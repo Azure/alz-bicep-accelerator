@@ -36,7 +36,7 @@ param vwanHubs = [
   {
     hubName: 'vhub-alz-${parLocations[0]}'
     location: parLocations[0]
-    addressPrefix: '10.100.0.0/23'
+    addressPrefix: '10.0.0.0/22'
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
     enableTelemetry: parEnableTelemetry
@@ -86,14 +86,14 @@ param vwanHubs = [
       name: 'vnet-sidecar-alz-${parLocations[0]}'
       sidecarVirtualNetworkEnabled: true
       addressPrefixes: [
-        '10.100.1.0/24'
+        '10.0.4.0/22'
       ]
     }
   }
   {
     hubName: 'vhub-alz-${parLocations[1]}'
     location: parLocations[1]
-    addressPrefix: '10.200.0.0/23'
+    addressPrefix: '10.1.0.0/22'
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
     enableTelemetry: parEnableTelemetry
@@ -143,7 +143,7 @@ param vwanHubs = [
       name: 'vnet-sidecar-alz-${parLocations[1]}'
       sidecarVirtualNetworkEnabled: true
       addressPrefixes: [
-        '10.200.1.0/24'
+        '10.1.4.0/22'
       ]
     }
   }
