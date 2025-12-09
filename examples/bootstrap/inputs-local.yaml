@@ -27,6 +27,7 @@ postfix_number: 1
 grant_permissions_to_current_user: true
 
 # Advanced Inputs
+network_type: "hubNetworking"
 bootstrap_module_version: "latest"
 starter_module_version: "latest"
 #output_folder_path: "/accelerator/output"
