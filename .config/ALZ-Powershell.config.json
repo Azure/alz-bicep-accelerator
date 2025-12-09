@@ -250,6 +250,18 @@
                 },
                 {
                     "order": 10,
+                    "name": "governance-landingzones-rbac",
+                    "displayName": "Governance-Landing Zones RBAC",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-platform-children"
+                },
+                {
+                    "order": 11,
                     "name": "governance-sandbox",
                     "displayName": "Governance-Sandbox",
                     "templateFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicep",
@@ -261,7 +273,7 @@
                     "group": "governance-sandbox"
                 },
                 {
-                    "order": 11,
+                    "order": 12,
                     "name": "governance-decommissioned",
                     "displayName": "Governance-Decommissioned",
                     "templateFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicep",
@@ -273,7 +285,7 @@
                     "group": "governance-decommissioned"
                 },
                 {
-                    "order": 12,
+                    "order": 13,
                     "name": "core-logging",
                     "displayName": "Core-Logging",
                     "templateFilePath": "templates/core/logging/main.bicep",
@@ -284,7 +296,7 @@
                     "group": "core"
                 },
                 {
-                    "order": 13,
+                    "order": 14,
                     "name": "networking-hubnetworking",
                     "displayName": "Networking-Hub Networking",
                     "templateFilePath": "templates/networking/hubnetworking/main.bicep",
@@ -296,7 +308,7 @@
                     "networkType": "hubNetworking"
                 },
                 {
-                    "order": 14,
+                    "order": 15,
                     "name": "networking-virtualwan",
                     "displayName": "Networking-Virtual WAN",
                     "templateFilePath": "templates/networking/virtualwan/main.bicep",
