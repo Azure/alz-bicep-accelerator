@@ -75,6 +75,7 @@ var expressRouteGatewaySkuMap = {
 }
 var hubExpressRouteGatewayRecommendedSku = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'virtualNetworkGateways', hub.location)) ? expressRouteGatewaySkuMap.nonZonal : expressRouteGatewaySkuMap.zonal]
 var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.enableAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
+var dnsResolverInboundIpAddresses = [for (hub, i) in hubNetworks: (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones) ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'DNSPrivateResolverInboundSubnet')[0].addressPrefix, 4) : '']
 
 output hubResourceGroupNames array = hubResourceGroupNames
 output dnsResourceGroupNames array = dnsResourceGroupNames
@@ -83,6 +84,7 @@ output publicIpRecommendedZones array = publicIpRecommendedZones
 output hubAzureFirewallRecommendedZones array = hubAzureFirewallRecommendedZones
 output hubBastionRecommendedZones array = hubBastionRecommendedZones
 output firewallPrivateIpAddresses array = firewallPrivateIpAddresses
+output dnsResolverInboundIpAddresses array = dnsResolverInboundIpAddresses
 
 //========================================
 // Resources Groups
@@ -145,7 +147,9 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
       name: hub.name
       location: hub.location
       addressPrefixes: hub.addressPrefixes
-      dnsServers: hub.?dnsServers ?? []
+      dnsServers: hub.azureFirewallSettings.enableAzureFirewall && hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones
+        ? [firewallPrivateIpAddresses[i]]
+        : (hub.?dnsServers ?? [])
       ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? (hub.ddosProtectionPlanSettings.enableDdosProtection ? resDdosProtectionPlan[i].?outputs.resourceId : null)
       vnetEncryption: hub.?vnetEncryption ?? false
       vnetEncryptionEnforcement: hub.?vnetEncryptionEnforcement ?? 'AllowUnencrypted'
@@ -371,13 +375,16 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
       threatIntelMode: (hub.?azureFirewallSettings.?azureSkuTier == 'Standard')
         ? 'Alert'
         : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
-
       enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
-        : hub.?azureFirewallSettings.?dnsProxyEnabled
+        : (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones && hub.azureFirewallSettings.enableAzureFirewall)
+          ? true
+          : (hub.?azureFirewallSettings.?dnsProxyEnabled ?? false)
       servers: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? null
-        : hub.?azureFirewallSettings.?firewallDnsServers
+        : (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones && hub.azureFirewallSettings.enableAzureFirewall)
+          ? [dnsResolverInboundIpAddresses[i]]
+          : hub.?azureFirewallSettings.?firewallDnsServers
       lock: parGlobalResourceLock ?? hub.?azureFirewallSettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry

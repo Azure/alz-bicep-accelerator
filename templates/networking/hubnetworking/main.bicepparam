@@ -93,7 +93,6 @@ param hubNetworks = [
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[0]}'
-      skuName: 'ErGw1AZ'
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
@@ -179,7 +178,6 @@ param hubNetworks = [
     expressRouteGatewaySettings: {
       enableExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[1]}'
-      skuName: 'ErGw1AZ'
     }
     privateDnsSettings: {
       enablePrivateDnsZones: true
