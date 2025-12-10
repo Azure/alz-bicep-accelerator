@@ -45,20 +45,20 @@ param vwanHubs = [
       name: 'afw-alz-${parLocations[0]}'
     }
     expressRouteGatewaySettings: {
-      enabled: false
+      enabled: true
       name: 'ergw-alz-${parLocations[0]}'
       minScaleUnits: 1
       maxScaleUnits: 1
       allowNonVirtualWanTraffic: false
     }
     s2sVpnGatewaySettings: {
-      name: 's2s-alz-${parLocations[0]}'
       enabled: false
+      name: 's2s-alz-${parLocations[0]}'
       scaleUnit: 1
     }
     p2sVpnGatewaySettings: {
-      name: 'p2s-alz-${parLocations[0]}'
       enabled: false
+      name: 'p2s-alz-${parLocations[0]}'
       scaleUnit: 1
       vpnServerConfiguration: {
         vpnAuthenticationTypes: ['AAD']
@@ -102,26 +102,26 @@ param vwanHubs = [
       name: 'afw-alz-${parLocations[1]}'
     }
     expressRouteGatewaySettings: {
-      enabled: false  // Deploy based on connectivity needs
+      enabled: true
       name: 'ergw-alz-${parLocations[1]}'
       minScaleUnits: 1
       maxScaleUnits: 1
       allowNonVirtualWanTraffic: false
     }
     s2sVpnGatewaySettings: {
-      name: 's2s-alz-${parLocations[1]}'
       enabled: false
-      scaleUnit: 1  // Baseline scale unit
+      name: 's2s-alz-${parLocations[1]}'
+      scaleUnit: 1
     }
     p2sVpnGatewaySettings: {
-      name: 'p2s-alz-${parLocations[1]}'
       enabled: false
-      scaleUnit: 1  // Baseline scale unit
+      name: 'p2s-alz-${parLocations[1]}'
+      scaleUnit: 1
       vpnServerConfiguration: {
-        vpnAuthenticationTypes: ['AAD']  // Common auth type
+        vpnAuthenticationTypes: ['AAD']
       }
       vpnClientAddressPool: {
-        addressPrefixes: ['172.16.1.0/24']  // Example client address pool (different from Hub 1)
+        addressPrefixes: ['172.16.1.0/24']
       }
     }
     ddosProtectionPlanSettings: {
