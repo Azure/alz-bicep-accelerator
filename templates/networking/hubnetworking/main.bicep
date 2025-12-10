@@ -66,12 +66,25 @@ param parEnableTelemetry bool = true
 var hubResourceGroupNames = [for (hub, i) in hubNetworks: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}-${hub.location}' : parHubNetworkingResourceGroupNameOverrides[i]]
 var dnsResourceGroupNames = [for (hub, i) in hubNetworks: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${hub.location}' : parDnsResourceGroupNameOverrides[i]]
 var dnsPrivateResolverResourceGroupNames = [for (hub, i) in hubNetworks: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${hub.location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
-var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'azureFirewalls', hub.location), ',')))]
-var hubVpnGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
-var hubExpressRouteGatewayRecommendedPublicIpZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
-var hubBastionRecommendedZones = [for hub in hubNetworks: json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var publicIpRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
+var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'azureFirewalls', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'azureFirewalls', hub.location), ',')))]
+var hubBastionRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'bastionHosts', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var expressRouteGatewaySkuMap = {
+  zonal: 'ErGw1AZ'
+  nonZonal: 'Standard'
+}
+var hubExpressRouteGatewayRecommendedSku = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'virtualNetworkGateways', hub.location)) ? expressRouteGatewaySkuMap.nonZonal : expressRouteGatewaySkuMap.zonal]
 var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.enableAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
 
+output hubResourceGroupNames array = hubResourceGroupNames
+output dnsResourceGroupNames array = dnsResourceGroupNames
+output dnsPrivateResolverResourceGroupNames array = dnsPrivateResolverResourceGroupNames
+output publicIpRecommendedZones array = publicIpRecommendedZones
+output hubAzureFirewallRecommendedZones array = hubAzureFirewallRecommendedZones
+output hubBastionRecommendedZones array = hubBastionRecommendedZones
+output firewallPrivateIpAddresses array = firewallPrivateIpAddresses
+
+//========================================
 // Resources Groups
 //========================================
 
@@ -118,12 +131,8 @@ module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource
 ]
 
 //=====================
-// Hub Networking
-//=====================
-//=====================
 // Virtual Networks
 //=====================
-
 module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = [
   for (hub, i) in hubNetworks: {
     name: 'vnet-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
@@ -197,7 +206,7 @@ module resAzureFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
 // Bastion Hosts
 //=====================
 
-module resBastion 'br/public:avm/res/network/bastion-host:0.8.1' = [
+module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
   for (hub, i) in hubNetworks: if (hub.bastionHostSettings.enableBastion) {
     name: 'bastion-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
@@ -216,6 +225,10 @@ module resBastion 'br/public:avm/res/network/bastion-host:0.8.1' = [
       enableKerberos: hub.?bastionHostSettings.?enableKerberos ?? false
       enableShareableLink: hub.?bastionHostSettings.?enableShareableLink ?? false
       availabilityZones: hub.?bastionHostSettings.?zones ?? hubBastionRecommendedZones[i]
+      publicIPAddressObject: {
+        name: '${hub.name}-bastion-pip'
+        availabilityZones: hub.?bastionHostSettings.?zones ?? publicIpRecommendedZones[i]
+      }
       lock: parGlobalResourceLock ?? hub.?bastionHostSettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry
@@ -563,7 +576,7 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' 
         ? hub.?vpnGatewaySettings.?domainNameLabel
         : ['vgw-alz-${hub.location}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn')}']
       publicIpAvailabilityZones: hub.?vpnGatewaySettings.?skuName != 'Basic'
-        ? hub.?vpnGatewaySettings.?publicIpZones ?? hubVpnGatewayRecommendedPublicIpZones[i]
+        ? hub.?vpnGatewaySettings.?publicIpZones ?? publicIpRecommendedZones[i]
         : []
       lock: parGlobalResourceLock ?? hub.?vpnGatewaySettings.?lock
       tags: parTags
@@ -587,11 +600,11 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
       }
       location: hub.location
       gatewayType: 'ExpressRoute'
-      skuName: hub.?expressRouteGatewaySettings.?skuName ?? 'ErGw1AZ'
+      skuName: hub.?expressRouteGatewaySettings.?skuName ?? hubExpressRouteGatewayRecommendedSku[i]
       enableDnsForwarding: hub.?expressRouteGatewaySettings.?enableDnsForwarding ?? false
       enablePrivateIpAddress: hub.?expressRouteGatewaySettings.?enablePrivateIpAddress ?? false
       virtualNetworkResourceId: resHubVirtualNetwork[i]!.outputs.resourceId
-      publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? hubExpressRouteGatewayRecommendedPublicIpZones[i]
+      publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? publicIpRecommendedZones[i]
       lock: parGlobalResourceLock ?? hub.?expressRouteGatewaySettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry
@@ -1111,7 +1124,7 @@ type expressRouteGatewaySettingsType = {
   name: string?
 
   @description('Optional. The SKU name of the ExpressRoute gateway.')
-  skuName: 'ErGw1AZ' | 'ErGw2AZ' | 'ErGw3AZ' | 'ErGwScale'?
+  skuName: 'Standard' | 'HighPerformance' | 'UltraPerformance' | 'ErGw1AZ' | 'ErGw2AZ' | 'ErGw3AZ' | 'ErGwScale'?
 
   @description('Optional. Enable DNS forwarding through the ExpressRoute gateway.')
   enableDnsForwarding: bool?
