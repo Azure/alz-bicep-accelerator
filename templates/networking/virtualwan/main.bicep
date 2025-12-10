@@ -76,6 +76,9 @@ var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: e
 var publicIpRecommendedZones = [for hub in (vwanHubs ?? []): empty(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
 var vwanBastionRecommendedZones = [for hub in (vwanHubs ?? []): empty(pickZones('Microsoft.Network', 'bastionHosts', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
 
+// Compute DNS Resolver inbound endpoint IP addresses for each hub using cidrHost (4th available address)
+var dnsResolverInboundIpAddresses = [for (vwanHub, i) in (vwanHubs ?? []): (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones) ? cidrHost(cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 0), 4) : '']
+
 //========================================
 // Resource Groups
 //========================================
@@ -396,6 +399,8 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
         {
           name: 'dnspr-inbound-${vwanHub.location}'
           subnetResourceId: '${resSidecarVirtualNetwork[i]!.outputs.resourceId}/subnets/DNSPrivateResolverInboundSubnet'
+          privateIpAddress: dnsResolverInboundIpAddresses[i]
+          privateIpAllocationMethod: 'Static'
         }
       ]
       outboundEndpoints: vwanHub.?dnsSettings.?outboundEndpoints ?? [
@@ -473,10 +478,12 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
       tier: vwanHub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
       enableProxy: vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
-        : vwanHub.?azureFirewallSettings.?dnsProxyEnabled
-      servers: vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic'
-        ? null
-        : vwanHub.?azureFirewallSettings.?firewallDnsServers
+        : (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones && vwanHub.azureFirewallSettings.enableAzureFirewall)
+          ? true
+          : (vwanHub.?azureFirewallSettings.?dnsProxyEnabled ?? false)
+      servers: (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones && vwanHub.azureFirewallSettings.enableAzureFirewall)
+        ? [dnsResolverInboundIpAddresses[i]]
+        : (vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic' ? null : vwanHub.?azureFirewallSettings.?firewallDnsServers)
       lock: parGlobalResourceLock ?? vwanHub.?azureFirewallSettings.?lock
       tags: parTags
       enableTelemetry: parEnableTelemetry
