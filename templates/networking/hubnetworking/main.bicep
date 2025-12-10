@@ -66,9 +66,9 @@ param parEnableTelemetry bool = true
 var hubResourceGroupNames = [for (hub, i) in hubNetworks: empty(parHubNetworkingResourceGroupNameOverrides) ? '${parHubNetworkingResourceGroupNamePrefix}-${hub.location}' : parHubNetworkingResourceGroupNameOverrides[i]]
 var dnsResourceGroupNames = [for (hub, i) in hubNetworks: empty(parDnsResourceGroupNameOverrides) ? '${parDnsResourceGroupNamePrefix}-${hub.location}' : parDnsResourceGroupNameOverrides[i]]
 var dnsPrivateResolverResourceGroupNames = [for (hub, i) in hubNetworks: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${hub.location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
-var publicIpRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
-var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'azureFirewalls', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'azureFirewalls', hub.location), ',')))]
-var hubBastionRecommendedZones = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'bastionHosts', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var publicIpRecommendedZones = [for hub in hubNetworks: map(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location, 3), zone => int(zone))]
+var hubAzureFirewallRecommendedZones = [for hub in hubNetworks: map(pickZones('Microsoft.Network', 'azureFirewalls', hub.location, 3), zone => int(zone))]
+var hubBastionRecommendedZones = [for hub in hubNetworks: map(pickZones('Microsoft.Network', 'bastionHosts', hub.location, 3), zone => int(zone))]
 var expressRouteGatewaySkuMap = {
   zonal: 'ErGw1AZ'
   nonZonal: 'Standard'
@@ -76,15 +76,6 @@ var expressRouteGatewaySkuMap = {
 var hubExpressRouteGatewayRecommendedSku = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'virtualNetworkGateways', hub.location)) ? expressRouteGatewaySkuMap.nonZonal : expressRouteGatewaySkuMap.zonal]
 var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.enableAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
 var dnsResolverInboundIpAddresses = [for (hub, i) in hubNetworks: (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones) ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'DNSPrivateResolverInboundSubnet')[0].addressPrefix, 4) : '']
-
-output hubResourceGroupNames array = hubResourceGroupNames
-output dnsResourceGroupNames array = dnsResourceGroupNames
-output dnsPrivateResolverResourceGroupNames array = dnsPrivateResolverResourceGroupNames
-output publicIpRecommendedZones array = publicIpRecommendedZones
-output hubAzureFirewallRecommendedZones array = hubAzureFirewallRecommendedZones
-output hubBastionRecommendedZones array = hubBastionRecommendedZones
-output firewallPrivateIpAddresses array = firewallPrivateIpAddresses
-output dnsResolverInboundIpAddresses array = dnsResolverInboundIpAddresses
 
 //========================================
 // Resources Groups

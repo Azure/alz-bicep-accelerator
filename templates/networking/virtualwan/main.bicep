@@ -73,8 +73,8 @@ var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsReso
 var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
 
 // Compute recommended availability zones for each hub location
-var publicIpRecommendedZones = [for hub in (vwanHubs ?? []): empty(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location), ',')))]
-var vwanBastionRecommendedZones = [for hub in (vwanHubs ?? []): empty(pickZones('Microsoft.Network', 'bastionHosts', hub.location)) ? [] : json(format('[{0}]', join(pickZones('Microsoft.Network', 'bastionHosts', hub.location), ',')))]
+var publicIpRecommendedZones = [for hub in (vwanHubs ?? []): map(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location, 3), zone => int(zone))]
+var vwanBastionRecommendedZones = [for hub in (vwanHubs ?? []): map(pickZones('Microsoft.Network', 'bastionHosts', hub.location, 3), zone => int(zone))]
 
 // Compute DNS Resolver inbound endpoint IP addresses for each hub using cidrHost (4th available address)
 var dnsResolverInboundIpAddresses = [for (vwanHub, i) in (vwanHubs ?? []): (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones) ? cidrHost(cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 0), 4) : '']
