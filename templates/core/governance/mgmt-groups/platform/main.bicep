@@ -21,11 +21,6 @@ param parEnableTelemetry bool = true
 @description('Optional. Policy assignment parameter overrides. Specify only the policy parameter values you want to change (logAnalytics, etc.). Role definitions are hardcoded variables and cannot be overridden.')
 param parPolicyAssignmentParameterOverrides object = {}
 
-@description('Optional. Management group names for cross-MG RBAC assignments. Specify child management group names where policy-assigned managed identities need permissions.')
-param parCrossMgRbacScopes object = {
-  landingZones: 'landingzones'
-}
-
 var builtInRoleDefinitionIds = {
   contributor: '/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
   aksContributor: '/providers/Microsoft.Authorization/roleDefinitions/ed7f3fbd-7b88-4dd4-9017-9adb7ce333f8'
