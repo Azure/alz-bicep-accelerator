@@ -14,9 +14,9 @@ param parGlobalResourceLock = {
 }
 
 // Resource Group Parameters
-param parVirtualWanResourceGroupNamePrefix = 'rg-alz-conn'
-param parDnsResourceGroupNamePrefix = 'rg-alz-dns'
-param parDnsPrivateResolverResourceGroupNamePrefix = 'rg-alz-dnspr'
+param parVirtualWanResourceGroupNamePrefix = '{{resource_group_virtual_wan_name_prefix||rg-alz-conn-}}'
+param parDnsResourceGroupNamePrefix = '{{resource_group_dns_name_prefix||rg-alz-dns-}}'
+param parDnsPrivateResolverResourceGroupNamePrefix = '{{resource_group_private_dns_resolver_name_prefix||rg-alz-dnspr-}}'
 
 // Virtual WAN Parameters
 param vwan = {
