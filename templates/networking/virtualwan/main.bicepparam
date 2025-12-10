@@ -39,7 +39,6 @@ param vwanHubs = [
     addressPrefix: '10.0.0.0/22'
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
-    enableTelemetry: parEnableTelemetry
     azureFirewallSettings: {
       enableAzureFirewall: true
       name: 'afw-alz-${parLocations[0]}'
@@ -96,7 +95,6 @@ param vwanHubs = [
     addressPrefix: '10.1.0.0/22'
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
-    enableTelemetry: parEnableTelemetry
     azureFirewallSettings: {
       enableAzureFirewall: true
       name: 'afw-alz-${parLocations[1]}'

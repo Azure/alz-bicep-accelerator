@@ -28,7 +28,6 @@ param hubNetworks = [
     ]
     enablePeering: true
     dnsServers: []
-    routes: []
     peeringSettings: [
       {
         remoteVirtualNetworkName: 'vnet-alz-${parLocations[1]}'
@@ -113,7 +112,6 @@ param hubNetworks = [
     ]
     enablePeering: true
     dnsServers: []
-    routes: []
     peeringSettings: [
       {
         remoteVirtualNetworkName: 'vnet-alz-${parLocations[0]}'
