@@ -163,7 +163,7 @@ module modMgmtLoggingResourceGroup 'br/public:avm/res/resources/resource-group:0
   params: {
     name: parMgmtLoggingResourceGroup
     location: parLocations[0]
-    lock: parGlobalResourceLock ?? parResourceGroupLock
+    lock: parResourceGroupLock ?? parGlobalResourceLock
     tags: parTags
     enableTelemetry: parEnableTelemetry
   }
@@ -197,7 +197,7 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
         workspaceResourceId: modLogAnalyticsWorkspace.outputs.resourceId
       }
     ]
-    lock: parGlobalResourceLock ?? parAutomationAccountLock
+    lock: parAutomationAccountLock ?? parGlobalResourceLock
     enableTelemetry: parEnableTelemetry
   }
 }
@@ -220,7 +220,7 @@ module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspac
     features: parLogAnalyticsWorkspaceFeatures
     dataExports: parLogAnalyticsWorkspaceDataExports
     dataSources: parLogAnalyticsWorkspaceDataSources
-    lock: parGlobalResourceLock ?? parLogAnalyticsWorkspaceLock
+    lock: parLogAnalyticsWorkspaceLock ?? parGlobalResourceLock
     enableTelemetry: parEnableTelemetry
   }
 }
@@ -237,7 +237,7 @@ module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.0' = {
     dataCollectionRuleVMInsightsExperience: parDataCollectionRuleVMInsightsExperience
     enableTelemetry: parEnableTelemetry
     location: parLocations[0]
-    lockConfig: parGlobalResourceLock ?? parAmaResourcesLock
+    lockConfig: parAmaResourcesLock ?? parGlobalResourceLock
     tags: parTags
   }
 }

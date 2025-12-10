@@ -140,8 +140,8 @@ module resVirtualWan 'br/public:avm/res/network/virtual-wan:0.4.3' = {
     type: vwan.?type ?? 'Standard'
     roleAssignments: vwan.?roleAssignments
     location: vwan.location
-    tags: parTags
-    lock: parGlobalResourceLock ?? vwan.?lock
+    tags: vwan.?tags ?? parTags
+    lock: vwan.?lock ?? parGlobalResourceLock
     enableTelemetry: parEnableTelemetry
   }
 }
@@ -176,8 +176,8 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.3' = [
       virtualHubRouteTableV2s: vwanHub.?virtualHubRouteTableV2s
       virtualRouterAsn: vwanHub.?virtualRouterAsn
       virtualRouterIps: vwanHub.?virtualRouterIps
-      lock: parGlobalResourceLock ?? vwanHub.?lock
-      tags: parTags
+      lock: vwanHub.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -201,8 +201,8 @@ module resExpressRouteGateway 'br/public:avm/res/network/express-route-gateway:0
       allowNonVirtualWanTraffic: vwanHub.expressRouteGatewaySettings.?allowNonVirtualWanTraffic ?? false
       autoScaleConfigurationBoundsMin: vwanHub.expressRouteGatewaySettings.?minScaleUnits ?? 1
       autoScaleConfigurationBoundsMax: vwanHub.expressRouteGatewaySettings.?maxScaleUnits ?? 1
-      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : vwanHub.expressRouteGatewaySettings.?lock
-      tags: parTags ?? vwanHub.expressRouteGatewaySettings.?tags
+      lock: vwanHub.expressRouteGatewaySettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.expressRouteGatewaySettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -244,8 +244,8 @@ module resS2sVpnGateway 'br/public:avm/res/network/vpn-gateway:0.2.2' = [
       isRoutingPreferenceInternet: (vwanHub.s2sVpnGatewaySettings.?routingPreference ?? 'ExpressRoute') == 'Internet'
       natRules: []
       vpnConnections: []
-      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
-      tags: parTags ?? vwanHub.s2sVpnGatewaySettings.?tags
+      lock: vwanHub.s2sVpnGatewaySettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.s2sVpnGatewaySettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -272,8 +272,8 @@ module resVpnServerConfigurations 'br/public:avm/res/network/vpn-server-configur
       radiusServers: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?radiusServers
       vpnClientRootCertificates: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?vpnClientRootCertificates
       vpnClientRevokedCertificates: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?vpnClientRevokedCertificates
-      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
-      tags: parTags ?? vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?tags
+      lock: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?lock ?? parGlobalResourceLock
+      tags: vwanHub.p2sVpnGatewaySettings.vpnServerConfiguration.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -302,8 +302,8 @@ module resP2sVpnGateway 'br/public:avm/res/network/p2s-vpn-gateway:0.1.3' = [
       customDnsServers: vwanHub.p2sVpnGatewaySettings.?dnsServers ?? []
       vpnGatewayScaleUnit: vwanHub.p2sVpnGatewaySettings.?scaleUnit ?? 1
       isRoutingPreferenceInternet: false
-      lock: parGlobalResourceLock.?kind != 'None' ? parGlobalResourceLock : null
-      tags: parTags ?? vwanHub.p2sVpnGatewaySettings.?tags
+      lock: vwanHub.p2sVpnGatewaySettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.p2sVpnGatewaySettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -322,7 +322,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       addressPrefixes: vwanHub.sideCarVirtualNetwork.addressPrefixes ?? []
       flowTimeoutInMinutes: vwanHub.sideCarVirtualNetwork.?flowTimeoutInMinutes
       ipamPoolNumberOfIpAddresses: vwanHub.sideCarVirtualNetwork.?ipamPoolNumberOfIpAddresses
-      lock: parGlobalResourceLock ?? vwanHub.sideCarVirtualNetwork.?lock
+      lock: vwanHub.sideCarVirtualNetwork.?lock ?? parGlobalResourceLock
       subnets: vwanHub.sideCarVirtualNetwork.?subnets ?? union(
         [
           {
@@ -356,7 +356,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       dnsServers: vwanHub.?sideCarVirtualNetwork.?dnsServers
       enableVmProtection: vwanHub.?sideCarVirtualNetwork.?enableVmProtection
       ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.enableDdosProtection ? resDdosProtectionPlan[i].?outputs.resourceId : null)
-      tags: parTags
+      tags: vwanHub.?sideCarVirtualNetwork.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -376,8 +376,8 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
     params: {
       location: vwanHub.location
       privateLinkPrivateDnsZones: empty(vwanHub.?dnsSettings.?privateDnsZones) ? null : vwanHub.?dnsSettings.?privateDnsZones
-      lock: parGlobalResourceLock ?? vwanHub.?dnsSettings.?lock
-      tags: parTags
+      lock: vwanHub.?dnsSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?dnsSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -409,8 +409,8 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
           subnetResourceId: '${resSidecarVirtualNetwork[i]!.outputs.resourceId}/subnets/DNSPrivateResolverOutboundSubnet'
         }
       ]
-      lock: parGlobalResourceLock ?? vwanHub.?dnsSettings.?lock
-      tags: parTags
+      lock: vwanHub.?dnsSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?dnsSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -429,8 +429,8 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
     params: {
       name: vwanHub.?ddosProtectionPlanSettings.?name ?? 'ddos-alz-${vwanHub.location}'
       location: vwanHub.location
-      lock: parGlobalResourceLock ?? vwanHub.?ddosProtectionPlanSettings.?lock
-      tags: parTags
+      lock: vwanHub.?ddosProtectionPlanSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?ddosProtectionPlanSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -457,8 +457,8 @@ module resAzFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
       }
       availabilityZones: vwanHub.?azureFirewallSettings.?zones ?? []
       threatIntelMode: vwanHub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
-      lock: parGlobalResourceLock ?? vwanHub.?azureFirewallSettings.?lock
-      tags: parTags
+      lock: vwanHub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -484,8 +484,8 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
       servers: (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones && vwanHub.azureFirewallSettings.enableAzureFirewall)
         ? [dnsResolverInboundIpAddresses[i]]
         : (vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic' ? null : vwanHub.?azureFirewallSettings.?firewallDnsServers)
-      lock: parGlobalResourceLock ?? vwanHub.?azureFirewallSettings.?lock
-      tags: parTags
+      lock: vwanHub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -510,8 +510,8 @@ module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' =
       publicIPAllocationMethod: vwanHub.bastionSettings.?bastionPublicIp.?allocationMethod ?? 'Static'
       idleTimeoutInMinutes: vwanHub.bastionSettings.?bastionPublicIp.?idleTimeoutInMinutes ?? 4
       availabilityZones: vwanHub.bastionSettings.?bastionPublicIp.?zones ?? vwanHub.bastionSettings.?zones ?? publicIpRecommendedZones[i]
-      lock: parGlobalResourceLock ?? vwanHub.bastionSettings.?lock
-      tags: vwanHub.bastionSettings.?bastionPublicIp.?tags ?? parTags
+      lock: vwanHub.bastionSettings.?lock ?? parGlobalResourceLock
+      tags: vwanHub.bastionSettings.?bastionPublicIp.?tags ?? vwanHub.bastionSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -538,7 +538,7 @@ module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
       enableIpConnect: vwanHub.bastionSettings.?ipConnectEnabled ?? false
       enableKerberos: vwanHub.bastionSettings.?kerberosEnabled ?? false
       enableShareableLink: vwanHub.bastionSettings.?shareableLinkEnabled ?? false
-      lock: parGlobalResourceLock ?? vwanHub.bastionSettings.?lock
+      lock: vwanHub.bastionSettings.?lock ?? parGlobalResourceLock
       tags: vwanHub.bastionSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -575,11 +575,11 @@ type vwanNetworkType = {
   @description('Optional. Lock settings.')
   lock: lockType?
 
-  @description('Optional. Tags of the resource.')
-  tags: object?
-
   @description('Optional. The type of the virtual WAN.')
   type: 'Basic' | 'Standard'?
+
+  @description('Optional. Tags for the virtual WAN.')
+  tags: object?
 }
 
 type sideCarVirtualNetworkType = {
@@ -592,12 +592,6 @@ type sideCarVirtualNetworkType = {
   @description('Required. The address space of the sidecar virtual network.')
   addressPrefixes: string[]
 
-  @description('Optional. The location of the sidecar virtual network. Defaults to the Virtual WAN hub location.')
-  location: string?
-
-  @description('Optional. Resource ID of an existing Virtual WAN hub to associate with the sidecar virtual network.')
-  virtualHubIdOverride: string?
-
   @description('Optional. Flow timeout in minutes for the sidecar virtual network.')
   flowTimeoutInMinutes: int?
 
@@ -607,35 +601,11 @@ type sideCarVirtualNetworkType = {
   @description('Optional. Resource lock configuration for the sidecar virtual network.')
   lock: lockType?
 
-  @description('Optional. Virtual network peerings in addition to the primary VWAN Hub peering connection.')
-  vnetPeerings: array?
-
   @description('Optional. Subnets for the sidecar virtual network.')
   subnets: array?
 
-  @description('Optional. Enable/Disable VNet encryption for the sidecar virtual network.')
-  vnetEncryption: bool?
-
-  @description('Optional. Whether the encrypted VNet allows VM that does not support encryption. Can only be used when vnetEncryption is enabled.')
-  vnetEncryptionEnforcement: 'AllowUnencrypted' | 'DropUnencrypted'?
-
-  @description('Optional. Role assignments for the sidecar virtual network.')
-  roleAssignments: array?
-
-  @description('Optional. BGP community for the sidecar virtual network.')
-  virtualNetworkBgpCommunity: string?
-
-  @description('Optional. Diagnostic settings for the sidecar virtual network.')
-  diagnosticSettings: array?
-
-  @description('Optional. DNS servers for the sidecar virtual network.')
-  dnsServers: array?
-
-  @description('Optional. Enable VM protection for the virtual network.')
-  enableVmProtection: bool?
-
-  @description('Optional. DDoS protection plan resource ID.')
-  ddosProtectionPlanResourceIdOverride: string?
+  @description('Optional. Tags for the sidecar virtual network.')
+  tags: object?
 }
 
 type vwanHubType = {
@@ -731,11 +701,8 @@ type vwanHubType = {
   @description('Optional. Lock settings.')
   lock: lockType?
 
-  @description('Optional. Tags of the resource.')
+  @description('Optional. Tags for the Virtual WAN hub.')
   tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
 }
 
 type peeringSettingsType = {
@@ -821,6 +788,9 @@ type azureFirewallType = {
 
   @description('Optional. Array of custom DNS servers used by Azure Firewall.')
   firewallDnsServers: array?
+
+  @description('Optional. Tags for Azure Firewall.')
+  tags: object?
 }
 
 type ddosProtectionType = {
@@ -835,9 +805,6 @@ type ddosProtectionType = {
 
   @description('Optional. Tags of the resource.')
   tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
 }
 
 type bastionType = {
@@ -909,20 +876,11 @@ type bastionType = {
 
   @description('Optional. Lock settings for Azure Bastion.')
   lock: lockType?
-
-  @description('Optional. Tags of the Azure Bastion resource.')
-  tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
 }
 
 type dnsSettingsType = {
   @description('Required. Enable/Disable Private DNS zones deployment.')
   enablePrivateDnsZones: bool
-
-  @description('Optional. The resource group name for private DNS zones.')
-  privateDnsZonesResourceGroup: string?
 
   @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The sidecar virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
@@ -945,23 +903,11 @@ type dnsSettingsType = {
   @description('Optional. Private DNS Resolver outbound endpoints configuration.')
   outboundEndpoints: array?
 
-  @description('Optional. The location of the Private DNS Resolver. Defaults to the location of the resource group.')
-  location: string?
-
   @description('Optional. Lock settings for Private DNS resources.')
   lock: lockType?
 
-  @description('Optional. Tags of the Private DNS resources.')
+  @description('Optional. Tags for Private DNS resources.')
   tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
-
-  @description('Optional. Diagnostic settings for Private DNS resources.')
-  diagnosticSettings: diagnosticSettingType?
-
-  @description('Optional. Role assignments for Private DNS resources.')
-  roleAssignments: roleAssignmentType?
 }
 
 type roleAssignmentType = {

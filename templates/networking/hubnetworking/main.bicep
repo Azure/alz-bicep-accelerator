@@ -155,7 +155,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
         }
       ]
       lock: parGlobalResourceLock ?? hub.?lock
-      tags: parTags
+      tags: hub.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -190,8 +190,8 @@ module resAzureFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
         : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
       availabilityZones: hub.?azureFirewallSettings.?zones ?? hubAzureFirewallRecommendedZones[i]
       virtualNetworkResourceId: resHubVirtualNetwork[i].outputs.resourceId
-      lock: parGlobalResourceLock ?? hub.?azureFirewallSettings.?lock
-      tags: parTags
+      lock: hub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -224,8 +224,8 @@ module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
         name: '${hub.name}-bastion-pip'
         availabilityZones: hub.?bastionHostSettings.?zones ?? publicIpRecommendedZones[i]
       }
-      lock: parGlobalResourceLock ?? hub.?bastionHostSettings.?lock
-      tags: parTags
+      lock: hub.?bastionHostSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?bastionHostSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -266,7 +266,9 @@ module resVnetPeering 'br/public:avm/res/network/virtual-network:0.7.2' = [
           )
         }
       ]
-      enableTelemetry: false
+      lock: hub.?lock ?? parGlobalResourceLock
+      tags: hub.?tags ?? parTags
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -296,8 +298,8 @@ module resFirewallRouteTable 'br/public:avm/res/network/route-table:0.5.0' = [
         }
       ]
       disableBgpRoutePropagation: false
-      lock: parGlobalResourceLock
-      tags: parTags
+      lock: hub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -325,8 +327,8 @@ module resUserSubnetsRouteTable 'br/public:avm/res/network/route-table:0.5.0' = 
         }
       ]
       disableBgpRoutePropagation: false
-      lock: parGlobalResourceLock
-      tags: parTags
+      lock: hub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -345,9 +347,9 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
     params: {
       name: hub.?ddosProtectionPlanSettings.?name ?? 'ddos-alz-${hub.location}'
       location: hub.?ddosProtectionPlanSettings.?location ?? hub.location
-      lock: parGlobalResourceLock ?? hub.?ddosProtectionPlanSettings.?lock
+      lock: hub.?ddosProtectionPlanSettings.?lock ?? parGlobalResourceLock
       tags: hub.?ddosProtectionPlanSettings.?tags ?? parTags
-      enableTelemetry: hub.?ddosProtectionPlanSettings.?enableTelemetry ?? parEnableTelemetry
+      enableTelemetry: parEnableTelemetry
     }
   }
 ]
@@ -376,8 +378,8 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
         : (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones && hub.azureFirewallSettings.enableAzureFirewall)
           ? [dnsResolverInboundIpAddresses[i]]
           : hub.?azureFirewallSettings.?firewallDnsServers
-      lock: parGlobalResourceLock ?? hub.?azureFirewallSettings.?lock
-      tags: parTags
+      lock: hub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?azureFirewallSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -393,7 +395,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = 
     params: {
       name: hub.?bastionHostSettings.?bastionNsgName ?? 'nsg-bas-alz-${hub.location}'
       location: hub.location
-      lock: parGlobalResourceLock ?? hub.?bastionHostSettings.?bastionNsgLock
+      lock: hub.?bastionHostSettings.?bastionNsgLock ?? parGlobalResourceLock
       securityRules: hub.?bastionHostSettings.?bastionNsgSecurityRules ?? [
         // Inbound Rules
         {
@@ -537,6 +539,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = 
           }
         }
       ]
+      tags: hub.?bastionHostSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -576,8 +579,8 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' 
       publicIpAvailabilityZones: hub.?vpnGatewaySettings.?skuName != 'Basic'
         ? hub.?vpnGatewaySettings.?publicIpZones ?? publicIpRecommendedZones[i]
         : []
-      lock: parGlobalResourceLock ?? hub.?vpnGatewaySettings.?lock
-      tags: parTags
+      lock: hub.?vpnGatewaySettings.?lock ?? parGlobalResourceLock
+      tags: hub.?vpnGatewaySettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -603,8 +606,8 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
       enablePrivateIpAddress: hub.?expressRouteGatewaySettings.?enablePrivateIpAddress ?? false
       virtualNetworkResourceId: resHubVirtualNetwork[i]!.outputs.resourceId
       publicIpAvailabilityZones: hub.?expressRouteGatewaySettings.?publicIpZones ?? publicIpRecommendedZones[i]
-      lock: parGlobalResourceLock ?? hub.?expressRouteGatewaySettings.?lock
-      tags: parTags
+      lock: hub.?expressRouteGatewaySettings.?lock ?? parGlobalResourceLock
+      tags: hub.?expressRouteGatewaySettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -640,8 +643,8 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
           virtualNetworkResourceId: id
         }
       ]
-      lock: parGlobalResourceLock ?? hub.?privateDnsSettings.?lock
-      tags: parTags
+      lock: hub.?privateDnsSettings.?lock ?? parGlobalResourceLock
+      tags: hub.?privateDnsSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
   }
@@ -692,11 +695,6 @@ type lockType = {
   notes: string?
 }
 
-type hubNetworkingType = {
-  @description('Required. ALZ network type')
-  networkType: 'hub-and-spoke'
-}
-
 type bastionHostSettingsType = {
   @description('Required. Enable/Disable Azure Bastion deployment for the virtual network.')
   enableBastion: bool
@@ -740,14 +738,11 @@ type bastionHostSettingsType = {
   @description('Optional. Lock settings for Bastion NSG.')
   bastionNsgLock: lockType?
 
-  @description('Optional. Tags for Bastion NSG.')
-  bastionNsgTags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for Bastion NSG.')
-  bastionNsgEnableTelemetry: bool?
-
   @description('Optional. Availability zones for the Bastion host.')
   zones: int[]?
+
+  @description('Optional. Tags for the Bastion host.')
+  tags: object?
 }
 
 type hubVirtualNetworkType = {
@@ -766,17 +761,8 @@ type hubVirtualNetworkType = {
   @description('Required. DDoS protection plan configuration settings.')
   ddosProtectionPlanSettings: ddosProtectionPlanType
 
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
-
   @description('Required. The location of the virtual network.')
   location: string
-
-  @description('Optional. The lock settings of the virtual network.')
-  lock: lockType?
-
-  @description('Optional. The diagnostic settings of the virtual network.')
-  diagnosticSettings: diagnosticSettingType?
 
   @description('Optional. Resource ID of an existing DDoS protection plan to associate with the virtual network. If not specified and enableDdosProtection is true, a new DDoS protection plan will be created.')
   ddosProtectionPlanResourceId: string?
@@ -784,29 +770,14 @@ type hubVirtualNetworkType = {
   @description('Optional. The DNS servers of the virtual network.')
   dnsServers: array?
 
-  @description('Optional. The flow timeout in minutes.')
-  flowTimeoutInMinutes: int?
-
   @description('Required. Enable/Disable peering for the virtual network.')
   enablePeering: bool
 
   @description('Optional. The peerings of the virtual network.')
   peeringSettings: peeringSettingsType?
 
-  @description('Optional. The role assignments to create.')
-  roleAssignments: roleAssignmentType?
-
-  @description('Optional. Routes to add to the virtual network route table.')
-  routes: array?
-
-  @description('Optional. The name of the route table.')
-  routeTableName: string?
-
   @description('Required. The subnets of the virtual network.')
   subnets: subnetOptionsType
-
-  @description('Optional. The tags of the virtual network.')
-  tags: object?
 
   @description('Optional. Enable/Disable VNet encryption.')
   vnetEncryption: bool?
@@ -822,6 +793,12 @@ type hubVirtualNetworkType = {
 
   @description('Required. Azure Bastion configuration settings.')
   bastionHostSettings: bastionHostSettingsType
+
+  @description('Optional. Lock settings for the virtual network.')
+  lock: lockType?
+
+  @description('Optional. Tags for the virtual network.')
+  tags: object?
 }[]
 
 type peeringSettingsType = {
@@ -856,9 +833,6 @@ type ddosProtectionPlanType = {
 
   @description('Optional. Tags for DDoS protection plan.')
   tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
 }
 
 type azureFirewallType = {
@@ -889,9 +863,6 @@ type azureFirewallType = {
   @description('Optional. Role assignments.')
   roleAssignments: roleAssignmentType?
 
-  @description('Optional. Tags of the resource.')
-  tags: object?
-
   @description('Optional. Threat Intel mode.')
   threatIntelMode: ('Alert' | 'Deny' | 'Off')?
 
@@ -903,14 +874,14 @@ type azureFirewallType = {
 
   @description('Optional. Array of custom DNS servers used by Azure Firewall.')
   firewallDnsServers: array?
+
+  @description('Optional. Tags for Azure Firewall.')
+  tags: object?
 }
 
 type privateDnsType = {
   @description('Required. Enable/Disable private DNS zones.')
   enablePrivateDnsZones: bool
-
-  @description('Optional. The resource group name for private DNS zones.')
-  privateDnsZonesResourceGroup: string?
 
   @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The hub virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
@@ -924,9 +895,6 @@ type privateDnsType = {
   @description('Required. Enable/Disable Private DNS Resolver deployment.')
   enableDnsPrivateResolver: bool
 
-  @description('Optional. Additional virtual network link objects to merge with the automatically generated hub link.')
-  virtualNetworkLinks: dnsVirtualNetworkLinkType[]?
-
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
 
@@ -936,39 +904,10 @@ type privateDnsType = {
   @description('Optional. Private DNS Resolver outbound endpoints configuration.')
   outboundEndpoints: array?
 
-  @description('Optional. The location of the Private DNS Resolver.')
-  location: string?
-
   @description('Optional. Lock settings for Private DNS resources.')
   lock: lockType?
 
-  @description('Optional. Tags of the Private DNS resources.')
-  tags: object?
-
-  @description('Optional. Enable/Disable usage telemetry for module.')
-  enableTelemetry: bool?
-
-  @description('Optional. Diagnostic settings for Private DNS resources.')
-  diagnosticSettings: diagnosticSettingType?
-
-  @description('Optional. Role assignments for Private DNS resources.')
-  roleAssignments: roleAssignmentType?
-}
-
-type dnsVirtualNetworkLinkType = {
-  @description('Optional. The resource name for the virtual network link.')
-  name: string?
-
-  @description('Required. The resource ID of the virtual network to link.')
-  virtualNetworkResourceId: string
-
-  @description('Optional. Enables auto-registration of DNS records for the linked virtual network.')
-  registrationEnabled: bool?
-
-  @description('Optional. Resolution policy for the virtual network link.')
-  resolutionPolicy: ('Default' | 'NxDomainRedirect')?
-
-  @description('Optional. Tags for the virtual network link resource.')
+  @description('Optional. Tags for Private DNS resources.')
   tags: object?
 }
 
@@ -1098,20 +1037,14 @@ type vpnGatewaySettingsType = {
   @description('Optional. Availability zones for the VPN gateway public IP addresses.')
   publicIpZones: array?
 
-  @description('Optional. Base64-encoded root certificate data for Point-to-Site VPN authentication.')
-  clientRootCertData: string?
-
-  @description('Optional. The address pool prefix for VPN client connections in Point-to-Site scenarios.')
-  vpnClientAddressPoolPrefix: string?
-
-  @description('Optional. Azure Active Directory configuration for OpenVPN Point-to-Site connections.')
-  vpnClientAadConfiguration: object?
-
   @description('Optional. Domain name labels for the public IP addresses associated with the gateway.')
   domainNameLabel: string[]?
 
   @description('Optional. Lock settings for Virtual Network Gateway.')
   lock: lockType?
+
+  @description('Optional. Tags for the VPN gateway.')
+  tags: object?
 }
 
 type expressRouteGatewaySettingsType = {
@@ -1135,4 +1068,7 @@ type expressRouteGatewaySettingsType = {
 
   @description('Optional. Lock settings for the ExpressRoute gateway.')
   lock: lockType?
+
+  @description('Optional. Tags for the ExpressRoute gateway.')
+  tags: object?
 }
