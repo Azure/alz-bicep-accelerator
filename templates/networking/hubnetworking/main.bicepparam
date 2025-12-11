@@ -100,7 +100,7 @@ param hubNetworks = [
       privateDnsZones: []
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: true
+      deployDdosProtectionPlan: true
       name: 'ddos-alz-${parLocations[0]}'
     }
   }
@@ -190,9 +190,7 @@ param hubNetworks = [
       ]
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: true
-      name: 'ddos-alz-${parLocations[1]}'
+      deployDdosProtectionPlan: false
     }
   }
 ]
-

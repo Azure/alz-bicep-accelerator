@@ -132,7 +132,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
       modHubNetworkingResourceGroups[i]
-      ...(hub.ddosProtectionPlanSettings.enableDdosProtection ? [resDdosProtectionPlan[i]] : [])
+      ...(hub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? [resDdosProtectionPlan[i]] : hubNetworks[0].ddosProtectionPlanSettings.deployDdosProtectionPlan ? [resDdosProtectionPlan[0]] : [])
     ]
     params: {
       name: hub.name
@@ -141,7 +141,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
       dnsServers: hub.azureFirewallSettings.enableAzureFirewall && hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones
         ? [firewallPrivateIpAddresses[i]]
         : (hub.?dnsServers ?? [])
-      ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? (hub.ddosProtectionPlanSettings.enableDdosProtection ? resDdosProtectionPlan[i].?outputs.resourceId : null)
+      ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? (hub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[i].?outputs.resourceId : hubNetworks[0].ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[0].?outputs.resourceId : null)
       vnetEncryption: hub.?vnetEncryption ?? false
       vnetEncryptionEnforcement: hub.?vnetEncryptionEnforcement ?? 'AllowUnencrypted'
       subnets: [
@@ -338,7 +338,7 @@ module resUserSubnetsRouteTable 'br/public:avm/res/network/route-table:0.5.0' = 
 // Network Security
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
-  for (hub, i) in hubNetworks: if (hub.ddosProtectionPlanSettings.enableDdosProtection) {
+  for (hub, i) in hubNetworks: if (hub.ddosProtectionPlanSettings.deployDdosProtectionPlan) {
     name: 'ddosPlan-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.?ddosProtectionPlanResourceId ?? '',hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -764,7 +764,7 @@ type hubVirtualNetworkType = {
   @description('Required. The location of the virtual network.')
   location: string
 
-  @description('Optional. Resource ID of an existing DDoS protection plan to associate with the virtual network. If not specified and enableDdosProtection is true, a new DDoS protection plan will be created.')
+  @description('Optional. Resource ID of an existing DDoS protection plan to associate with the virtual network. If not specified and deployDdosProtectionPlan is true, a new DDoS protection plan will be created.')
   ddosProtectionPlanResourceId: string?
 
   @description('Optional. The DNS servers of the virtual network.')
@@ -819,8 +819,8 @@ type peeringSettingsType = {
 }[]?
 
 type ddosProtectionPlanType = {
-  @description('Required. Enable/Disable DDoS protection plan for the virtual network.')
-  enableDdosProtection: bool
+  @description('Required. Deploy a DDoS protection plan in the same region as the virtual network. Typically only needed in the primary region (the 1st declared in `hubNetworks`).')
+  deployDdosProtectionPlan: bool
 
   @description('Optional. The name of the DDoS protection plan.')
   name: string?
