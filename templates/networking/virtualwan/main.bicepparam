@@ -40,23 +40,23 @@ param vwanHubs = [
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
     azureFirewallSettings: {
-      enableAzureFirewall: true
+      deployAzureFirewall: true
       name: 'afw-alz-${parLocations[0]}'
     }
     expressRouteGatewaySettings: {
-      enabled: true
+      deployExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[0]}'
       minScaleUnits: 1
       maxScaleUnits: 1
       allowNonVirtualWanTraffic: false
     }
     s2sVpnGatewaySettings: {
-      enabled: false
+      deployS2sVpnGateway: false
       name: 's2s-alz-${parLocations[0]}'
       scaleUnit: 1
     }
     p2sVpnGatewaySettings: {
-      enabled: false
+      deployP2sVpnGateway: false
       name: 'p2s-alz-${parLocations[0]}'
       scaleUnit: 1
       vpnServerConfiguration: {
@@ -72,12 +72,12 @@ param vwanHubs = [
       tags: {}
     }
     dnsSettings: {
-      enablePrivateDnsZones: true
-      enableDnsPrivateResolver: true
+      deployPrivateDnsZones: true
+      deployDnsPrivateResolver: true
       privateDnsResolverName: 'dnspr-alz-${parLocations[0]}'
     }
     bastionSettings: {
-      enableBastion: true
+      deployBastion: true
       name: 'bas-alz-${parLocations[0]}'
       sku: 'Standard'
     }
@@ -96,23 +96,23 @@ param vwanHubs = [
     allowBranchToBranchTraffic: true
     preferredRoutingGateway: 'ExpressRoute'
     azureFirewallSettings: {
-      enableAzureFirewall: true
+      deployAzureFirewall: true
       name: 'afw-alz-${parLocations[1]}'
     }
     expressRouteGatewaySettings: {
-      enabled: true
+      deployExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[1]}'
       minScaleUnits: 1
       maxScaleUnits: 1
       allowNonVirtualWanTraffic: false
     }
     s2sVpnGatewaySettings: {
-      enabled: false
+      deployS2sVpnGateway: false
       name: 's2s-alz-${parLocations[1]}'
       scaleUnit: 1
     }
     p2sVpnGatewaySettings: {
-      enabled: false
+      deployP2sVpnGateway: false
       name: 'p2s-alz-${parLocations[1]}'
       scaleUnit: 1
       vpnServerConfiguration: {
@@ -126,12 +126,12 @@ param vwanHubs = [
       deployDdosProtectionPlan: false
     }
     dnsSettings: {
-      enablePrivateDnsZones: true
-      enableDnsPrivateResolver: true
+      deployPrivateDnsZones: true
+      deployDnsPrivateResolver: true
       privateDnsResolverName: 'dnspr-alz-${parLocations[1]}'
     }
     bastionSettings: {
-      enableBastion: true
+      deployBastion: true
       name: 'bas-alz-${parLocations[1]}'
       sku: 'Standard'
     }

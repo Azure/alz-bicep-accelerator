@@ -26,7 +26,7 @@ param hubNetworks = [
     addressPrefixes: [
       '10.0.0.0/22'
     ]
-    enablePeering: true
+    deployPeering: true
     dnsServers: []
     peeringSettings: [
       {
@@ -66,7 +66,7 @@ param hubNetworks = [
       }
     ]
     azureFirewallSettings: {
-      enableAzureFirewall: true
+      deployAzureFirewall: true
       azureFirewallName: 'afw-alz-${parLocations[0]}'
       azureSkuTier: 'Standard'
       publicIPAddressObject: {
@@ -77,12 +77,12 @@ param hubNetworks = [
       }
     }
     bastionHostSettings: {
-      enableBastion: true
+      deployBastion: true
       bastionHostSettingsName: 'bas-alz-${parLocations[0]}'
       skuName: 'Standard'
     }
     vpnGatewaySettings: {
-      enableVirtualNetworkGateway: true
+      deployVpnGateway: true
       name: 'vgw-alz-${parLocations[0]}'
       skuName: 'VpnGw1AZ'
       vpnMode: 'activeActiveBgp'
@@ -90,12 +90,12 @@ param hubNetworks = [
       asn: 65515
     }
     expressRouteGatewaySettings: {
-      enableExpressRouteGateway: true
+      deployExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[0]}'
     }
     privateDnsSettings: {
-      enablePrivateDnsZones: true
-      enableDnsPrivateResolver: true
+      deployPrivateDnsZones: true
+      deployDnsPrivateResolver: true
       privateDnsResolverName: 'dnspr-alz-${parLocations[0]}'
       privateDnsZones: []
     }
@@ -110,7 +110,7 @@ param hubNetworks = [
     addressPrefixes: [
       '10.1.0.0/22'
     ]
-    enablePeering: true
+    deployPeering: true
     dnsServers: []
     peeringSettings: [
       {
@@ -150,7 +150,7 @@ param hubNetworks = [
       }
     ]
     azureFirewallSettings: {
-      enableAzureFirewall: true
+      deployAzureFirewall: true
       azureFirewallName: 'afw-alz-${parLocations[1]}'
       azureSkuTier: 'Standard'
       publicIPAddressObject: {
@@ -161,12 +161,12 @@ param hubNetworks = [
       }
     }
     bastionHostSettings: {
-      enableBastion: true
+      deployBastion: true
       bastionHostSettingsName: 'bas-alz-${parLocations[1]}'
       skuName: 'Standard'
     }
     vpnGatewaySettings: {
-      enableVirtualNetworkGateway: true
+      deployVpnGateway: true
       name: 'vgw-alz-${parLocations[1]}'
       skuName: 'VpnGw1AZ'
       vpnMode: 'activeActiveBgp'
@@ -174,12 +174,12 @@ param hubNetworks = [
       asn: 65515
     }
     expressRouteGatewaySettings: {
-      enableExpressRouteGateway: true
+      deployExpressRouteGateway: true
       name: 'ergw-alz-${parLocations[1]}'
     }
     privateDnsSettings: {
-      enablePrivateDnsZones: true
-      enableDnsPrivateResolver: true
+      deployPrivateDnsZones: true
+      deployDnsPrivateResolver: true
       privateDnsResolverName: 'dnspr-alz-${parLocations[1]}'
       privateDnsZones: [
         'privatelink.{regionName}.azurecontainerapps.io'

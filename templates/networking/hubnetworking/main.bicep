@@ -74,8 +74,8 @@ var expressRouteGatewaySkuMap = {
   nonZonal: 'Standard'
 }
 var hubExpressRouteGatewayRecommendedSku = [for hub in hubNetworks: empty(pickZones('Microsoft.Network', 'virtualNetworkGateways', hub.location)) ? expressRouteGatewaySkuMap.nonZonal : expressRouteGatewaySkuMap.zonal]
-var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.enableAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
-var dnsResolverInboundIpAddresses = [for (hub, i) in hubNetworks: (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones) ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'DNSPrivateResolverInboundSubnet')[0].addressPrefix, 4) : '']
+var firewallPrivateIpAddresses = [for (hub, i) in hubNetworks: hub.azureFirewallSettings.deployAzureFirewall ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'AzureFirewallSubnet')[0].addressPrefix, 4) : '']
+var dnsResolverInboundIpAddresses = [for (hub, i) in hubNetworks: (hub.privateDnsSettings.deployDnsPrivateResolver && hub.privateDnsSettings.deployPrivateDnsZones) ? cidrHost(filter(hub.subnets, subnet => subnet.?name == 'DNSPrivateResolverInboundSubnet')[0].addressPrefix, 4) : '']
 
 //========================================
 // Resources Groups
@@ -96,7 +96,7 @@ module modHubNetworkingResourceGroups 'br/public:avm/res/resources/resource-grou
 ]
 
 module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enablePrivateDnsZones) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.deployPrivateDnsZones) {
     name: 'modDnsResourceGroup-${i}-${uniqueString(parDnsResourceGroupNamePrefix, hub.location)}'
     scope: subscription()
     params: {
@@ -110,7 +110,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' =
 ]
 
 module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enableDnsPrivateResolver) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.deployDnsPrivateResolver) {
     name: 'modPrivateDnsResolverResourceGroup-${i}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, hub.location)}'
     scope: subscription()
     params: {
@@ -138,7 +138,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
       name: hub.name
       location: hub.location
       addressPrefixes: hub.addressPrefixes
-      dnsServers: hub.azureFirewallSettings.enableAzureFirewall && hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones
+      dnsServers: hub.azureFirewallSettings.deployAzureFirewall && hub.privateDnsSettings.deployDnsPrivateResolver && hub.privateDnsSettings.deployPrivateDnsZones
         ? [firewallPrivateIpAddresses[i]]
         : (hub.?dnsServers ?? [])
       ddosProtectionPlanResourceId: hub.?ddosProtectionPlanResourceId ?? (hub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[i].?outputs.resourceId : hubNetworks[0].ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[0].?outputs.resourceId : null)
@@ -149,7 +149,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
           name: subnet.name
           addressPrefix: subnet.addressPrefix
           delegation: subnet.?delegation
-          networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.bastionHostSettings.enableBastion)
+          networkSecurityGroupResourceId: (subnet.?name == 'AzureBastionSubnet' && hub.bastionHostSettings.deployBastion)
             ? resBastionNsg[i].?outputs.resourceId
             : subnet.?networkSecurityGroupId
         }
@@ -166,7 +166,7 @@ module resHubVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2' = 
 //=====================
 
 module resAzureFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
-  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall) {
+  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.deployAzureFirewall) {
     name: 'afw-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -202,7 +202,7 @@ module resAzureFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
 //=====================
 
 module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
-  for (hub, i) in hubNetworks: if (hub.bastionHostSettings.enableBastion) {
+  for (hub, i) in hubNetworks: if (hub.bastionHostSettings.deployBastion) {
     name: 'bastion-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -236,7 +236,7 @@ module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
 //=====================
 
 module resVnetPeering 'br/public:avm/res/network/virtual-network:0.7.2' = [
-  for (hub, i) in hubNetworks: if (hub.enablePeering && !empty(hub.?peeringSettings ?? [])) {
+  for (hub, i) in hubNetworks: if (hub.deployPeering && !empty(hub.?peeringSettings ?? [])) {
     name: 'peering-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -279,7 +279,7 @@ module resVnetPeering 'br/public:avm/res/network/virtual-network:0.7.2' = [
 
 // Firewall Route Table - for AzureFirewallSubnet with default route to Internet
 module resFirewallRouteTable 'br/public:avm/res/network/route-table:0.5.0' = [
-  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall) {
+  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.deployAzureFirewall) {
     name: 'rt-fw-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -307,7 +307,7 @@ module resFirewallRouteTable 'br/public:avm/res/network/route-table:0.5.0' = [
 
 // User Subnets Route Table - for regular subnets with default route to Firewall
 module resUserSubnetsRouteTable 'br/public:avm/res/network/route-table:0.5.0' = [
-  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall) {
+  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.deployAzureFirewall) {
     name: 'rt-user-${hub.name}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -355,7 +355,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
 ]
 
 module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
-  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.enableAzureFirewall && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
+  for (hub, i) in hubNetworks: if (hub.azureFirewallSettings.deployAzureFirewall && empty(hub.?azureFirewallSettings.?firewallPolicyId)) {
     name: 'firewallPolicy-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -370,12 +370,12 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
         : hub.?azureFirewallSettings.?threatIntelMode ?? 'Alert'
       enableProxy: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
-        : (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones && hub.azureFirewallSettings.enableAzureFirewall)
+        : (hub.privateDnsSettings.deployDnsPrivateResolver && hub.privateDnsSettings.deployPrivateDnsZones && hub.azureFirewallSettings.deployAzureFirewall)
           ? true
           : (hub.?azureFirewallSettings.?dnsProxyEnabled ?? false)
       servers: hub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? null
-        : (hub.privateDnsSettings.enableDnsPrivateResolver && hub.privateDnsSettings.enablePrivateDnsZones && hub.azureFirewallSettings.enableAzureFirewall)
+        : (hub.privateDnsSettings.deployDnsPrivateResolver && hub.privateDnsSettings.deployPrivateDnsZones && hub.azureFirewallSettings.deployAzureFirewall)
           ? [dnsResolverInboundIpAddresses[i]]
           : hub.?azureFirewallSettings.?firewallDnsServers
       lock: hub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
@@ -386,7 +386,7 @@ module resFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
 ]
 
 module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = [
-  for (hub, i) in hubNetworks: if (hub.bastionHostSettings.enableBastion) {
+  for (hub, i) in hubNetworks: if (hub.bastionHostSettings.deployBastion) {
     name: '${hub.name}-bastionNsg-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -549,7 +549,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = 
 // Hybrid Connectivity
 //=====================
 module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
-  for (hub, i) in hubNetworks: if (hub.vpnGatewaySettings.enableVirtualNetworkGateway) {
+  for (hub, i) in hubNetworks: if (hub.vpnGatewaySettings.deployVpnGateway) {
     name: 'vpnGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -587,7 +587,7 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' 
 ]
 
 module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
-  for (hub, i) in hubNetworks: if (hub.?expressRouteGatewaySettings.?enableExpressRouteGateway ?? false) {
+  for (hub, i) in hubNetworks: if (hub.?expressRouteGatewaySettings.?deployExpressRouteGateway ?? false) {
     name: 'expressRouteGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
     dependsOn: [
@@ -617,7 +617,7 @@ module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway
 // DNS
 // =====================
 module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
-  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enablePrivateDnsZones) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.deployPrivateDnsZones) {
     name: 'privateDnsZone-${hub.name}-${uniqueString(parDnsResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[i])
     dependsOn: [
@@ -651,7 +651,7 @@ module resPrivateDnsZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 ]
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
-  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.enableDnsPrivateResolver) {
+  for (hub, i) in hubNetworks: if (hub.privateDnsSettings.deployDnsPrivateResolver) {
     name: 'dnsResolver-${hub.name}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,hub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[i])
     dependsOn: [
@@ -696,8 +696,8 @@ type lockType = {
 }
 
 type bastionHostSettingsType = {
-  @description('Required. Enable/Disable Azure Bastion deployment for the virtual network.')
-  enableBastion: bool
+  @description('Required. Deploy Azure Bastion for the virtual network.')
+  deployBastion: bool
 
   @description('Optional. Enable/Disable copy/paste functionality.')
   disableCopyPaste: bool?
@@ -770,8 +770,8 @@ type hubVirtualNetworkType = {
   @description('Optional. The DNS servers of the virtual network.')
   dnsServers: array?
 
-  @description('Required. Enable/Disable peering for the virtual network.')
-  enablePeering: bool
+  @description('Required. Deploy VNet peering for the virtual network.')
+  deployPeering: bool
 
   @description('Optional. The peerings of the virtual network.')
   peeringSettings: peeringSettingsType?
@@ -836,8 +836,8 @@ type ddosProtectionPlanType = {
 }
 
 type azureFirewallType = {
-  @description('Required. Enable/Disable Azure Firewall deployment for the virtual network.')
-  enableAzureFirewall: bool
+  @description('Required. Deploy Azure Firewall for the virtual network.')
+  deployAzureFirewall: bool
 
   @description('Optional. The name of the Azure Firewall to create.')
   azureFirewallName: string?
@@ -880,8 +880,8 @@ type azureFirewallType = {
 }
 
 type privateDnsType = {
-  @description('Required. Enable/Disable private DNS zones.')
-  enablePrivateDnsZones: bool
+  @description('Required. Deploy private DNS zones.')
+  deployPrivateDnsZones: bool
 
   @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The hub virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
@@ -892,8 +892,8 @@ type privateDnsType = {
   @description('Optional. Resource ID of an existing failover virtual network for Private DNS Zone VNet failover links.')
   virtualNetworkIdToLinkFailover: string?
 
-  @description('Required. Enable/Disable Private DNS Resolver deployment.')
-  enableDnsPrivateResolver: bool
+  @description('Required. Deploy Private DNS Resolver.')
+  deployDnsPrivateResolver: bool
 
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
@@ -999,8 +999,8 @@ type subnetOptionsType = ({
 })[]
 
 type vpnGatewaySettingsType = {
-  @description('Required. Enable/Disable virtual network gateway deployment.')
-  enableVirtualNetworkGateway: bool
+  @description('Required. Deploy VPN virtual network gateway.')
+  deployVpnGateway: bool
 
   @description('Optional. The name of the virtual network gateway.')
   name: string?
@@ -1048,8 +1048,8 @@ type vpnGatewaySettingsType = {
 }
 
 type expressRouteGatewaySettingsType = {
-  @description('Required. Enable/Disable ExpressRoute gateway deployment.')
-  enableExpressRouteGateway: bool
+  @description('Required. Deploy ExpressRoute gateway.')
+  deployExpressRouteGateway: bool
 
   @description('Optional. The name of the ExpressRoute gateway.')
   name: string?

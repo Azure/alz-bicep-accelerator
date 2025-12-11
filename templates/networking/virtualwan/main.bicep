@@ -72,7 +72,7 @@ var dnsResourceGroupNames = [for (location, i) in parLocations: empty(parDnsReso
 var dnsPrivateResolverResourceGroupNames = [for (location, i) in parLocations: empty(parDnsPrivateResolverResourceGroupNameOverrides) ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${location}' : parDnsPrivateResolverResourceGroupNameOverrides[i]]
 var publicIpRecommendedZones = [for hub in (vwanHubs ?? []): map(pickZones('Microsoft.Network', 'publicIPAddresses', hub.location, 3), zone => int(zone))]
 var vwanBastionRecommendedZones = [for hub in (vwanHubs ?? []): map(pickZones('Microsoft.Network', 'bastionHosts', hub.location, 3), zone => int(zone))]
-var dnsResolverInboundIpAddresses = [for (vwanHub, i) in (vwanHubs ?? []): (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones) ? cidrHost(cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 0), 4) : '']
+var dnsResolverInboundIpAddresses = [for (vwanHub, i) in (vwanHubs ?? []): (vwanHub.dnsSettings.deployDnsPrivateResolver && vwanHub.dnsSettings.deployPrivateDnsZones) ? cidrHost(cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 28, 0), 4) : '']
 
 //========================================
 // Resource Groups
@@ -92,7 +92,7 @@ module modVwanResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' 
 ]
 
 module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.enablePrivateDnsZones)) > 0) {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.deployPrivateDnsZones)) > 0) {
     name: 'modDnsResourceGroup-${uniqueString(parDnsResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -106,7 +106,7 @@ module modDnsResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' =
 ]
 
 module modPrivateDnsResolverResourceGroups 'br/public:avm/res/resources/resource-group:0.4.3' = [
-  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.enableDnsPrivateResolver)) > 0) {
+  for (location, i) in parLocations: if (!empty(vwanHubs) && length(filter((vwanHubs ?? []), hub => hub.location == location && hub.dnsSettings.deployDnsPrivateResolver)) > 0) {
     name: 'modPrivateDnsResolverResourceGroup-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix, location)}'
     scope: subscription()
     params: {
@@ -182,7 +182,7 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.3' = [
 // ExpressRoute Gateways
 //=====================
 module resExpressRouteGateway 'br/public:avm/res/network/express-route-gateway:0.8.0' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.expressRouteGatewaySettings.?enabled ?? false) && empty(vwanHub.expressRouteGatewaySettings.?existingExpressRouteGatewayResourceId)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.expressRouteGatewaySettings.?deployExpressRouteGateway ?? false) && empty(vwanHub.expressRouteGatewaySettings.?existingExpressRouteGatewayResourceId)) {
     name: 'ergw-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -207,7 +207,7 @@ module resExpressRouteGateway 'br/public:avm/res/network/express-route-gateway:0
 // S2S VPN Gateways
 //=====================
 module resS2sVpnGateway 'br/public:avm/res/network/vpn-gateway:0.2.2' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.s2sVpnGatewaySettings.?enabled ?? false) && empty(vwanHub.s2sVpnGatewaySettings.?existingS2sVpnGatewayResourceId)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.s2sVpnGatewaySettings.?deployS2sVpnGateway ?? false) && empty(vwanHub.s2sVpnGatewaySettings.?existingS2sVpnGatewayResourceId)) {
     name: 'vpnGateway-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -250,7 +250,7 @@ module resS2sVpnGateway 'br/public:avm/res/network/vpn-gateway:0.2.2' = [
 // P2S VPN Server Configurations
 //=====================
 module resVpnServerConfigurations 'br/public:avm/res/network/vpn-server-configuration:0.1.2' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.p2sVpnGatewaySettings.?enabled ?? false) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.p2sVpnGatewaySettings.?deployP2sVpnGateway ?? false) {
     name: 'vpnServerConfig-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -278,7 +278,7 @@ module resVpnServerConfigurations 'br/public:avm/res/network/vpn-server-configur
 // P2S VPN Gateways
 //=====================
 module resP2sVpnGateway 'br/public:avm/res/network/p2s-vpn-gateway:0.1.3' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.p2sVpnGatewaySettings.?enabled ?? false) && empty(vwanHub.p2sVpnGatewaySettings.?existingP2sVpnGatewayResourceId)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if ((vwanHub.p2sVpnGatewaySettings.?deployP2sVpnGateway ?? false) && empty(vwanHub.p2sVpnGatewaySettings.?existingP2sVpnGatewayResourceId)) {
     name: 'p2sVpnGateway-${i}-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -335,7 +335,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
             defaultOutboundAccess: false
           }
         ],
-        vwanHub.bastionSettings.enableBastion ? [
+        vwanHub.bastionSettings.deployBastion ? [
           {
             name: 'AzureBastionSubnet'
             addressPrefix: vwanHub.bastionSettings.?subnetAddressPrefix ?? cidrSubnet(vwanHub.sideCarVirtualNetwork.addressPrefixes[0], 26, 2)
@@ -362,7 +362,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
 // DNS
 //=====================
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.enablePrivateDnsZones) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.deployPrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -379,7 +379,7 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
 ]
 
 module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.enableDnsPrivateResolver) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.deployDnsPrivateResolver) {
     name: 'dnsResolver-${vwanHub.hubName}-${uniqueString(parDnsPrivateResolverResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsPrivateResolverResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -432,7 +432,7 @@ module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3
 ]
 
 module resAzFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.azureFirewallSettings.enableAzureFirewall && empty(vwanHub.?azureFirewallSettings.?azureFirewallResourceID)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.azureFirewallSettings.deployAzureFirewall && empty(vwanHub.?azureFirewallSettings.?azureFirewallResourceID)) {
     name: 'azFirewall-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -460,7 +460,7 @@ module resAzFirewall 'br/public:avm/res/network/azure-firewall:0.9.2' = [
 ]
 
 module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.azureFirewallSettings.enableAzureFirewall) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.azureFirewallSettings.deployAzureFirewall) {
     name: 'azFirewallPolicy-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -473,10 +473,10 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
       tier: vwanHub.?azureFirewallSettings.?azureSkuTier ?? 'Standard'
       enableProxy: vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic'
         ? false
-        : (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones && vwanHub.azureFirewallSettings.enableAzureFirewall)
+        : (vwanHub.dnsSettings.deployDnsPrivateResolver && vwanHub.dnsSettings.deployPrivateDnsZones && vwanHub.azureFirewallSettings.deployAzureFirewall)
           ? true
           : (vwanHub.?azureFirewallSettings.?dnsProxyEnabled ?? false)
-      servers: (vwanHub.dnsSettings.enableDnsPrivateResolver && vwanHub.dnsSettings.enablePrivateDnsZones && vwanHub.azureFirewallSettings.enableAzureFirewall)
+      servers: (vwanHub.dnsSettings.deployDnsPrivateResolver && vwanHub.dnsSettings.deployPrivateDnsZones && vwanHub.azureFirewallSettings.deployAzureFirewall)
         ? [dnsResolverInboundIpAddresses[i]]
         : (vwanHub.?azureFirewallSettings.?azureSkuTier == 'Basic' ? null : vwanHub.?azureFirewallSettings.?firewallDnsServers)
       lock: vwanHub.?azureFirewallSettings.?lock ?? parGlobalResourceLock
@@ -490,7 +490,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
 // Azure Bastion
 //=====================
 module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.deployBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
     name: 'bastionPip-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -513,7 +513,7 @@ module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' =
 ]
 
 module resBastion 'br/public:avm/res/network/bastion-host:0.8.2' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.enableBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.deployBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
     name: 'bastion-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -718,8 +718,8 @@ type peeringSettingsType = {
 }[]?
 
 type azureFirewallType = {
-  @description('Required. Enable/Disable Azure Firewall deployment for the Virtual WAN hub.')
-  enableAzureFirewall: bool
+  @description('Required. Deploy Azure Firewall for the Virtual WAN hub.')
+  deployAzureFirewall: bool
 
   @description('Optional. The name of the Azure Firewall to create.')
   name: string?
@@ -745,7 +745,7 @@ type azureFirewallType = {
   @description('Optional. Enable/Disable usage telemetry for module.')
   enableTelemetry: bool?
 
-  @description('Optional. Resource ID of an existing Azure Firewall Policy to associate with the firewall. If not specified and enableAzureFirewall is true, a new firewall policy will be created.')
+  @description('Optional. Resource ID of an existing Azure Firewall Policy to associate with the firewall. If not specified and deployAzureFirewall is true, a new firewall policy will be created.')
   firewallPolicyId: string?
 
   @description('Optional. Lock settings for Azure Firewall.')
@@ -803,8 +803,8 @@ type ddosProtectionType = {
 }
 
 type bastionType = {
-  @description('Required. Enable/Disable Azure Bastion deployment for the sidecar virtual network.')
-  enableBastion: bool
+  @description('Required. Deploy Azure Bastion for the sidecar virtual network.')
+  deployBastion: bool
 
   @description('Optional. The IPv4 address prefix to use for the Azure Bastion subnet in CIDR format. Defaults to auto-calculated /26.')
   subnetAddressPrefix: string?
@@ -874,8 +874,8 @@ type bastionType = {
 }
 
 type dnsSettingsType = {
-  @description('Required. Enable/Disable Private DNS zones deployment.')
-  enablePrivateDnsZones: bool
+  @description('Required. Deploy Private DNS zones.')
+  deployPrivateDnsZones: bool
 
   @description('Optional. Array of resource IDs of existing virtual networks to link to the Private DNS Zones. The sidecar virtual network is automatically included.')
   virtualNetworkResourceIdsToLinkTo: array?
@@ -886,8 +886,8 @@ type dnsSettingsType = {
   @description('Optional. Resource ID of an existing failover virtual network for Private DNS Zone VNet failover links.')
   virtualNetworkIdToLinkFailover: string?
 
-  @description('Required. Enable/Disable Private DNS Resolver deployment.')
-  enableDnsPrivateResolver: bool
+  @description('Required. Deploy Private DNS Resolver.')
+  deployDnsPrivateResolver: bool
 
   @description('Optional. The name of the Private DNS Resolver.')
   privateDnsResolverName: string?
@@ -997,8 +997,8 @@ type subnetOptionsType = ({
 //=====================
 
 type expressRouteGatewaySettingsType = {
-  @description('Required. Enable/Disable ExpressRoute Gateway deployment.')
-  enabled: bool
+  @description('Required. Deploy ExpressRoute Gateway.')
+  deployExpressRouteGateway: bool
 
   @description('Optional. Resource ID of an existing ExpressRoute Gateway. If provided, a new gateway will not be deployed.')
   existingExpressRouteGatewayResourceId: string?
@@ -1023,8 +1023,8 @@ type expressRouteGatewaySettingsType = {
 }
 
 type s2sVpnGatewayType = {
-  @description('Required. Enable/Disable Site-to-Site VPN Gateway deployment.')
-  enabled: bool
+  @description('Required. Deploy Site-to-Site VPN Gateway.')
+  deployS2sVpnGateway: bool
 
   @description('Optional. Resource ID of an existing S2S VPN Gateway. If provided, a new gateway will not be deployed.')
   existingS2sVpnGatewayResourceId: string?
@@ -1221,8 +1221,8 @@ type vpnConnectionType = {
 }
 
 type p2sVpnGatewayType = {
-  @description('Required. Enable/Disable Point-to-Site VPN Gateway deployment.')
-  enabled: bool
+  @description('Required. Deploy Point-to-Site VPN Gateway.')
+  deployP2sVpnGateway: bool
 
   @description('Optional. Resource ID of an existing P2S VPN Gateway. If provided, a new gateway will not be deployed.')
   existingP2sVpnGatewayResourceId: string?

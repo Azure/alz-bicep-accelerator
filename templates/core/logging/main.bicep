@@ -22,8 +22,8 @@ param parResourceGroupLock lockType?
 @description('Required. The name of the Automation Account.')
 param parAutomationAccountName string
 
-@description('Optional. The flag to enable or disable the Automation Account.')
-param parDisableAutomationAccount bool = true
+@description('Optional. The flag to deploy the Automation Account.')
+param parDeployAutomationAccount bool = false
 
 @description('Optional. The location of the Automation Account.')
 param parAutomationAccountLocation string = 'eastus'
@@ -178,7 +178,7 @@ resource resResourceGroupPointer 'Microsoft.Resources/resourceGroups@2025-04-01'
 }
 
 // Automation Account
-module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.17.1' = if (!parDisableAutomationAccount) {
+module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.17.1' = if (parDeployAutomationAccount) {
   name: '${parAutomationAccountName}-automationAccount-${uniqueString(parMgmtLoggingResourceGroup,parAutomationAccountLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
@@ -203,7 +203,7 @@ module modAutomationAccount 'br/public:avm/res/automation/automation-account:0.1
 }
 
 // Log Analytics Workspace
-module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.14.1' = {
+module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.14.2' = {
   name: '${parLogAnalyticsWorkspaceName}-logAnalyticsWorkspace-${uniqueString(parMgmtLoggingResourceGroup,parLogAnalyticsWorkspaceLocation,parLocations[0])}'
   scope: resResourceGroupPointer
   params: {
@@ -226,7 +226,7 @@ module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspac
 }
 
 // Azure Monitoring Agent Resources
-module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.0' = {
+module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.1' = {
   scope: resResourceGroupPointer
   params: {
     dataCollectionRuleChangeTrackingName: parDataCollectionRuleChangeTrackingName
