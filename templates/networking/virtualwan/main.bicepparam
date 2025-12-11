@@ -67,7 +67,7 @@ param vwanHubs = [
       }
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: true
+      deployDdosProtectionPlan: true
       name: 'ddos-alz-${parLocations[0]}'
       tags: {}
     }
@@ -123,9 +123,7 @@ param vwanHubs = [
       }
     }
     ddosProtectionPlanSettings: {
-      enableDdosProtection: true
-      name: 'ddos-alz-${parLocations[1]}'
-      tags: {}
+      deployDdosProtectionPlan: false
     }
     dnsSettings: {
       enablePrivateDnsZones: true

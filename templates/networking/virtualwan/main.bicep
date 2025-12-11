@@ -350,7 +350,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       diagnosticSettings: vwanHub.?sideCarVirtualNetwork.?diagnosticSettings
       dnsServers: vwanHub.?sideCarVirtualNetwork.?dnsServers
       enableVmProtection: vwanHub.?sideCarVirtualNetwork.?enableVmProtection
-      ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.enableDdosProtection ? resDdosProtectionPlan[i].?outputs.resourceId : null)
+      ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[i].?outputs.resourceId : vwanHubs[0].ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[0].?outputs.resourceId : null)
       tags: vwanHub.?sideCarVirtualNetwork.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -415,7 +415,7 @@ module resDnsPrivateResolver 'br/public:avm/res/network/dns-resolver:0.5.6' = [
 // Network security
 //=====================
 module resDdosProtectionPlan 'br/public:avm/res/network/ddos-protection-plan:0.3.2' = [
-  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.ddosProtectionPlanSettings.enableDdosProtection) {
+  for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.ddosProtectionPlanSettings.deployDdosProtectionPlan) {
     name: 'ddosPlan-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.?ddosProtectionPlanSettings.?name ?? '', vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
     dependsOn: [
@@ -789,8 +789,8 @@ type azureFirewallType = {
 }
 
 type ddosProtectionType = {
-  @description('Required. Enable/Disable DDoS protection.')
-  enableDdosProtection: bool
+  @description('Required. Deploy a DDoS protection plan in the same region as the virtual network. Typically only needed in the primary region (the 1st declared in `hubNetworks`).')
+  deployDdosProtectionPlan: bool
 
   @description('Optional. Friendly logical name for this DDoS protection configuration instance.')
   name: string?
