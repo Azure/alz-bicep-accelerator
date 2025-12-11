@@ -24,8 +24,8 @@ param landingZonesConfig = {
   waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
   waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
   waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
-  waitForConsistencyCounterBeforePolicyAssignments: 10
-  waitForConsistencyCounterBeforeRoleAssignments: 10
+  waitForConsistencyCounterBeforePolicyAssignments: 40
+  waitForConsistencyCounterBeforeRoleAssignments: 40
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
 

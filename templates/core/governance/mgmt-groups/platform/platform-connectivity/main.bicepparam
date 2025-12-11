@@ -21,12 +21,12 @@ param platformConnectivityConfig = {
   customerPolicySetDefs: []
   customerPolicyAssignments: []
   subscriptionsToPlaceInManagementGroup: ['{{connectivity_subscription_id}}']
-  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 30
-  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 30
-  waitForConsistencyCounterBeforeCustomRoleDefinitions: 30
-  waitForConsistencyCounterBeforePolicyAssignments: 30
-  waitForConsistencyCounterBeforeRoleAssignments: 30
-  waitForConsistencyCounterBeforeSubPlacement: 30
+  waitForConsistencyCounterBeforeCustomPolicyDefinitions: 10
+  waitForConsistencyCounterBeforeCustomPolicySetDefinitions: 10
+  waitForConsistencyCounterBeforeCustomRoleDefinitions: 10
+  waitForConsistencyCounterBeforePolicyAssignments: 40
+  waitForConsistencyCounterBeforeRoleAssignments: 40
+  waitForConsistencyCounterBeforeSubPlacement: 10
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
