@@ -10,9 +10,6 @@
 ## Decision 4: Bootstrap Resource Azure Region
 bootstrap_location: "<region-1>"
 
-## Decision 5: Platform Landing Zone Azure Regions
-starter_locations: ["<region-1>", "<region-2>"]
-
 ## Decision 6: Parent Management Group
 root_parent_management_group_id: ""  # Leave empty to use Tenant Root Group
 
@@ -26,7 +23,7 @@ subscription_ids:
 ## Decision 8: Bootstrap Resource Subscription
 bootstrap_subscription_id: ""  # Leave empty to use the subscription connected to Azure CLI
 
-## Decision 9: Bootstrap Resource Naming. 
+## Decision 9: Bootstrap Resource Naming.
 # Default names can be found here: https://aka.ms/alz/acc/bootstrap/azuredevops/resourcenames
 # For fully custom naming see the FAQ here: https://aka.ms/alz/acc/faq/bootstrap
 service_name: "alz"
@@ -37,7 +34,7 @@ postfix_number: 1
 use_self_hosted_agents: true
 use_private_networking: true
 
-## Decsion 11: Version Control System Settings
+## Decision 11: Version Control System Settings
 azure_devops_personal_access_token: "<token-1>"
 azure_devops_agents_personal_access_token: "<token-2>"
 azure_devops_organization_name: "<azure-devops-organization>"

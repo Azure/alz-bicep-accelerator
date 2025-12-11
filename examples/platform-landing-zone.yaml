@@ -1,3 +1,6 @@
+## Decision 5: Platform Landing Zone Azure Regions
+starter_locations: ["<region-1>", "<region-2>"]
+
 # Management Groups
 
 # The naming pattern is <id-prefix><id><id-postfix> and <name-prefix><name><name-postfix>
