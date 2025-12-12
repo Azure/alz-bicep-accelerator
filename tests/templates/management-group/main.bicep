@@ -27,7 +27,7 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 //   Resources  //
 // ============ //
 
-module sandbox 'br/public:avm/ptn/alz/empty:0.3.1' = {
+module sandbox 'br/public:avm/ptn/alz/empty:0.3.5' = {
   params: {
     createOrUpdateManagementGroup: testConfig.?createOrUpdateManagementGroup
     managementGroupName: testConfig.?managementGroupName ?? 'alz-test'

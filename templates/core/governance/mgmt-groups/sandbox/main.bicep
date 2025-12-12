@@ -183,7 +183,7 @@ var allPolicyAssignments = [
 //   Resources  //
 // ============ //
 
-module sandbox 'br/public:avm/ptn/alz/empty:0.3.4' = {
+module sandbox 'br/public:avm/ptn/alz/empty:0.3.5' = {
   params: {
     createOrUpdateManagementGroup: sandboxConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName

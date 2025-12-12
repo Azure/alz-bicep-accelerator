@@ -453,7 +453,7 @@ resource tenantRootMgExisting 'Microsoft.Management/managementGroups@2023-04-01'
 //   Resources  //
 // ============ //
 
-module intRoot 'br/public:avm/ptn/alz/empty:0.3.4' = {
+module intRoot 'br/public:avm/ptn/alz/empty:0.3.5' = {
   params: {
     createOrUpdateManagementGroup: intRootConfig.?createOrUpdateManagementGroup
     managementGroupName: managementGroupFinalName
