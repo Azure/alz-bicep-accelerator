@@ -134,7 +134,7 @@ resource policyAssignmentMdfcDefSqlAma 'Microsoft.Authorization/policyAssignment
 }
 
 // Deploy-VM-ChangeTrack role assignments
-module rbacVmChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-VM-ChangeTrack'].roleDefinitionIds: {
     name: 'rbac-vmchgtrk-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -148,7 +148,7 @@ module rbacVmChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.3'
 ]
 
 // Deploy-VM-Monitoring role assignments
-module rbacVmMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-VM-Monitoring'].roleDefinitionIds: {
     name: 'rbac-vmmon-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -162,7 +162,7 @@ module rbacVmMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.3' 
 ]
 
 // Deploy-vmArc-ChangeTrack role assignments
-module rbacVmArcChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmArcChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-vmArc-ChangeTrack'].roleDefinitionIds: {
     name: 'rbac-vmarcchgtrk-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -176,7 +176,7 @@ module rbacVmArcChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2
 ]
 
 // Deploy-VMSS-ChangeTrack role assignments
-module rbacVmssChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmssChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-VMSS-ChangeTrack'].roleDefinitionIds: {
     name: 'rbac-vmsschgtrk-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -190,7 +190,7 @@ module rbacVmssChangeTrack 'br/public:avm/ptn/authorization/role-assignment:0.2.
 ]
 
 // Deploy-vmHybr-Monitoring role assignments
-module rbacVmHybrMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmHybrMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-vmHybr-Monitoring'].roleDefinitionIds: {
     name: 'rbac-vmhybrmon-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -204,7 +204,7 @@ module rbacVmHybrMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2
 ]
 
 // Deploy-VMSS-Monitoring role assignments
-module rbacVmssMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacVmssMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-VMSS-Monitoring'].roleDefinitionIds: {
     name: 'rbac-vmssmon-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
@@ -218,7 +218,7 @@ module rbacVmssMonitoring 'br/public:avm/ptn/authorization/role-assignment:0.2.3
 ]
 
 // Deploy-MDFC-DefSQL-AMA role assignments
-module rbacMdfcDefSqlAma 'br/public:avm/ptn/authorization/role-assignment:0.2.3' = [
+module rbacMdfcDefSqlAma 'br/public:avm/ptn/authorization/role-assignment:0.2.4' = [
   for roleDefId in policyAssignmentsRequiringCrossMgRbac['Deploy-MDFC-DefSQL-AMA'].roleDefinitionIds: {
     name: 'rbac-mdfcdefsqlama-${substring(uniqueString(roleDefId), 0, 8)}'
     params: {
