@@ -329,40 +329,28 @@ var allPolicySetDefinitions = [
 ]
 
 var allPolicyAssignments = [
-  for policyAssignment in deduplicatedPolicyAssignments: union(
-    {
-      name: policyAssignment.name
-      displayName: policyAssignment.properties.?displayName
-      description: policyAssignment.properties.?description
-      policyDefinitionId: policyAssignment.properties.policyDefinitionId
-      parameters: policyAssignment.properties.?parameters
-      parameterOverrides: policyAssignment.properties.?parameterOverrides
-      identity: policyAssignment.identity.?type ?? 'None'
-      userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
-      roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
-      nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
-      metadata: policyAssignment.properties.?metadata
-      enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
-      notScopes: policyAssignment.properties.?notScopes
-      location: policyAssignment.?location
-      overrides: policyAssignment.properties.?overrides
-      resourceSelectors: policyAssignment.properties.?resourceSelectors
-      definitionVersion: policyAssignment.properties.?definitionVersion
-    },
-    policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo != null
-      ? {
-          additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo
-        }
-      : {},
-    policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo != null
-      ? { additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo }
-      : {},
-    policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo != null
-      ? {
-          additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo
-        }
-      : {}
-  )
+  for policyAssignment in deduplicatedPolicyAssignments: {
+    name: policyAssignment.name
+    displayName: policyAssignment.properties.?displayName
+    description: policyAssignment.properties.?description
+    policyDefinitionId: policyAssignment.properties.policyDefinitionId
+    parameters: policyAssignment.properties.?parameters
+    parameterOverrides: policyAssignment.properties.?parameterOverrides
+    identity: policyAssignment.identity.?type ?? 'None'
+    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
+    roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
+    nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
+    metadata: policyAssignment.properties.?metadata
+    enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
+    notScopes: policyAssignment.properties.?notScopes
+    location: policyAssignment.?location
+    overrides: policyAssignment.properties.?overrides
+    resourceSelectors: policyAssignment.properties.?resourceSelectors
+    definitionVersion: policyAssignment.properties.?definitionVersion
+    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo
+    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo
+    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
+  }
 ]
 
 // ============ //
