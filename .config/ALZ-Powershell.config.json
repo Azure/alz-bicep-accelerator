@@ -250,18 +250,6 @@
                 },
                 {
                     "order": 10,
-                    "name": "governance-landingzones-rbac",
-                    "displayName": "Governance-Landing Zones RBAC",
-                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicep",
-                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicepparam",
-                    "managementGroupId": "MANAGEMENT_GROUP_ID",
-                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
-                    "deploymentType": "managementGroup",
-                    "firstRunWhatIf": false,
-                    "group": "governance-platform-children"
-                },
-                {
-                    "order": 11,
                     "name": "governance-sandbox",
                     "displayName": "Governance-Sandbox",
                     "templateFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicep",
@@ -273,7 +261,7 @@
                     "group": "governance-sandbox"
                 },
                 {
-                    "order": 12,
+                    "order": 11,
                     "name": "governance-decommissioned",
                     "displayName": "Governance-Decommissioned",
                     "templateFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicep",
@@ -285,7 +273,43 @@
                     "group": "governance-decommissioned"
                 },
                 {
+                    "order": 12,
+                    "name": "governance-platform-rbac",
+                    "displayName": "Governance-Platform RBAC",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/main-rbac.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/main-rbac.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-rbac"
+                },
+                {
                     "order": 13,
+                    "name": "governance-platform-connectivity-rbac",
+                    "displayName": "Governance-Platform Connectivity RBAC",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main-rbac.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main-rbac.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-rbac"
+                },
+                {
+                    "order": 14,
+                    "name": "governance-landingzones-rbac",
+                    "displayName": "Governance-Landing Zones RBAC",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-rbac"
+                },
+                {
+                    "order": 15,
                     "name": "core-logging",
                     "displayName": "Core-Logging",
                     "templateFilePath": "templates/core/logging/main.bicep",
@@ -296,7 +320,7 @@
                     "group": "core"
                 },
                 {
-                    "order": 14,
+                    "order": 16,
                     "name": "networking-hubnetworking",
                     "displayName": "Networking-Hub Networking",
                     "templateFilePath": "templates/networking/hubnetworking/main.bicep",
@@ -308,7 +332,7 @@
                     "networkType": "hubNetworking"
                 },
                 {
-                    "order": 15,
+                    "order": 17,
                     "name": "networking-virtualwan",
                     "displayName": "Networking-Virtual WAN",
                     "templateFilePath": "templates/networking/virtualwan/main.bicep",
@@ -358,11 +382,16 @@
                 },
                 {
                     "order": 8,
+                    "name": "governance-rbac",
+                    "displayName": "Governance - Cross-MG RBAC"
+                },
+                {
+                    "order": 9,
                     "name": "core",
                     "displayName": "Core Logging"
                 },
                 {
-                    "order": 9,
+                    "order": 10,
                     "name": "networking",
                     "displayName": "Networking"
                 }
