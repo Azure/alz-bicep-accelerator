@@ -71,6 +71,7 @@
                     "source": "powershell",
                     "sourceInput": "starter_locations[1]",
                     "description": "The secondary Azure location for deployments",
+                    "default": "",
                     "targets": [
                         {
                             "Name": "LOCATION_SECONDARY",
@@ -82,7 +83,7 @@
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
-                    "default": "alz",
+                    "default": "",
                     "targets": [
                         {
                             "Name": "MANAGEMENT_GROUP_ID",
@@ -108,17 +109,6 @@
                     "targets": [
                         {
                             "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
-                            "Destination": "Environment"
-                        }
-                    ]
-                },
-                "time_stamp": {
-                    "source": "powershell",
-                    "description": "The time stamp to append to deployment stack names",
-                    "default": "",
-                    "targets": [
-                        {
-                            "Name": "TIME_STAMP",
                             "Destination": "Environment"
                         }
                     ]
@@ -469,6 +459,7 @@
                     "source": "powershell",
                     "sourceInput": "starter_locations[1]",
                     "description": "The secondary Azure location for deployments",
+                    "default": "",
                     "targets": [
                         {
                             "Name": "LOCATION_SECONDARY",
@@ -480,7 +471,7 @@
                     "source": "input",
                     "description": "The management group ID prefix",
                     "sourceInput": "root_parent_management_group_id",
-                    "default": "alz",
+                    "default": "",
                     "targets": [
                         {
                             "Name": "MANAGEMENT_GROUP_ID",
@@ -509,17 +500,6 @@
                             "Destination": "Environment"
                         }
                     ]
-                },
-                "time_stamp": {
-                    "source": "powershell",
-                    "description": "The time stamp to append to deployment stack names",
-                    "default": "",
-                    "targets": [
-                        {
-                            "Name": "TIME_STAMP",
-                            "Destination": "Environment"
-                        }
-                    ]
                 }
             },
             "folders_or_files_to_retain": [
@@ -541,7 +521,7 @@
             "deployment_files": [
                 {
                     "order": 1,
-                    "name": "management-group",
+                    "name": "management-group-{{unique_postfix}}",
                     "displayName": "Management Group Test {{unique_postfix}}",
                     "templateFilePath": "tests/templates/management-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/management-group/main.bicepparam",
@@ -553,7 +533,7 @@
                 },
                 {
                     "order": 2,
-                    "name": "resource-group-management",
+                    "name": "resource-group-management-{{unique_postfix}}",
                     "displayName": "Resource Group Test Management {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
@@ -564,7 +544,7 @@
                 },
                 {
                     "order": 3,
-                    "name": "resource-group-connectivity",
+                    "name": "resource-group-connectivity-{{unique_postfix}}",
                     "displayName": "Resource Group Test Connectivity {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
@@ -575,7 +555,7 @@
                 },
                 {
                     "order": 4,
-                    "name": "resource-group-identity",
+                    "name": "resource-group-identity-{{unique_postfix}}",
                     "displayName": "Resource Group Test Identity {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
@@ -586,7 +566,7 @@
                 },
                 {
                     "order": 5,
-                    "name": "resource-group-security",
+                    "name": "resource-group-security-{{unique_postfix}}",
                     "displayName": "Resource Group Test Security {{unique_postfix}}",
                     "templateFilePath": "tests/templates/resource-group/main.bicep",
                     "templateParametersFilePath": "tests/templates/resource-group/main.bicepparam",
