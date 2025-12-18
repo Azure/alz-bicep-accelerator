@@ -112,6 +112,28 @@
                             "Destination": "Environment"
                         }
                     ]
+                },
+                "management_group_id_prefix": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID_PREFIX",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id_postfix": {
+                    "source": "input",
+                    "description": "The management group ID postfix",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID_POSTFIX",
+                            "Destination": "Environment"
+                        }
+                    ]
                 }
             },
             "folders_or_files_to_retain": [
@@ -497,6 +519,28 @@
                     "targets": [
                         {
                             "Name": "INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id_prefix": {
+                    "source": "input",
+                    "description": "The management group ID prefix",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID_PREFIX",
+                            "Destination": "Environment"
+                        }
+                    ]
+                },
+                "management_group_id_postfix": {
+                    "source": "input",
+                    "description": "The management group ID postfix",
+                    "default": "",
+                    "targets": [
+                        {
+                            "Name": "MANAGEMENT_GROUP_ID_POSTFIX",
                             "Destination": "Environment"
                         }
                     ]
