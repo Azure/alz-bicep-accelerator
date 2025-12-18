@@ -36,7 +36,6 @@ param parLogAnalyticsWorkspaceFeatures = null
 param parLogAnalyticsWorkspaceDataExports = null
 param parLogAnalyticsWorkspaceDataSources = null
 param parLogAnalyticsWorkspaceSolutions = [
-  'SecurityInsights'
   'ChangeTracking'
 ]
 
