@@ -32,7 +32,6 @@ Replace this with any testing evidence to show that your Pull Request works/fixe
 
 ## As part of this Pull Request I have
 
-- [ ] Read the [Contribution Guide](https://github.com/Azure/alz-bicep-accelerator/wiki/Contributing) and ensured this PR is compliant with the guide
 - [ ] Checked for duplicate [Pull Requests](https://github.com/Azure/alz-bicep-accelerator/pulls)
 - [ ] Associated it with relevant [GitHub Issues](https://github.com/Azure/alz-bicep-accelerator/issues)
 - [ ] *(ALZ Bicep Core Team Only)* Associated it with relevant with `AB#` identifier [ADO Items](https://aka.ms/alz/bicep/backlog)

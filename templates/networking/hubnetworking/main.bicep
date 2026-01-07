@@ -9,7 +9,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('Optional. The prefix for the Hub Networking Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parHubNetworkingResourceGroupNameOverrides.')
-param parHubNetworkingResourceGroupNamePrefix string = 'rg-alz-conn-'
+param parHubNetworkingResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of hubs in hubNetworks array.')
 param parHubNetworkingResourceGroupNameOverrides array = []
@@ -22,13 +22,13 @@ param parHubNetworkingResourceGroupNameOverrides array = []
 param parResourceGroupLock lockType?
 
 @description('Optional. The prefix for the DNS Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsResourceGroupNameOverrides.')
-param parDnsResourceGroupNamePrefix string = 'rg-alz-dns-'
+param parDnsResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of hubs in hubNetworks array.')
 param parDnsResourceGroupNameOverrides array = []
 
 @description('Optional. The prefix for the Private DNS Resolver Resource Group names. Will be combined with location to create: {prefix}-{location}. Can be overridden by parDnsPrivateResolverResourceGroupNameOverrides.')
-param parDnsPrivateResolverResourceGroupNamePrefix string = 'rg-alz-dnspr-'
+param parDnsPrivateResolverResourceGroupNamePrefix string
 
 @description('Optional. Array of complete resource group names to override the default naming. If provided, must match the number of hubs in hubNetworks array.')
 param parDnsPrivateResolverResourceGroupNameOverrides array = []
@@ -65,17 +65,17 @@ param parEnableTelemetry bool = true
 
 var hubResourceGroupNames = [
   for (hub, i) in hubNetworks: empty(parHubNetworkingResourceGroupNameOverrides)
-    ? '${parHubNetworkingResourceGroupNamePrefix}${hub.location}'
+    ? '${parHubNetworkingResourceGroupNamePrefix}-${hub.location}'
     : parHubNetworkingResourceGroupNameOverrides[i]
 ]
 var dnsResourceGroupNames = [
   for (hub, i) in hubNetworks: empty(parDnsResourceGroupNameOverrides)
-    ? '${parDnsResourceGroupNamePrefix}${hub.location}'
+    ? '${parDnsResourceGroupNamePrefix}-${hub.location}'
     : parDnsResourceGroupNameOverrides[i]
 ]
 var dnsPrivateResolverResourceGroupNames = [
   for (hub, i) in hubNetworks: empty(parDnsPrivateResolverResourceGroupNameOverrides)
-    ? '${parDnsPrivateResolverResourceGroupNamePrefix}${hub.location}'
+    ? '${parDnsPrivateResolverResourceGroupNamePrefix}-${hub.location}'
     : parDnsPrivateResolverResourceGroupNameOverrides[i]
 ]
 var publicIpRecommendedZones = [
