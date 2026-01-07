@@ -8,8 +8,8 @@ targetScope = 'subscription'
 //========================================
 
 // Resource Group Parameters
-@description('Optional. The name of the Resource Group.')
-param parMgmtLoggingResourceGroup string = ''
+@description('Required. The name of the Resource Group.')
+param parMgmtLoggingResourceGroup string
 
 @description('''Resource Lock Configuration for Resource Group.
 - `name` - The name of the lock.
