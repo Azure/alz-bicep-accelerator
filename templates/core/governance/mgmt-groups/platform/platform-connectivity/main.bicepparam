@@ -34,7 +34,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Enable-DDoS-VNET': {
     parameters: {
       ddosPlan: {
-        value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/{{resource_group_hub_networking_name_prefix||rg-alz-conn-}}${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
+        value: '/subscriptions/{{connectivity_subscription_id}}/resourceGroups/{{resource_group_hub_networking_name_prefix||rg-alz-conn}}-${parLocations[0]}/providers/Microsoft.Network/ddosProtectionPlans/ddos-alz-${parLocations[0]}'
       }
     }
   }

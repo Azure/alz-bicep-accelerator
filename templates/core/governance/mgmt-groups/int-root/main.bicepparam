@@ -33,7 +33,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-MDFC-Config-H224': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/{{resource_group_logging_name_prefix||rg-alz-logging}}-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       emailSecurityContact: {
         value: 'security@yourcompany.com'
@@ -49,7 +49,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzActivity-Log': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/{{resource_group_logging_name_prefix||rg-alz-logging}}-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
       logsEnabled: {
         value: 'True'
@@ -59,7 +59,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-Diag-LogsCat': {
     parameters: {
       logAnalytics: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/{{resource_group_logging_name_prefix||rg-alz-logging}}-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
@@ -84,7 +84,7 @@ param parPolicyAssignmentParameterOverrides = {
   'Deploy-AzSqlDb-Auditing': {
     parameters: {
       logAnalyticsWorkspaceResourceId: {
-        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/rg-alz-mgmt-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
+        value: '/subscriptions/{{management_subscription_id}}/resourcegroups/{{resource_group_logging_name_prefix||rg-alz-logging}}-${parLocations[0]}/providers/Microsoft.OperationalInsights/workspaces/law-alz-${parLocations[0]}'
       }
     }
   }
