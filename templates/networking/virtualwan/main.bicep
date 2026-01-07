@@ -361,7 +361,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
 //=====================
 // DNS
 //=====================
-module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.1' = [
+module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.2' = [
   for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.deployPrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
     scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
@@ -371,6 +371,8 @@ module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zo
     params: {
       location: vwanHub.location
       privateLinkPrivateDnsZones: empty(vwanHub.?dnsSettings.?privateDnsZones) ? null : vwanHub.?dnsSettings.?privateDnsZones
+      additionalPrivateLinkPrivateDnsZonesToInclude: vwanHub.?dnsSettings.?additionalPrivateLinkPrivateDnsZonesToInclude ?? []
+      privateLinkPrivateDnsZonesToExclude: vwanHub.?dnsSettings.?privateLinkPrivateDnsZonesToExclude ?? []
       lock: vwanHub.?dnsSettings.?lock ?? parGlobalResourceLock
       tags: vwanHub.?dnsSettings.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
@@ -903,6 +905,12 @@ type dnsSettingsType = {
 
   @description('Optional. Tags for Private DNS resources.')
   tags: object?
+
+  @description('Optional. An array of additional Private Link Private DNS Zones to include in the deployment on top of the defaults set in the parameter `privateLinkPrivateDnsZones`.')
+  additionalPrivateLinkPrivateDnsZonesToInclude: string[]?
+
+  @description('Optional. An array of Private Link Private DNS Zones to exclude from the deployment. The DNS zone names must match what is provided as the default values or any input to the `privateLinkPrivateDnsZones` parameter e.g. `privatelink.api.azureml.ms` or `privatelink.{regionCode}.backup.windowsazure.com` or `privatelink.{regionName}.azmk8s.io` .')
+  privateLinkPrivateDnsZonesToExclude: string[]?
 }
 
 type roleAssignmentType = {

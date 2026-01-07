@@ -129,6 +129,13 @@ param vwanHubs = [
       deployPrivateDnsZones: true
       deployDnsPrivateResolver: true
       privateDnsResolverName: 'dnspr-alz-${parLocations[1]}'
+      privateDnsZones: [
+        'privatelink.{regionName}.azurecontainerapps.io'
+        'privatelink.{regionName}.kusto.windows.net'
+        'privatelink.{regionName}.azmk8s.io'
+        'privatelink.{regionName}.prometheus.monitor.azure.com'
+        'privatelink.{regionCode}.backup.windowsazure.com'
+      ]
     }
     bastionSettings: {
       deployBastion: true
