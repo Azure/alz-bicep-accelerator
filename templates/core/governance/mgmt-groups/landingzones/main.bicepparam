@@ -9,10 +9,10 @@ param parEnableTelemetry = true
 
 param landingZonesConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: '{{management_group_id_prefix}}{{management_group_landingzones_id||landingzones}}{{management_group_id_postfix}}'
+  managementGroupName: '{{management_group_id_prefix}}{{management_group_landing_zones_id||landingzones}}{{management_group_id_postfix}}'
   managementGroupParentId: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
   managementGroupIntermediateRootName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
-  managementGroupDisplayName: '{{management_group_iname_prefix}}{{management_group_landingzones_name||Landing zones}}{{management_group_name_postfix}}'
+  managementGroupDisplayName: '{{management_group_iname_prefix}}{{management_group_landing_zones_name||Landing Zones}}{{management_group_name_postfix}}'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
