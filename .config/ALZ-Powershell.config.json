@@ -102,7 +102,7 @@
                         }
                     ]
                 },
-                "intermediate_root_management_group_id": {
+                "management_group_int_root_id": {
                     "source": "input",
                     "description": "The intermediate root management group ID",
                     "default": "alz",
@@ -512,7 +512,7 @@
                         }
                     ]
                 },
-                "intermediate_root_management_group_id": {
+                "management_group_int_root_id": {
                     "source": "input",
                     "description": "The intermediate root management group ID",
                     "default": "alz",

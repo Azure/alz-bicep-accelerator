@@ -12,7 +12,7 @@ param landingZonesOnlineConfig = {
   managementGroupName: '{{management_group_id_prefix}}{{management_group_online_id||online}}{{management_group_id_postfix}}'
   managementGroupParentId: '{{management_group_id_prefix}}{{management_group_landingzones_id||landingzones}}{{management_group_id_postfix}}'
   managementGroupIntermediateRootName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
-  managementGroupDisplayName: 'Online'
+  managementGroupDisplayName: '{{management_group_name_prefix}}{{management_group_online_name||Online}}{{management_group_name_postfix}}'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []

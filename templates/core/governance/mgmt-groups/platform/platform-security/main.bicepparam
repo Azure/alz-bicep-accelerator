@@ -12,7 +12,7 @@ param platformSecurityConfig = {
   managementGroupName: '{{management_group_id_prefix}}{{management_group_security_id||security}}{{management_group_id_postfix}}'
   managementGroupParentId: '{{management_group_id_prefix}}{{management_group_platform_id||platform}}{{management_group_id_postfix}}'
   managementGroupIntermediateRootName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
-  managementGroupDisplayName: 'Security'
+  managementGroupDisplayName: '{{management_group_name_prefix}}{{management_group_security_name||Security}}{{management_group_name_postfix}}'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []

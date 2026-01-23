@@ -11,7 +11,7 @@ param intRootConfig = {
   createOrUpdateManagementGroup: true
   managementGroupName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
   managementGroupParentId: '{{root_parent_management_group_id}}'
-  managementGroupDisplayName: 'Azure Landing Zones'
+  managementGroupDisplayName: '{{management_group_name_prefix}}{{management_group_int_root_name||Azure Landing Zones}}{{management_group_name_postfix}}'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
