@@ -306,6 +306,7 @@ module resP2sVpnGateway 'br/public:avm/res/network/p2s-vpn-gateway:0.1.3' = [
       location: vwanHub.location
       virtualHubResourceId: resVirtualWanHub[i].outputs.resourceId
       vpnServerConfigurationResourceId: resVpnServerConfigurations[i]!.outputs.resourceId
+      associatedRouteTableName: vwanHub.p2sVpnGatewaySettings.?associatedRouteTableName ?? 'defaultRouteTable'
       p2SConnectionConfigurationsName: 'P2SConnectionConfig'
       vpnClientAddressPoolAddressPrefixes: vwanHub.p2sVpnGatewaySettings.?vpnClientAddressPool.addressPrefixes ?? null
       enableInternetSecurity: vwanHub.p2sVpnGatewaySettings.?enableInternetSecurity ?? true
@@ -1271,6 +1272,9 @@ type p2sVpnGatewayType = {
 
   @description('Optional. Name of the Point-to-Site VPN Gateway. Required when deploying a new gateway.')
   name: string?
+
+  @description('Optional. Associated route table name for the P2S VPN Gateway. Required when deploying in a Secure Virtual Hub.')
+  associatedRouteTableName: ('defaultRouteTable' | 'noneRouteTable')?
 
   @description('Optional. The scale unit for the P2S VPN Gateway. Required when deploying a new gateway.')
   scaleUnit: int?
