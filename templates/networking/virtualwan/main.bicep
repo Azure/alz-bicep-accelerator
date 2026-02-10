@@ -161,7 +161,22 @@ module resVirtualWanHub 'br/public:avm/res/network/virtual-hub:0.4.3' = [
       vpnGatewayResourceId: !empty(vwanHub.s2sVpnGatewaySettings.?existingS2sVpnGatewayResourceId) ? vwanHub.s2sVpnGatewaySettings!.existingS2sVpnGatewayResourceId : null
       p2SVpnGatewayResourceId: !empty(vwanHub.p2sVpnGatewaySettings.?existingP2sVpnGatewayResourceId) ? vwanHub.p2sVpnGatewaySettings!.existingP2sVpnGatewayResourceId : null
       hubRouteTables: vwanHub.?routeTableRoutes
-      hubVirtualNetworkConnections: vwanHub.?hubVirtualNetworkConnections
+      hubVirtualNetworkConnections: (vwanHub.?sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)
+        ? concat(
+            [
+              {
+                name: 'sidecar-${vwanHub.?hubName ?? 'vwanhub-alz-${vwanHub.location}'}'
+                remoteVirtualNetworkResourceId: resourceId(
+                  subscription().subscriptionId,
+                  vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)],
+                  'Microsoft.Network/virtualNetworks',
+                  vwanHub.sideCarVirtualNetwork.?name ?? 'vnet-sidecar-alz-${vwanHub.location}'
+                )
+              }
+            ],
+            vwanHub.?hubVirtualNetworkConnections ?? []
+          )
+        : (vwanHub.?hubVirtualNetworkConnections ?? [])
       preferredRoutingGateway: vwanHub.?preferredRoutingGateway ?? 'ExpressRoute'
       hubRoutingPreference: vwanHub.?hubRoutingPreference ?? 'ExpressRoute'
       routingIntent: vwanHub.?routingIntent
@@ -350,7 +365,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
       diagnosticSettings: vwanHub.?sideCarVirtualNetwork.?diagnosticSettings
       dnsServers: vwanHub.?sideCarVirtualNetwork.?dnsServers
       enableVmProtection: vwanHub.?sideCarVirtualNetwork.?enableVmProtection
-      ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[i].?outputs.resourceId : vwanHubs[0].ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[0].?outputs.resourceId : null)
+      ddosProtectionPlanResourceId: vwanHub.?sideCarVirtualNetwork.?ddosProtectionPlanResourceIdOverride ?? (vwanHub.ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[i].?outputs.resourceId : (length(vwanHubs ?? []) > 0 && first(vwanHubs ?? []).ddosProtectionPlanSettings.deployDdosProtectionPlan ? resDdosProtectionPlan[0].?outputs.resourceId : null))
       tags: vwanHub.?sideCarVirtualNetwork.?tags ?? parTags
       enableTelemetry: parEnableTelemetry
     }
@@ -364,12 +379,31 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
 module resPrivateDNSZones 'br/public:avm/ptn/network/private-link-private-dns-zones:0.7.2' = [
   for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.dnsSettings.deployPrivateDnsZones) {
     name: 'privateDnsZone-${vwanHub.hubName}-${uniqueString(parDnsResourceGroupNamePrefix,vwanHub.location)}'
-    scope: resourceGroup(dnsResourceGroupNames[indexOf(parLocations, vwanHub.location)])
+    scope:resourceGroup(dnsResourceGroupNames[i])
     dependsOn: [
       modDnsResourceGroups
+      resSidecarVirtualNetwork[i]
     ]
     params: {
       location: vwanHub.location
+      virtualNetworkLinks: [
+        for id in union(
+          [
+            resourceId(
+              subscription().subscriptionId,
+              vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)],
+              'Microsoft.Network/virtualNetworks',
+              vwanHub.sideCarVirtualNetwork.?name ?? 'vnet-sidecar-alz-${vwanHub.location}'
+            )
+          ],
+          !empty(vwanHub.?dnsSettings.?virtualNetworkIdToLinkFailover)
+            ? [vwanHub.?dnsSettings.?virtualNetworkIdToLinkFailover]
+            : [],
+          vwanHub.?dnsSettings.?virtualNetworkResourceIdsToLinkTo ?? []
+        ): {
+          virtualNetworkResourceId: id
+        }
+      ]
       privateLinkPrivateDnsZones: empty(vwanHub.?dnsSettings.?privateDnsZones) ? null : vwanHub.?dnsSettings.?privateDnsZones
       additionalPrivateLinkPrivateDnsZonesToInclude: vwanHub.?dnsSettings.?additionalPrivateLinkPrivateDnsZonesToInclude ?? []
       privateLinkPrivateDnsZonesToExclude: vwanHub.?dnsSettings.?privateLinkPrivateDnsZonesToExclude ?? []
@@ -491,7 +525,7 @@ module resAzFirewallPolicy 'br/public:avm/res/network/firewall-policy:0.3.4' = [
 //=====================
 // Azure Bastion
 //=====================
-module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.10.0' = [
+module resBastionPublicIp 'br/public:avm/res/network/public-ip-address:0.12.0' = [
   for (vwanHub, i) in (vwanHubs ?? []): if (vwanHub.bastionSettings.deployBastion && (vwanHub.sideCarVirtualNetwork.?sidecarVirtualNetworkEnabled ?? true)) {
     name: 'bastionPip-${uniqueString(parVirtualWanResourceGroupNamePrefix, vwanHub.hubName, vwanHub.location)}'
     scope: resourceGroup(vwanResourceGroupNames[indexOf(parLocations, vwanHub.location)])
