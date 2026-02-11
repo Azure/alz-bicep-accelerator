@@ -335,7 +335,10 @@ module resFirewallRouteTable 'br/public:avm/res/network/route-table:0.5.0' = [
           name: 'internet'
           properties: {
             addressPrefix: '0.0.0.0/0'
-            nextHopType: 'Internet'
+            nextHopType: hub.azureFirewallSettings.?firewallSubnetDefaultRouteNextHopType ?? 'Internet'
+            nextHopIpAddress: (hub.azureFirewallSettings.?firewallSubnetDefaultRouteNextHopType ?? 'Internet') == 'VirtualAppliance'
+              ? hub.azureFirewallSettings.?firewallSubnetDefaultRouteNextHopIpAddress
+              : null
           }
         }
       ]
@@ -590,7 +593,7 @@ module resBastionNsg 'br/public:avm/res/network/network-security-group:0.5.2' = 
 //=====================
 // Hybrid Connectivity
 //=====================
-module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
+module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.1' = [
   for (hub, i) in hubNetworks: if (hub.vpnGatewaySettings.deployVpnGateway) {
     name: 'vpnGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
@@ -630,7 +633,7 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' 
   }
 ]
 
-module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.0' = [
+module resExpressRouteGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.1' = [
   for (hub, i) in hubNetworks: if (hub.?expressRouteGatewaySettings.?deployExpressRouteGateway ?? false) {
     name: 'expressRouteGateway-${uniqueString(parHubNetworkingResourceGroupNamePrefix,hub.name,hub.location)}'
     scope: resourceGroup(hubResourceGroupNames[i])
@@ -909,6 +912,12 @@ type azureFirewallType = {
 
   @description('Optional. Public IP resource ID.')
   publicIPResourceID: string?
+
+  @description('Optional. Default route next hop type for the AzureFirewallSubnet route table. Default is Internet.')
+  firewallSubnetDefaultRouteNextHopType: ('Internet' | 'VirtualAppliance')?
+
+  @description('Optional. Next hop IP address when the AzureFirewallSubnet default route uses VirtualAppliance.')
+  firewallSubnetDefaultRouteNextHopIpAddress: string?
 
   @description('Optional. Role assignments.')
   roleAssignments: roleAssignmentType?
