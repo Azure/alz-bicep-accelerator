@@ -226,7 +226,7 @@ module modLogAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspac
 }
 
 // Azure Monitoring Agent Resources
-module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.1.1' = {
+module modAzureMonitoringAgent 'br/public:avm/ptn/alz/ama:0.2.0' = {
   scope: resResourceGroupPointer
   params: {
     dataCollectionRuleChangeTrackingName: parDataCollectionRuleChangeTrackingName
