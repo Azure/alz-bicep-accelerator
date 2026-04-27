@@ -202,6 +202,18 @@
                 },
                 {
                     "order": 5,
+                    "name": "governance-landingzones-local",
+                    "displayName": "Governance-Landing Zones Local",
+                    "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-local/main.bicep",
+                    "templateParametersFilePath": "templates/core/governance/mgmt-groups/landingzones/landingzones-local/main.bicepparam",
+                    "managementGroupId": "MANAGEMENT_GROUP_ID",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "managementGroup",
+                    "firstRunWhatIf": false,
+                    "group": "governance-landingzones-children"
+                },
+                {
+                    "order": 6,
                     "name": "governance-platform",
                     "displayName": "Governance-Platform",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/main.bicep",
@@ -213,7 +225,7 @@
                     "group": "governance-platform"
                 },
                 {
-                    "order": 6,
+                    "order": 7,
                     "name": "governance-platform-connectivity",
                     "displayName": "Governance-Platform Connectivity",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep",
@@ -225,7 +237,7 @@
                     "group": "governance-platform-children"
                 },
                 {
-                    "order": 7,
+                    "order": 8,
                     "name": "governance-platform-identity",
                     "displayName": "Governance-Platform Identity",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep",
@@ -237,7 +249,7 @@
                     "group": "governance-platform-children"
                 },
                 {
-                    "order": 8,
+                    "order": 9,
                     "name": "governance-platform-management",
                     "displayName": "Governance-Platform Management",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-management/main.bicep",
@@ -249,7 +261,7 @@
                     "group": "governance-platform-children"
                 },
                 {
-                    "order": 9,
+                    "order": 10,
                     "name": "governance-platform-security",
                     "displayName": "Governance-Platform Security",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-security/main.bicep",
@@ -261,7 +273,7 @@
                     "group": "governance-platform-children"
                 },
                 {
-                    "order": 10,
+                    "order": 11,
                     "name": "governance-sandbox",
                     "displayName": "Governance-Sandbox",
                     "templateFilePath": "templates/core/governance/mgmt-groups/sandbox/main.bicep",
@@ -273,7 +285,7 @@
                     "group": "governance-sandbox"
                 },
                 {
-                    "order": 11,
+                    "order": 12,
                     "name": "governance-decommissioned",
                     "displayName": "Governance-Decommissioned",
                     "templateFilePath": "templates/core/governance/mgmt-groups/decommissioned/main.bicep",
@@ -285,7 +297,7 @@
                     "group": "governance-decommissioned"
                 },
                 {
-                    "order": 12,
+                    "order": 13,
                     "name": "governance-platform-rbac",
                     "displayName": "Governance-Platform RBAC",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/main-rbac.bicep",
@@ -297,7 +309,7 @@
                     "group": "governance-rbac"
                 },
                 {
-                    "order": 13,
+                    "order": 14,
                     "name": "governance-platform-connectivity-rbac",
                     "displayName": "Governance-Platform Connectivity RBAC",
                     "templateFilePath": "templates/core/governance/mgmt-groups/platform/platform-connectivity/main-rbac.bicep",
@@ -309,7 +321,7 @@
                     "group": "governance-rbac"
                 },
                 {
-                    "order": 14,
+                    "order": 15,
                     "name": "governance-landingzones-rbac",
                     "displayName": "Governance-Landing Zones RBAC",
                     "templateFilePath": "templates/core/governance/mgmt-groups/landingzones/main-rbac.bicep",
@@ -321,7 +333,7 @@
                     "group": "governance-rbac"
                 },
                 {
-                    "order": 15,
+                    "order": 16,
                     "name": "core-logging",
                     "displayName": "Core-Logging",
                     "templateFilePath": "templates/core/logging/main.bicep",
@@ -332,7 +344,7 @@
                     "group": "core"
                 },
                 {
-                    "order": 16,
+                    "order": 17,
                     "name": "networking-hubnetworking",
                     "displayName": "Networking-Hub Networking",
                     "templateFilePath": "templates/networking/hubnetworking/main.bicep",
@@ -344,7 +356,7 @@
                     "networkType": "hubNetworking"
                 },
                 {
-                    "order": 17,
+                    "order": 18,
                     "name": "networking-virtualwan",
                     "displayName": "Networking-Virtual WAN",
                     "templateFilePath": "templates/networking/virtualwan/main.bicep",
