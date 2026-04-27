@@ -36,6 +36,9 @@ management_group_corp_name: "Corp"
 management_group_online_id: "online"
 management_group_online_name: "Online"
 
+management_group_local_id: "local"
+management_group_local_name: "Local"
+
 management_group_decommissioned_id: "decommissioned"
 management_group_decommissioned_name: "Decommissioned"
 
