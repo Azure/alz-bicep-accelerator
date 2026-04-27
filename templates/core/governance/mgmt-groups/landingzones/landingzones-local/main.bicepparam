@@ -7,12 +7,12 @@ param parLocations = [
 ]
 param parEnableTelemetry = true
 
-param landingZonesOnlineConfig = {
+param landingZonesLocalConfig = {
   createOrUpdateManagementGroup: true
-  managementGroupName: '{{management_group_id_prefix}}{{management_group_online_id||online}}{{management_group_id_postfix}}'
+  managementGroupName: '{{management_group_id_prefix}}{{management_group_local_id||local}}{{management_group_id_postfix}}'
   managementGroupParentId: '{{management_group_id_prefix}}{{management_group_landing_zones_id||landingzones}}{{management_group_id_postfix}}'
   managementGroupIntermediateRootName: '{{management_group_id_prefix}}{{management_group_int_root_id||alz}}{{management_group_id_postfix}}'
-  managementGroupDisplayName: '{{management_group_name_prefix}}{{management_group_online_name||Online}}{{management_group_name_postfix}}'
+  managementGroupDisplayName: '{{management_group_name_prefix}}{{management_group_local_name||Local}}{{management_group_name_postfix}}'
   managementGroupDoNotEnforcePolicyAssignments: []
   managementGroupExcludedPolicyAssignments: []
   customerRbacRoleDefs: []
@@ -29,8 +29,8 @@ param landingZonesOnlineConfig = {
   waitForConsistencyCounterBeforeSubPlacement: 10
 }
 
-// Currently no policy assignments for online landing zones
+// Currently no policy assignments for local landing zones
 // When policies are added, specify parameter overrides here
 param parPolicyAssignmentParameterOverrides = {
-  // No policy assignments in landing zones - online currently
+  // No policy assignments in landing zones - local currently
 }
