@@ -165,23 +165,25 @@ var allPolicySetDefinitions = [
 var allPolicyAssignments = [
   for policyAssignment in deduplicatedPolicyAssignments: {
     name: policyAssignment.name
-    description: policyAssignment.properties.description
-    displayName: policyAssignment.properties.displayName
+    displayName: policyAssignment.properties.?displayName
+    description: policyAssignment.properties.?description
     policyDefinitionId: policyAssignment.properties.policyDefinitionId
-    enforcementMode: policyAssignment.properties.enforcementMode
-    identity: policyAssignment.properties.identity
-    userAssignedIdentityId: policyAssignment.properties.userAssignedIdentity
-    roleDefinitionIds: policyAssignment.properties.roleDefinitionIds
-    parameters: policyAssignment.properties.parameters
-    nonComplianceMessages: policyAssignment.properties.nonComplianceMessages
-    metadata: policyAssignment.properties.metadata
-    overrides: policyAssignment.properties.overrides
-    resourceSelectors: policyAssignment.properties.resourceSelectors
+    parameters: policyAssignment.properties.?parameters
+    parameterOverrides: policyAssignment.properties.?parameterOverrides
+    identity: policyAssignment.identity.?type ?? 'None'
+    userAssignedIdentityId: policyAssignment.properties.?userAssignedIdentityId
+    roleDefinitionIds: policyAssignment.properties.?roleDefinitionIds
+    nonComplianceMessages: policyAssignment.properties.?nonComplianceMessages
+    metadata: policyAssignment.properties.?metadata
+    enforcementMode: policyAssignment.properties.?enforcementMode ?? 'Default'
+    notScopes: policyAssignment.properties.?notScopes
+    location: policyAssignment.?location
+    overrides: policyAssignment.properties.?overrides
+    resourceSelectors: policyAssignment.properties.?resourceSelectors
     definitionVersion: policyAssignment.properties.?definitionVersion
-    notScopes: policyAssignment.properties.notScopes
-    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.additionalManagementGroupsIDsToAssignRbacTo
-    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.additionalSubscriptionIDsToAssignRbacTo
-    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.additionalResourceGroupResourceIDsToAssignRbacTo
+    additionalManagementGroupsIDsToAssignRbacTo: policyAssignment.properties.?additionalManagementGroupsIDsToAssignRbacTo
+    additionalSubscriptionIDsToAssignRbacTo: policyAssignment.properties.?additionalSubscriptionIDsToAssignRbacTo
+    additionalResourceGroupResourceIDsToAssignRbacTo: policyAssignment.properties.?additionalResourceGroupResourceIDsToAssignRbacTo
   }
 ]
 
