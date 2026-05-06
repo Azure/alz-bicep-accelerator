@@ -77,6 +77,14 @@ var alzPolicyAssignmentsWithOverrides = [
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
                 }
               : {},
+            contains(
+                parPolicyAssignmentParameterOverrides[policyAssignment.name],
+                'additionalSubscriptionIDsToAssignRbacTo'
+              )
+              ? {
+                  additionalSubscriptionIDsToAssignRbacTo: parPolicyAssignmentParameterOverrides[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo
+                }
+              : {},
             {
               policyDefinitionId: replace(
                 replace(
