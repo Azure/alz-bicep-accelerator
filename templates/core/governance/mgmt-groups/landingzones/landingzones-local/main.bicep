@@ -32,14 +32,11 @@ param parPolicyAssignmentParameterOverrides object = {}
 //   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 //   reader: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 // }
-var alzRbacRoleDefsJson = [
-]
+var alzRbacRoleDefsJson = []
 
-var alzPolicyDefsJson = [
-]
+var alzPolicyDefsJson = []
 
-var alzPolicySetDefsJson = [
-]
+var alzPolicySetDefsJson = []
 
 var alzPolicyAssignmentsJson = [
   loadJsonContent('../../../lib/alz/landingzones/local/Enforce-ALDO-Services.alz_policy_assignment.json')
@@ -70,6 +67,14 @@ var alzPolicyAssignmentsWithOverrides = [
                     policyAssignment.properties.?parameters ?? {},
                     parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
                   )
+                }
+              : {},
+            contains(
+                parPolicyAssignmentParameterOverrides[policyAssignment.name],
+                'additionalSubscriptionIDsToAssignRbacTo'
+              )
+              ? {
+                  additionalSubscriptionIDsToAssignRbacTo: parPolicyAssignmentParameterOverrides[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo
                 }
               : {},
             {
@@ -226,4 +231,3 @@ module landingZonesLocal 'br/public:avm/ptn/alz/empty:0.3.6' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../../../../alzCoreType.bicep'
-

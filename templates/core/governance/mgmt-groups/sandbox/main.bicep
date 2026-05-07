@@ -58,6 +58,14 @@ var alzPolicyAssignmentsWithOverrides = [
                   )
                 }
               : {},
+            contains(
+                parPolicyAssignmentParameterOverrides[policyAssignment.name],
+                'additionalSubscriptionIDsToAssignRbacTo'
+              )
+              ? {
+                  additionalSubscriptionIDsToAssignRbacTo: parPolicyAssignmentParameterOverrides[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo
+                }
+              : {},
             {
               policyDefinitionId: replace(
                 replace(

@@ -33,6 +33,7 @@ param landingZonesCorpConfig = {
 param parPolicyAssignmentParameterOverrides = {
   // Deploy-Private-DNS-Zones Policy: Configure private DNS zones for Azure services private endpoints
   'Deploy-Private-DNS-Zones': {
+    additionalSubscriptionIDsToAssignRbacTo: ['{{connectivity_subscription_id}}']
     parameters: {
       // Azure Container Registry private DNS zone
       azureAcrPrivateDnsZoneId: {
