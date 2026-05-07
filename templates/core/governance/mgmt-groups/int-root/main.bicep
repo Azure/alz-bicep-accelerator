@@ -299,6 +299,14 @@ var alzPolicyAssignmentsWithOverrides = [
                   )
                 }
               : {},
+            contains(
+                parPolicyAssignmentParameterOverrides[policyAssignment.name],
+                'additionalSubscriptionIDsToAssignRbacTo'
+              )
+              ? {
+                  additionalSubscriptionIDsToAssignRbacTo: parPolicyAssignmentParameterOverrides[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo
+                }
+              : {},
             contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
@@ -465,4 +473,3 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.6' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../../../alzCoreType.bicep'
-
