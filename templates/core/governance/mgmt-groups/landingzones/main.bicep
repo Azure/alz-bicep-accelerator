@@ -224,6 +224,14 @@ var alzPolicyAssignmentsWithOverrides = [
                   )
                 }
               : {},
+            contains(
+                parPolicyAssignmentParameterOverrides[policyAssignment.name],
+                'additionalSubscriptionIDsToAssignRbacTo'
+              )
+              ? {
+                  additionalSubscriptionIDsToAssignRbacTo: parPolicyAssignmentParameterOverrides[policyAssignment.name].additionalSubscriptionIDsToAssignRbacTo
+                }
+              : {},
             contains(alzPolicyAssignmentRoleDefinitions, policyAssignment.name)
               ? {
                   roleDefinitionIds: alzPolicyAssignmentRoleDefinitions[policyAssignment.name]
