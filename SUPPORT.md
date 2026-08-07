@@ -9,7 +9,7 @@ For help and questions about using this project, please raise an Issue.
 ## Microsoft Support Policy
 
 Support for this project is limited to the resources listed above.
-## Known limitations
+## Known Limitations
 
 ### Azure Government and Sovereign Clouds
 
