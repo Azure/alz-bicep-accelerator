@@ -31,6 +31,9 @@ param landingZonesLocalConfig = {
 
 // Currently no policy assignments for local landing zones
 // When policies are added, specify parameter overrides here
+// Supports policy assignment parameter overrides only.
+// Overriding built-in policy definitionVersion values is not supported.
+// See SUPPORT.md for known limitations and guidance.
 param parPolicyAssignmentParameterOverrides = {
   // No policy assignments in landing zones - local currently
 }

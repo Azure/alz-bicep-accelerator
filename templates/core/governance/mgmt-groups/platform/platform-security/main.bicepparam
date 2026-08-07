@@ -30,6 +30,9 @@ param platformSecurityConfig = {
 }
 
 // Only specify the parameters you want to override - others will use defaults from JSON files
+// Supports policy assignment parameter overrides only.
+// Overriding built-in policy definitionVersion values is not supported.
+// See SUPPORT.md for known limitations and guidance.
 param parPolicyAssignmentParameterOverrides = {
   // No policy assignments in platform-security currently
 }
