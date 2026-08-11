@@ -345,6 +345,17 @@
                 },
                 {
                     "order": 17,
+                    "name": "core-healthmodels",
+                    "displayName": "Core-Health Models",
+                    "templateFilePath": "templates/core/healthmodels/main.bicep",
+                    "templateParametersFilePath": "templates/core/healthmodels/main.bicepparam",
+                    "subscriptionId": "SUBSCRIPTION_ID_MANAGEMENT",
+                    "deploymentType": "subscription",
+                    "firstRunWhatIf": false,
+                    "group": "core"
+                },
+                {
+                    "order": 18,
                     "name": "networking-hubnetworking",
                     "displayName": "Networking-Hub Networking",
                     "templateFilePath": "templates/networking/hubnetworking/main.bicep",
@@ -356,7 +367,7 @@
                     "networkType": "hubNetworking"
                 },
                 {
-                    "order": 18,
+                    "order": 19,
                     "name": "networking-virtualwan",
                     "displayName": "Networking-Virtual WAN",
                     "templateFilePath": "templates/networking/virtualwan/main.bicep",
