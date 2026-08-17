@@ -27,6 +27,9 @@ management_group_identity_name: "Identity"
 management_group_security_id: "security"
 management_group_security_name: "Security"
 
+management_group_management_id: "management"
+management_group_management_name: "Management"
+
 management_group_landing_zones_id: "landingzones"
 management_group_landing_zones_name: "Landing Zones"
 
@@ -35,6 +38,16 @@ management_group_corp_name: "Corp"
 
 management_group_online_id: "online"
 management_group_online_name: "Online"
+
+# These three confidential management groups are used in the SLZ (Sovereign Landing Zone) deployment
+management_group_confidential_corp_id: "confidential-corp"
+management_group_confidential_corp_name: "Confidential Corp"
+
+management_group_confidential_online_id: "confidential-online"
+management_group_confidential_online_name: "Confidential Online"
+
+management_group_public_id: "public"
+management_group_public_name: "Public"
 
 management_group_local_id: "local"
 management_group_local_name: "Local"
