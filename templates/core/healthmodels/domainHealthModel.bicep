@@ -3,6 +3,8 @@ metadata description = 'Used to deploy a simple ALZ domain Health Model with one
 
 targetScope = 'resourceGroup'
 
+import { discoveryRuleType } from './healthModel.bicep'
+
 //========================================
 // Parameters
 //========================================
@@ -51,12 +53,24 @@ param parGlobalResourceLock lockType = {
 @description('Optional. Tags to be applied to the domain health model.')
 param parTags object = {}
 
+@description('Optional. Resource ID of the shared discovery User Assigned Identity. Required when parDiscoveryRules is non-empty.')
+param parDiscoveryIdentityResourceId string = ''
+
+@description('Optional. Resource Graph discovery rules to attach to this domain model root.')
+param parDiscoveryRules discoveryRuleType[] = []
+
 //========================================
 // Variables
 //========================================
 
 var varDummyEntityName = 'entity-${parDomain}-dummy-green'
 var varDummyEntityCanvasPosition = { x: 0, y: 193 }
+var varDiscoveryEnabled = !empty(parDiscoveryRules)
+var varAuthenticationSettingName = 'managed-identity'
+// Guard: a rule set must never be supplied without a discovery identity.
+var varDiscoveryIdentityResourceId = varDiscoveryEnabled && empty(parDiscoveryIdentityResourceId)
+  ? fail('parDiscoveryIdentityResourceId is required when parDiscoveryRules is non-empty.')
+  : parDiscoveryIdentityResourceId
 var varHealthModelTags = union(parTags, {
   alzHealthModelRole: 'domain'
   alzHealthModelDomain: parDomain
@@ -71,11 +85,52 @@ resource resHealthModel 'Microsoft.CloudHealth/healthmodels@2026-05-01-preview' 
   name: parHealthModelName
   location: parHealthModelLocation
   tags: varHealthModelTags
-  identity: {
+  identity: varDiscoveryEnabled ? {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${varDiscoveryIdentityResourceId}': {}
+    }
+  } : {
     type: 'SystemAssigned'
   }
   properties: {}
 }
+
+resource resAuthenticationSetting 'Microsoft.CloudHealth/healthmodels/authenticationsettings@2026-05-01-preview' = if (varDiscoveryEnabled) {
+  parent: resHealthModel
+  name: varAuthenticationSettingName
+  properties: {
+    displayName: 'Health model discovery identity'
+    authenticationKind: 'ManagedIdentity'
+    managedIdentityName: varDiscoveryIdentityResourceId
+  }
+}
+
+resource resDiscoveryRules 'Microsoft.CloudHealth/healthmodels/discoveryrules@2026-05-01-preview' = [for discoveryRule in parDiscoveryRules: if (varDiscoveryEnabled) {
+  parent: resHealthModel
+  name: discoveryRule.name
+  properties: {
+    displayName: discoveryRule.displayName
+    authenticationSetting: resAuthenticationSetting.name
+    addRecommendedSignals: discoveryRule.?addRecommendedSignals ?? 'Enabled'
+    addResourceHealthSignal: discoveryRule.?addResourceHealthSignal ?? 'Disabled'
+    discoverRelationships: discoveryRule.?discoverRelationships ?? 'Disabled'
+    specification: {
+      kind: 'ResourceGraphQuery'
+      resourceGraphQuery: discoveryRule.resourceGraphQuery
+    }
+  }
+}]
+
+resource resRootToDiscoveryRelationships 'Microsoft.CloudHealth/healthmodels/relationships@2026-05-01-preview' = [for (discoveryRule, i) in parDiscoveryRules: if (varDiscoveryEnabled) {
+  parent: resHealthModel
+  name: 'root-to-${discoveryRule.name}'
+  properties: {
+    displayName: 'Root to ${discoveryRule.displayName}'
+    parentEntityName: parHealthModelName
+    childEntityName: resDiscoveryRules[i].name
+  }
+}]
 
 resource resDummyEntity 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-preview' = {
   parent: resHealthModel

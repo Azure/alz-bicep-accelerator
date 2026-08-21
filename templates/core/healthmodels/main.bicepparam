@@ -24,3 +24,11 @@ param parHealthModelLocation = '{{health_model_location||swedencentral}}'
 
 // Discovery Identity Parameters
 param parDiscoveryIdentityName = 'mi-ahm-alz-${parLocations[0]}'
+
+param parManagementSubscriptionId = '{{management_subscription_id}}'
+param parConnectivitySubscriptionId = '{{connectivity_subscription_id}}'
+param parIdentitySubscriptionId = '{{identity_subscription_id}}'
+param parSecuritySubscriptionId = '{{security_subscription_id}}'
+param parLandingZoneDiscoveryManagementGroupIds = [
+  '{{management_group_id_prefix}}{{management_group_landing_zones_id||landingzones}}{{management_group_id_postfix}}'
+]
