@@ -56,6 +56,7 @@ param parTags object = {}
 //========================================
 
 var varDummyEntityName = 'entity-${parDomain}-dummy-green'
+var varDummyEntityCanvasPosition = { x: 0, y: 193 }
 var varHealthModelTags = union(parTags, {
   alzHealthModelRole: 'domain'
   alzHealthModelDomain: parDomain
@@ -82,6 +83,7 @@ resource resDummyEntity 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-
   properties: {
     displayName: '${parDomainDisplayName} dummy health'
     impact: 'Standard'
+    canvasPosition: varDummyEntityCanvasPosition
   }
 }
 

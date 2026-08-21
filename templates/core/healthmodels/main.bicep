@@ -80,10 +80,17 @@ var varDomainHealthModels = [
   }
 ]
 
+var varLayoutColumnStep = 250
+var varLayoutEntityRowY = 193
+
 var varParentEntities = [
-  for domainHealthModel in varDomainHealthModels: {
+  for (domainHealthModel, index) in varDomainHealthModels: {
     name: 'entity-domain-${domainHealthModel.domain}'
     displayName: domainHealthModel.displayName
+    canvasPosition: {
+      x: index * varLayoutColumnStep
+      y: varLayoutEntityRowY
+    }
   }
 ]
 

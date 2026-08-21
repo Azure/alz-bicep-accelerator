@@ -95,6 +95,7 @@ resource resEntities 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-pre
     properties: {
       displayName: entity.displayName
       impact: 'Standard'
+      canvasPosition: entity.?canvasPosition
       signalGroups: {
         dependencies: {
           aggregationType: 'WorstOf'
@@ -161,6 +162,9 @@ type entityType = {
 
   @description('Required. The display name shown for the entity.')
   displayName: string
+
+  @description('Optional. Canvas position of the entity in the model topology view.')
+  canvasPosition: { x: int, y: int }?
 }
 
 @export()
