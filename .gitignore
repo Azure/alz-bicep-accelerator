@@ -398,3 +398,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Playwright MCP scratch output (screenshots, console logs, page snapshots)
+.playwright-mcp/

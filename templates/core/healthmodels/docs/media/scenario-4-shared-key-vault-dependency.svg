@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="842" height="423" viewBox="0 0 842 423" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif">
+<defs><filter id="cs" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.3" flood-color="#000" flood-opacity="0.1"/></filter></defs>
+<rect width="842" height="423" fill="#ffffff"/>
+<rect x="0" y="78.0" width="842" height="90.0" fill="#ffffff"/>
+<line x1="0" y1="78.0" x2="842" y2="78.0" stroke="#e6e4e2"/>
+<text x="676.0" y="127.5" font-size="13" font-weight="700" fill="#323130">Workload root</text>
+<rect x="0" y="168.0" width="842" height="90.0" fill="#faf9f8"/>
+<line x1="0" y1="168.0" x2="842" y2="168.0" stroke="#e6e4e2"/>
+<text x="676.0" y="217.5" font-size="13" font-weight="700" fill="#323130">Business &amp; user flows</text>
+<rect x="0" y="258.0" width="842" height="99.0" fill="#ffffff"/>
+<line x1="0" y1="258.0" x2="842" y2="258.0" stroke="#e6e4e2"/>
+<text x="676.0" y="303.5" font-size="13" font-weight="700" fill="#323130">Application</text>
+<text x="676.0" y="320.5" font-size="13" font-weight="700" fill="#323130">components</text>
+<line x1="0" y1="374.5" x2="842" y2="374.5" stroke="#e6e4e2"/>
+<text x="40" y="34" font-size="18" font-weight="700" fill="#242424">Scenario 4: Shared Key Vault dependency</text>
+<text x="40" y="52" font-size="12" fill="#605e5c">One shared vault degrades; every dependent flow and the root follow.</text>
+<text x="40.0" y="413.0" font-size="11.5" font-weight="600" fill="#605e5c">Legend</text>
+<circle cx="99.7" cy="409.0" r="4.5" fill="#4c9a2a"/>
+<text x="109.7" y="413.0" font-size="11.5" fill="#323130">Healthy</text>
+<circle cx="165.5" cy="409.0" r="4.5" fill="#c26a00"/>
+<text x="175.5" y="413.0" font-size="11.5" fill="#323130">Degraded</text>
+<circle cx="243.0" cy="409.0" r="4.5" fill="#c50f18"/>
+<text x="253.0" y="413.0" font-size="11.5" fill="#323130">Unhealthy</text>
+<circle cx="321.8" cy="409.0" r="4.5" fill="#8a8886"/>
+<text x="331.8" y="413.0" font-size="11.5" fill="#323130">Unknown</text>
+<g transform="translate(390.7,402.0) scale(0.875)"><rect x="1.5" y="8" width="2.6" height="6" rx="0.6" fill="#8661c5"/><rect x="5.7" y="4.5" width="2.6" height="9.5" rx="0.6" fill="#0078D4"/><rect x="9.9" y="6.5" width="2.6" height="7.5" rx="0.6" fill="#3fb0ac"/></g>
+<text x="408.7" y="413.0" font-size="11.5" fill="#323130">Metric</text>
+<g transform="translate(40.0,0)">
+<g fill="none" stroke-linecap="butt" stroke-linejoin="round">
+<path d="M175.5 276.0 L175.5 244.0" stroke="#db7500" stroke-width="1.7"/>
+<path d="M381.5 276.0 L381.5 244.0" stroke="#db7500" stroke-width="1.7"/>
+<path d="M236.0 186.0 L236.0 154.0" stroke="#db7500" stroke-width="1.7"/>
+<path d="M290.0 186.0 L290.0 154.0" stroke="#db7500" stroke-width="1.7"/>
+</g>
+<g filter="url(#cs)"><rect x="163.5" y="276.0" width="230" height="67" rx="10" fill="#fbf2e7" stroke="#db7500" stroke-width="2"/></g><g transform="translate(169.5,283.16) scale(0.82)"><path d="M12 3l7 2.6v5.2c0 4.6-3 7.9-7 9.2-4-1.3-7-4.6-7-9.2V5.6z" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.8 12.2l2.2 2.2 4-4.6" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="197.5" y="296.5" font-size="12.5" font-weight="600" fill="#242424">Shared Key Vault</text><rect x="310.5" y="284.00" width="75.0" height="18" rx="9" fill="#ffffff" stroke="#db7500" stroke-width="1"/><circle cx="321.5" cy="293.0" r="6" fill="#c26a00"/><text x="330.5" y="296.57" font-size="10.5" fill="#323130">Degraded</text><line x1="164.5" y1="313.0" x2="392.5" y2="313.0" stroke="#e6e4e2"/><circle cx="179.5" cy="328.0" r="6" fill="#c26a00"/><g transform="translate(195.5,321.0) scale(0.875)"><rect x="1.5" y="8" width="2.6" height="6" rx="0.6" fill="#8661c5"/><rect x="5.7" y="4.5" width="2.6" height="9.5" rx="0.6" fill="#0078D4"/><rect x="9.9" y="6.5" width="2.6" height="7.5" rx="0.6" fill="#3fb0ac"/></g><text x="215.5" y="331.5" font-size="10.5" fill="#242424">Availability</text><text x="381.5" y="331.5" font-size="10.5" font-weight="600" fill="#c26a00" text-anchor="end">97.9%</text>
+<g filter="url(#cs)"><rect x="0.0" y="186.0" width="248" height="58" rx="10" fill="#fbf2e7" stroke="#db7500" stroke-width="2"/></g><g transform="translate(6.0,205.16) scale(0.82)"><path d="M12 3l7 2.6v5.2c0 4.6-3 7.9-7 9.2-4-1.3-7-4.6-7-9.2V5.6z" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.8 12.2l2.2 2.2 4-4.6" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="34.0" y="218.5" font-size="12.5" font-weight="600" fill="#242424">Identity secrets flow</text><rect x="165.0" y="206.00" width="75.0" height="18" rx="9" fill="#ffffff" stroke="#db7500" stroke-width="1"/><circle cx="176.0" cy="215.0" r="6" fill="#c26a00"/><text x="185.0" y="218.57" font-size="10.5" fill="#323130">Degraded</text>
+<g filter="url(#cs)"><rect x="278.0" y="186.0" width="310" height="58" rx="10" fill="#fbf2e7" stroke="#db7500" stroke-width="2"/></g><g transform="translate(284.0,205.16) scale(0.82)"><path d="M12 3l7 2.6v5.2c0 4.6-3 7.9-7 9.2-4-1.3-7-4.6-7-9.2V5.6z" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.8 12.2l2.2 2.2 4-4.6" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="312.0" y="218.5" font-size="12.5" font-weight="600" fill="#242424">App landing-zone secrets flow</text><rect x="505.0" y="206.00" width="75.0" height="18" rx="9" fill="#ffffff" stroke="#db7500" stroke-width="1"/><circle cx="516.0" cy="215.0" r="6" fill="#c26a00"/><text x="525.0" y="218.57" font-size="10.5" fill="#323130">Degraded</text>
+<g filter="url(#cs)"><rect x="164.5" y="96.0" width="228" height="58" rx="10" fill="#fbf2e7" stroke="#db7500" stroke-width="2"/></g><g transform="translate(170.5,115.16) scale(0.82)"><path d="M12 3.2l7.6 4.4v8.8L12 20.8l-7.6-4.4V7.6z" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.6 7.8l7.4 4.3 7.4-4.3M12 12.1v8.6" fill="none" stroke="#605e5c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="198.5" y="123.0" font-size="12.5" font-weight="600" fill="#242424">ahm-alz-platform</text><text x="198.5" y="135.0" font-size="9" fill="#605e5c">worstOf</text><rect x="309.5" y="116.00" width="75.0" height="18" rx="9" fill="#ffffff" stroke="#db7500" stroke-width="1"/><circle cx="320.5" cy="125.0" r="6" fill="#c26a00"/><text x="329.5" y="128.57" font-size="10.5" fill="#323130">Degraded</text>
+</g></svg>
