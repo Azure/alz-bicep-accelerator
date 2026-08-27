@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep Accelerator - Health Model Discovery Reader (Management Group)'
-metadata description = 'Grants the health model discovery identity the Reader role on a management group that its discovery rules query.'
+metadata description = 'Grants the health model discovery identity the Reader role on a management group queried by its discovery rules.'
 
 targetScope = 'managementGroup'
 
@@ -10,7 +10,7 @@ targetScope = 'managementGroup'
 @description('Required. The principal ID of the health model discovery identity.')
 param parPrincipalId string
 
-@description('Required. The ID of the built in role granted to the discovery identity.')
+@description('Required. The ID of the built-in role for the discovery identity.')
 param parRoleDefinitionId string
 
 //========================================
@@ -23,7 +23,7 @@ resource resDiscoveryReaderMg 'Microsoft.Authorization/roleAssignments@2022-04-0
     roleDefinitionId: tenantResourceId('Microsoft.Authorization/roleDefinitions', parRoleDefinitionId)
     principalId: parPrincipalId
     principalType: 'ServicePrincipal'
-    description: 'Allows the ALZ platform health model discovery rules to read resources in this management group.'
+    description: 'Lets ALZ platform health model discovery rules read resources in this management group.'
   }
 }
 

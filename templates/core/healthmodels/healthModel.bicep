@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep Accelerator - Platform Health Model Resources'
-metadata description = 'Used to deploy a Microsoft.CloudHealth health model, top-level entities, and Resource Graph discovery rules.'
+metadata description = 'Deploys a Microsoft.CloudHealth health model, top-level entities, and Resource Graph discovery rules.'
 
 targetScope = 'resourceGroup'
 
@@ -32,7 +32,7 @@ param parEntityDiscoveryLinks entityDiscoveryLinkType[]
 ''')
 param parHealthModelLock lockType?
 
-@description('Optional. Tags to be applied to resources.')
+@description('Optional. Tags for the deployed resources.')
 param parTags object = {}
 
 //========================================
@@ -42,6 +42,13 @@ param parTags object = {}
 var varAuthenticationSettingName = 'managed-identity'
 var varEntityNames = [for entity in parEntities: entity.name]
 var varDiscoveryRuleNames = [for discoveryRule in parDiscoveryRules: discoveryRule.name]
+var varInvalidEntityDiscoveryLinks = map(
+  filter(parEntityDiscoveryLinks, entityDiscoveryLink => !contains(varEntityNames, entityDiscoveryLink.entityName) || !contains(varDiscoveryRuleNames, entityDiscoveryLink.discoveryRuleName)),
+  entityDiscoveryLink => '${entityDiscoveryLink.entityName}->${entityDiscoveryLink.discoveryRuleName}'
+)
+var varValidatedEntityDiscoveryLinks = empty(varInvalidEntityDiscoveryLinks)
+  ? parEntityDiscoveryLinks
+  : fail('parEntityDiscoveryLinks contains unknown references: ${join(varInvalidEntityDiscoveryLinks, ', ')}')
 
 //========================================
 // Resources
@@ -99,7 +106,6 @@ resource resEntities 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-pre
       signalGroups: {
         dependencies: {
           aggregationType: 'WorstOf'
-          ignoreUnknown: true
         }
       }
     }
@@ -120,7 +126,7 @@ resource resRootToEntityRelationships 'Microsoft.CloudHealth/healthmodels/relati
 ]
 
 resource resEntityToDiscoveryRelationships 'Microsoft.CloudHealth/healthmodels/relationships@2026-05-01-preview' = [
-  for entityDiscoveryLink in parEntityDiscoveryLinks: {
+  for entityDiscoveryLink in varValidatedEntityDiscoveryLinks: {
     parent: resHealthModel
     name: '${entityDiscoveryLink.entityName}-to-${entityDiscoveryLink.discoveryRuleName}'
     properties: {

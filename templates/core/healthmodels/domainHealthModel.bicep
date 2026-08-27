@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep Accelerator - Domain Health Model'
-metadata description = 'Used to deploy a simple ALZ domain Health Model with one dummy health entity.'
+metadata description = 'Deploys an ALZ domain health model with one placeholder entity and no signal definitions.'
 
 targetScope = 'resourceGroup'
 
@@ -24,23 +24,9 @@ param parDomain string
 param parDomainDisplayName string = parDomain
 
 @description('Required. The location of the health model. Must be a region where Microsoft.CloudHealth offers health models.')
-@allowed([
-  'australiaeast'
-  'canadacentral'
-  'centralus'
-  'eastasia'
-  'germanywestcentral'
-  'italynorth'
-  'japanwest'
-  'northeurope'
-  'southeastasia'
-  'swedencentral'
-  'switzerlandnorth'
-  'uksouth'
-])
 param parHealthModelLocation string = 'swedencentral'
 
-@sys.description('''Global Resource Lock Configuration used for resources deployed in this module.
+@sys.description('''Configures the global resource lock for this module.
 - `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
@@ -50,10 +36,10 @@ param parGlobalResourceLock lockType = {
   notes: 'This lock was created by the ALZ Bicep Accelerator.'
 }
 
-@description('Optional. Tags to be applied to the domain health model.')
+@description('Optional. Tags for the domain health model.')
 param parTags object = {}
 
-@description('Optional. Resource ID of the shared discovery User Assigned Identity. Required when parDiscoveryRules is non-empty.')
+@description('Optional. Resource ID of the shared discovery user-assigned identity. Required when parDiscoveryRules is not empty.')
 param parDiscoveryIdentityResourceId string = ''
 
 @description('Optional. Resource Graph discovery rules to attach to this domain model root.')
@@ -63,11 +49,11 @@ param parDiscoveryRules discoveryRuleType[] = []
 // Variables
 //========================================
 
-var varDummyEntityName = 'entity-${parDomain}-dummy-green'
-var varDummyEntityCanvasPosition = { x: 0, y: 193 }
+var varPlaceholderEntityName = 'entity-${parDomain}-placeholder'
+var varPlaceholderEntityCanvasPosition = { x: 0, y: 193 }
 var varDiscoveryEnabled = !empty(parDiscoveryRules)
 var varAuthenticationSettingName = 'managed-identity'
-// Guard: a rule set must never be supplied without a discovery identity.
+// Fail before deployment when discovery rules lack an identity.
 var varDiscoveryIdentityResourceId = varDiscoveryEnabled && empty(parDiscoveryIdentityResourceId)
   ? fail('parDiscoveryIdentityResourceId is required when parDiscoveryRules is non-empty.')
   : parDiscoveryIdentityResourceId
@@ -132,23 +118,23 @@ resource resRootToDiscoveryRelationships 'Microsoft.CloudHealth/healthmodels/rel
   }
 }]
 
-resource resDummyEntity 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-preview' = {
+resource resPlaceholderEntity 'Microsoft.CloudHealth/healthmodels/entities@2026-05-01-preview' = {
   parent: resHealthModel
-  name: varDummyEntityName
+  name: varPlaceholderEntityName
   properties: {
-    displayName: '${parDomainDisplayName} dummy health'
+    displayName: '${parDomainDisplayName} placeholder entity'
     impact: 'Standard'
-    canvasPosition: varDummyEntityCanvasPosition
+    canvasPosition: varPlaceholderEntityCanvasPosition
   }
 }
 
-resource resRootToDummyRelationship 'Microsoft.CloudHealth/healthmodels/relationships@2026-05-01-preview' = {
+resource resRootToPlaceholderRelationship 'Microsoft.CloudHealth/healthmodels/relationships@2026-05-01-preview' = {
   parent: resHealthModel
-  name: 'root-to-${varDummyEntityName}'
+  name: 'root-to-${varPlaceholderEntityName}'
   properties: {
-    displayName: 'Root to ${parDomainDisplayName} dummy health'
+    displayName: 'Root to ${parDomainDisplayName} placeholder entity'
     parentEntityName: parHealthModelName
-    childEntityName: resDummyEntity.name
+    childEntityName: resPlaceholderEntity.name
   }
 }
 
@@ -171,8 +157,8 @@ output outHealthModelResourceId string = resHealthModel.id
 @description('The name of the domain health model.')
 output outHealthModelName string = resHealthModel.name
 
-@description('The name of the dummy entity seeded by deployment verification.')
-output outDummyEntityName string = resDummyEntity.name
+@description('The name of the placeholder entity that holds this domain until operators model it. It defines no signals.')
+output outPlaceholderEntityName string = resPlaceholderEntity.name
 
 //========================================
 // Definitions

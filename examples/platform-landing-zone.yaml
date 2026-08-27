@@ -59,9 +59,8 @@ resource_group_health_model_name_prefix: "rg-alz-healthmodels"
 
 # Health Model
 
-# The Microsoft.CloudHealth resource provider offers health models in fewer regions than
-# the rest of the platform, so the health model region is chosen separately from
-# starter_locations. Valid values are:
+# Microsoft.CloudHealth supports fewer regions than the rest of the platform, so configure
+# this location separately from starter_locations. Valid values:
 # australiaeast, canadacentral, centralus, eastasia, germanywestcentral, italynorth,
 # japanwest, northeurope, southeastasia, swedencentral, switzerlandnorth, uksouth
 

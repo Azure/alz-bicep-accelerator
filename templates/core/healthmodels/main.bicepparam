@@ -17,8 +17,8 @@ param parEnableTelemetry = true
 param parHealthModelResourceGroup = '{{resource_group_health_model_name_prefix||rg-alz-healthmodels}}-${parLocations[0]}'
 
 // Health Model Parameters
-// The health model location is chosen separately from the platform locations because the
-// Microsoft.CloudHealth resource provider offers health models in a smaller set of regions.
+// Microsoft.CloudHealth supports fewer regions than the rest of the platform, so this
+// location is configured separately.
 param parHealthModelName = '{{health_model_platform_name||ahm-alz-platform}}'
 param parHealthModelLocation = '{{health_model_location||swedencentral}}'
 
@@ -29,6 +29,3 @@ param parManagementSubscriptionId = '{{management_subscription_id}}'
 param parConnectivitySubscriptionId = '{{connectivity_subscription_id}}'
 param parIdentitySubscriptionId = '{{identity_subscription_id}}'
 param parSecuritySubscriptionId = '{{security_subscription_id}}'
-param parLandingZoneDiscoveryManagementGroupIds = [
-  '{{management_group_id_prefix}}{{management_group_landing_zones_id||landingzones}}{{management_group_id_postfix}}'
-]

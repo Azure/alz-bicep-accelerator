@@ -1,5 +1,5 @@
 metadata name = 'ALZ Bicep Accelerator - Platform Health Model'
-metadata description = 'Used to deploy a platform parent health model and its ALZ domain child health models.'
+metadata description = 'Deploys a platform parent health model and five ALZ domain child health models that the parent discovers by tag.'
 
 targetScope = 'subscription'
 
@@ -8,7 +8,7 @@ targetScope = 'subscription'
 //========================================
 
 // Resource Group Parameters
-@description('Required. The name of the Resource Group that hosts the platform health models.')
+@description('Required. The resource group that hosts the platform health models.')
 param parHealthModelResourceGroup string
 
 // Health Model Parameters
@@ -16,7 +16,7 @@ param parHealthModelResourceGroup string
 @minLength(3)
 param parHealthModelName string = 'ahm-alz-platform'
 
-@description('Optional. The location of the platform health model. Must be a region where the Microsoft.CloudHealth resource provider offers health models, which is a smaller set than the regions available to the rest of the platform.')
+@description('Optional. The location of the platform health model. Must be a Microsoft.CloudHealth supported region.')
 param parHealthModelLocation string = 'swedencentral'
 
 // Discovery Identity Parameters
@@ -28,37 +28,38 @@ param parDiscoveryIdentityName string
 @description('Optional. Management subscription ID for domain discovery. Defaults to the deployment subscription.')
 param parManagementSubscriptionId string = subscription().subscriptionId
 
-@description('Optional. Connectivity subscription ID for domain discovery.')
+@description('Optional. Connectivity subscription ID for domain discovery. Empty omits the Connectivity discovery rule.')
 param parConnectivitySubscriptionId string = ''
 
-@description('Optional. Identity subscription ID for domain discovery.')
+@description('Optional. Identity subscription ID for domain discovery. Empty omits the Identity discovery rule.')
 param parIdentitySubscriptionId string = ''
 
-@description('Optional. Security subscription ID for domain discovery.')
+@description('Optional. Security subscription ID for domain discovery. Empty omits the Security discovery rule.')
 param parSecuritySubscriptionId string = ''
 
-@description('Optional. Per-domain resource-type overrides, keyed by domain (management/connectivity/identity/security). Empty domain omitted uses the built-in default.')
+@description('Optional. Resource-type overrides keyed by management, connectivity, identity, or security. Omitted domains use built-in defaults. An empty list omits that domain\'s rule unless parSubscriptionWideDiscoveryDomains names the domain.')
 param parDomainResourceTypes object = {}
 
-@description('Optional. Domains (by name) that should get a subscription-wide discovery rule even when their resource-type list is empty.')
+@description('Optional. Domains that use a subscription-wide discovery rule when their resource-type list is empty. Empty by default, so clearing a list narrows discovery rather than widening it.')
 param parSubscriptionWideDiscoveryDomains array = []
 
-@description('Optional. Management group IDs whose subtree the Application Landing Zones model scans for other (non platform/domain) health models. Empty = no landing-zone discovery rule.')
+@description('Optional. Management groups searched for health models outside the platform hierarchy. An empty list omits landing-zone discovery.')
 param parLandingZoneDiscoveryManagementGroupIds array = []
 
-@description('Optional. Opt-in: also grant the discovery identity Reader on the Connectivity, Identity, and Security subscriptions the domain queries target. Landing-zone management-group Reader is NOT granted here (a subscription-scoped deployment cannot assign at management-group scope); deploy discoveryReaderMg.bicep separately for that. Default false (no scope escalation).')
+@description('Optional. Grants the discovery identity Reader on domain subscriptions outside the deployment subscription. False by default, so those rules return nothing until enabled. Deploy discoveryReaderMg.bicep separately for management-group access.')
 param parEnableCrossScopeDiscoveryReader bool = false
 
 // General Parameters
 @description('Required. The locations to deploy resources to.')
+@minLength(1)
 param parLocations array = [
   deployment().location
 ]
 
-@description('Optional. Tags to be applied to resources.')
+@description('Optional. Tags for the deployed resources.')
 param parTags object = {}
 
-@sys.description('''Global Resource Lock Configuration used for all resources deployed in this module.
+@sys.description('''Configures the global resource lock for this module.
 - `name` - The name of the lock.
 - `kind` - The lock settings of the service which can be CanNotDelete, ReadOnly, or None.
 - `notes` - Notes about this lock.
@@ -81,6 +82,10 @@ var varResourceTypeSubscription = 'microsoft.resources/subscriptions'
 var varHealthModelRoleParent = 'parent'
 var varHealthModelRoleDomain = 'domain'
 
+// This accelerator produces the management and connectivity types: templates/core/logging,
+// templates/networking, the platform monitoring policy assignments, and this module's own identity.
+// Identity and security types are common ALZ starting points, not accelerator output.
+// Review and override both through parDomainResourceTypes before relying on their results.
 var varDefaultDomainResourceTypes = {
   management: [
     'microsoft.operationalinsights/workspaces'
@@ -241,6 +246,7 @@ var varParentHealthModelTags = union(parTags, {
 })
 
 var varCrossScopePlatformSubscriptionIds = union([], map(filter([
+  varDomainSubscriptionIds.management
   varDomainSubscriptionIds.connectivity
   varDomainSubscriptionIds.identity
   varDomainSubscriptionIds.security
@@ -352,9 +358,6 @@ module modParentHealthModel 'healthModel.bicep' = {
 @description('The resource ID of the platform health model.')
 output outHealthModelResourceId string = modParentHealthModel.outputs.outHealthModelResourceId
 
-@description('The resource ID of the parent platform health model.')
-output outParentHealthModelResourceId string = modParentHealthModel.outputs.outHealthModelResourceId
-
 @description('The resource ID of the health model discovery identity.')
 output outDiscoveryIdentityResourceId string = modDiscoveryIdentity.outputs.resourceId
 
@@ -375,4 +378,4 @@ type lockType = {
 
   @description('Optional. Notes about this lock.')
   notes: string?
-}?
+}
