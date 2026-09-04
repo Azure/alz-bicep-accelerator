@@ -342,6 +342,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
             privateEndpointNetworkPolicies: 'Enabled'
             privateLinkServiceNetworkPolicies: 'Enabled'
             defaultOutboundAccess: false
+            delegation: 'Microsoft.Network/dnsResolvers'
           }
           {
             name: 'DNSPrivateResolverOutboundSubnet'
@@ -349,6 +350,7 @@ module resSidecarVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.2
             privateEndpointNetworkPolicies: 'Enabled'
             privateLinkServiceNetworkPolicies: 'Enabled'
             defaultOutboundAccess: false
+            delegation: 'Microsoft.Network/dnsResolvers'
           }
         ],
         vwanHub.bastionSettings.deployBastion ? [
