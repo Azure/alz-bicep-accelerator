@@ -618,16 +618,17 @@ module resVpnGateway 'br/public:avm/res/network/virtual-network-gateway:0.10.1' 
       enableDnsForwarding: hub.?vpnGatewaySettings.?enableDnsForwarding ?? false
       vpnGatewayGeneration: hub.?vpnGatewaySettings.?vpnGatewayGeneration ?? 'None'
       virtualNetworkResourceId: resHubVirtualNetwork[i].outputs.resourceId
-      // Active-active provisions two PIPs; supply a unique label per PIP to avoid the global cloudapp.azure.com default-label collision (issue #4141)
+      // Active-active provisions two PIPs; supply a unique label per PIP to avoid the global cloudapp.azure.com default-label collision (issue #4141).
+      // subscription().subscriptionId is included so the hash is globally unique across tenants/customers that share the same RG prefix, hub name and region.
       domainNameLabel: !empty(hub.?vpnGatewaySettings.?domainNameLabel ?? [])
         ? hub.?vpnGatewaySettings.?domainNameLabel
         : (hub.?vpnGatewaySettings.?vpnMode == 'activeActiveBgp' || hub.?vpnGatewaySettings.?vpnMode == 'activeActiveNoBgp')
             ? [
-                'vgw-alz-${hub.location}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn', 'pip1')}'
-                'vgw-alz-${hub.location}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn', 'pip2')}'
+                'vgw-alz-${hub.location}-${uniqueString(subscription().subscriptionId, parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn', 'pip1')}'
+                'vgw-alz-${hub.location}-${uniqueString(subscription().subscriptionId, parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn', 'pip2')}'
               ]
             : [
-                'vgw-alz-${hub.location}-${uniqueString(parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn')}'
+                'vgw-alz-${hub.location}-${uniqueString(subscription().subscriptionId, parHubNetworkingResourceGroupNamePrefix, hub.name, hub.location, 'vpn')}'
               ]
       publicIpAvailabilityZones: hub.?vpnGatewaySettings.?skuName != 'Basic'
         ? hub.?vpnGatewaySettings.?publicIpZones ?? publicIpRecommendedZones[i]
