@@ -68,6 +68,16 @@ resource_group_hub_networking_name_prefix: "rg-alz-conn"
 resource_group_virtual_wan_name_prefix: "rg-alz-conn"
 resource_group_dns_name_prefix: "rg-alz-dns"
 resource_group_private_dns_resolver_name_prefix: "rg-alz-dnspr"
+resource_group_health_model_name_prefix: "rg-alz-healthmodels"
+
+# Health Model
+
+# Microsoft.CloudHealth supports fewer regions than the rest of the platform, so configure
+# this location separately from starter_locations. Valid values:
+# australiaeast, canadacentral, centralus, eastasia, germanywestcentral, italynorth,
+# japanwest, northeurope, southeastasia, swedencentral, switzerlandnorth, uksouth
+
+health_model_location: "swedencentral"
 
 # Networking
 
