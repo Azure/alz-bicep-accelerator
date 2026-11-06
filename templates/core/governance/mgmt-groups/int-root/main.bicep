@@ -209,6 +209,7 @@ var alzPolicySetDefsJson = [
   loadJsonContent('../../lib/alz/Enforce-EncryptTransit_20241211.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Enforce-Guardrails-APIM.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Enforce-Guardrails-AppServices.alz_policy_set_definition.json')
+  loadJsonContent('../../lib/alz/Enforce-Guardrails-Automation_20260910.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Enforce-Guardrails-Automation.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Enforce-Guardrails-BotService.alz_policy_set_definition.json')
   loadJsonContent('../../lib/alz/Enforce-Guardrails-CognitiveServices.alz_policy_set_definition.json')
@@ -474,4 +475,5 @@ module intRoot 'br/public:avm/ptn/alz/empty:0.3.6' = {
 // ================ //
 
 import { alzCoreType as alzCoreType } from '../../../alzCoreType.bicep'
+
 
