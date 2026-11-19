@@ -18,7 +18,7 @@ param parLocations array = [
 @sys.description('Set Parameter to true to Opt-out of deployment telemetry.')
 param parEnableTelemetry bool = true
 
-@description('Optional. Policy assignment overrides. Specify the policy parameter values, location, or scope you want to change (logAnalytics, emailSecurityContact, etc.). Role definitions are hardcoded variables and cannot be overridden.')
+@description('Optional. Policy assignment overrides. Specify the policy parameter values, location, or scope you want to change (logAnalytics, emailSecurityContact, etc.). Role definitions are hardcoded variables and cannot be overridden. Set enforcementMode to Default or DoNotEnforce to change the enforcement mode; assignments listed in managementGroupDoNotEnforcePolicyAssignments are always deployed as DoNotEnforce.')
 param parPolicyAssignmentParameterOverrides object = {}
 
 var builtInRoleDefinitionIds = {
@@ -299,6 +299,11 @@ var alzPolicyAssignmentsWithOverrides = [
                     policyAssignment.properties.?parameters ?? {},
                     parPolicyAssignmentParameterOverrides[policyAssignment.name].parameters
                   )
+                }
+              : {},
+            contains(parPolicyAssignmentParameterOverrides[policyAssignment.name], 'enforcementMode')
+              ? {
+                  enforcementMode: parPolicyAssignmentParameterOverrides[policyAssignment.name].enforcementMode
                 }
               : {},
             contains(
