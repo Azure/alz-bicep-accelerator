@@ -56,6 +56,7 @@ var policyAssignmentsRequiringCrossMgRbac = {
     builtInRoleDefinitionIds.logAnalyticsContributor
     builtInRoleDefinitionIds.monitoringContributor
     builtInRoleDefinitionIds.reader
+    builtInRoleDefinitionIds.connectedMachineResourceAdministrator
   ]
   'Deploy-VMSS-ChangeTrack': [
     builtInRoleDefinitionIds.vmContributor
@@ -83,6 +84,7 @@ var policyAssignmentsRequiringCrossMgRbac = {
     builtInRoleDefinitionIds.monitoringContributor
     builtInRoleDefinitionIds.managedIdentityOperator
     builtInRoleDefinitionIds.reader
+    builtInRoleDefinitionIds.connectedMachineResourceAdministrator
   ]
   'Enable-DDoS-VNET': [
     builtInRoleDefinitionIds.networkContributor
